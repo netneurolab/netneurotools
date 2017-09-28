@@ -8,7 +8,8 @@ DESCRIPTION = 'Commonly used tools in the Network Neuroscience Lab'
 DOWNLOAD_URL = 'http://github.com/netneurolab/netneurotools'
 
 INSTALL_REQUIRES = [
-    'numpy>=1.9.0'
+    'numpy>=1.9.0',
+    'bctpy>=0.5.0'
 ]
 
 TESTS_REQUIRE = [
