@@ -9,7 +9,8 @@ DOWNLOAD_URL = 'http://github.com/netneurolab/netneurotools'
 
 INSTALL_REQUIRES = [
     'numpy>=1.9.0',
-    'bctpy>=0.5.0'
+    'bctpy>=0.5.0',
+    'scipy>=0.13.0'
 ]
 
 TESTS_REQUIRE = [
