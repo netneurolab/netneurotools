@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import itertools
+
 import bct
 import numpy as np
+from scipy.linalg import expm
 
 
 def zrand(X, Y):
@@ -39,29 +41,30 @@ def zrand(X, Y):
     Xa = indx @ indx.T
     Ya = indy @ indy.T
 
-    M = n*(n - 1)/2
-    M1 = Xa.nonzero()[0].size/2
-    M2 = Ya.nonzero()[0].size/2
+    M = n * (n - 1) / 2
+    M1 = Xa.nonzero()[0].size / 2
+    M2 = Ya.nonzero()[0].size / 2
 
-    wab = np.logical_and(Xa, Ya).nonzero()[0].size/2
-    muab = M1*M2/M
+    wab = np.logical_and(Xa, Ya).nonzero()[0].size / 2
+    muab = M1 * M2 / M
 
     nx = indx.sum(0)
     ny = indy.sum(0)
 
-    C1 = n*(n**2 - 3*n - 2) - 8*(n + 1)*M1 + 4*sum(np.power(nx,3))
-    C2 = n*(n**2 - 3*n - 2) - 8*(n + 1)*M2 + 4*sum(np.power(ny,3))
+    C1 = n * (n**2 - 3 * n - 2) - 8 * (n + 1) * M1 + 4 * sum(np.power(nx, 3))
+    C2 = n * (n**2 - 3 * n - 2) - 8 * (n + 1) * M2 + 4 * sum(np.power(ny, 3))
 
-    a = M/16
-    b = ((4*M1 - 2*M)**2)*((4*M2 - 2*M)**2)/(256*(M**2))
-    c = C1*C2/(16*n*(n - 1)*(n - 2))
-    d = ((((4*M1 - 2*M)**2) - 4*C1 - 4*M)*(((4*M2 - 2*M)**2) - 4*C2 - 4*M) /
-         (64*n*(n - 1)*(n - 2)*(n - 3)))
+    a = M / 16
+    b = ((4 * M1 - 2 * M)**2) * ((4 * M2 - 2 * M)**2) / (256 * (M**2))
+    c = C1 * C2 / (16 * n * (n - 1) * (n - 2))
+    d = ((((4 * M1 - 2 * M)**2) - 4 * C1 - 4 * M) *
+         (((4 * M2 - 2 * M)**2) - 4 * C2 - 4 * M) /
+         (64 * n * (n - 1) * (n - 2) * (n - 3)))
 
     sigw2 = a - b + c + d
     if sigw2 < 0: return 0  # catch any negatives
     sigw = np.sqrt(sigw2)
-    wz = (wab - muab)/sigw
+    wz = (wab - muab) / sigw
 
     return wz
 
@@ -88,8 +91,8 @@ def zrand_partitions(communities):
         Standard deviation of z-Rand over all pairs of community assignments
     """
 
-    all_zrand  = [zrand(f[0],f[1]) for f in
-                  itertools.combinations(communities.T,2)]
+    all_zrand  = [zrand(f[0], f[1]) for f in
+                  itertools.combinations(communities.T, 2)]
 
     zrand_avg, zrand_std = np.nanmean(all_zrand), np.nanstd(all_zrand)
 
@@ -121,7 +124,7 @@ def consensus_modularity(adjacency,
 
     Returns
     -------
-    consensus : ndarray
+    consensus : np.ndarray
         Consensus community assignments
     Q_mean : float
         Average modularity of generated community assignment partitions
@@ -151,7 +154,7 @@ def consensus_modularity(adjacency,
 
     # generate null agreement matrix
     comms_null = np.zeros_like(comms)
-    for n, i in enumerate(comms.T): comms_null[:,n] = np.random.permutation(i)
+    for n, i in enumerate(comms.T): comms_null[:, n] = np.random.permutation(i)
     ag_null = bct.clustering.agreement(comms_null) / repeats
 
     # get `null_func` of null agreement matrix
@@ -164,3 +167,47 @@ def consensus_modularity(adjacency,
     zrand_avg, zrand_std = zrand_partitions(comms)
 
     return consensus, Q_mean, zrand_avg, zrand_std
+
+
+def communicability(adjacency):
+    """
+    Computes the communicability of pairs of nodes in `adjacency`
+
+    Parameters
+    ----------
+    adjacency : (N x N) array_like
+        Unweighted, direct/undirected connection weight/length array
+
+    Returns
+    -------
+    (N x N) ndarray
+        Symmetric array representing communicability of nodes {i, j}
+    """
+
+    return expm(adjacency)
+
+
+def communicability_wei(adjacency):
+    """
+    Computes the communicability of pairs of nodes in `adjacency`
+
+    Parameters
+    ----------
+    adjacency : (N x N) array_like
+        Weighted, direct/undirected connection weight/length array
+
+    Returns
+    -------
+    cmc : (N x N) ndarray
+        Symmetric array representing communicability of nodes {i, j}
+    """
+
+    row_sum     = adjacency.sum(1)
+    neg_sqrt    = np.power(row_sum, -0.5)
+    square_sqrt = np.diag(neg_sqrt)
+    for_expm    = square_sqrt @ adjacency @ square_sqrt
+
+    cmc = expm(for_expm)
+    cmc[np.diag_indices_from(cmc)] = 0
+
+    return cmc

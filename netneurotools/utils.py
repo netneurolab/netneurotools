@@ -3,35 +3,7 @@
 import numpy as np
 
 
-def ecdf(data):
-    """
-    Estimates empirical cumulative distribution function of `data`
-
-    Parameters
-    ----------
-    data : array_like
-        Array containing values from a continuous distribution
-
-    Returns
-    -------
-    cumprob : ndarray
-        Cumulative probability of distribution
-    quantiles : ndarray
-        Quantiles of distribution
-
-    Notes
-    -----
-    Taken from StackOverflow: https://stackoverflow.com/a/33346366.
-    """
-
-    sample = np.atleast_1d(data)
-    quantiles, counts = np.unique(sample, return_counts=True)
-    cumprob = np.cumsum(counts).astype('float') / sample.size
-
-    return cumprob, quantiles
-
-
-def fcn_group_average(data, n_boot=1000, alpha=0.05, seed=None):
+def func_group_consensus(data, n_boot=1000, alpha=0.05, seed=None):
     """
     Calculates group-level, thresholded functional connectivity matrix
 
@@ -57,7 +29,7 @@ def fcn_group_average(data, n_boot=1000, alpha=0.05, seed=None):
 
     Returns
     -------
-    consensus : (N x N) ndarray
+    consensus : (N x N) np.ndarray
         Thresholded, group-level correlation matrix
     """
 
@@ -66,7 +38,7 @@ def fcn_group_average(data, n_boot=1000, alpha=0.05, seed=None):
     if alpha > 1 or alpha < 0:
         raise ValueError("`alpha` must be between 0 and 1.")
 
-    collapsed_data = data.reshape((len(data),-1), order='F')
+    collapsed_data = data.reshape((len(data), -1), order='F')
     consensus = np.corrcoef(collapsed_data)
 
     bootstrapped_corrmat = np.zeros((len(data), len(data), n_boot))
@@ -74,13 +46,13 @@ def fcn_group_average(data, n_boot=1000, alpha=0.05, seed=None):
     # generate `n_boot` bootstrap correlation matrices by sampling `t` time
     # points from the concatenated time series
     for boot in range(n_boot):
-        indices = np.random.randint(collapsed_data.shape[-1],
-                                    size=data.shape[1])
-        bootstrapped_corrmat[:,:,boot] = np.corrcoef(collapsed_data[:,indices])
+        inds = np.random.randint(collapsed_data.shape[-1],
+                                 size=data.shape[1])
+        bootstrapped_corrmat[:, :, boot] = np.corrcoef(collapsed_data[:, inds])
 
     # extract the CIs from the bootstrapped correlation matrices
-    alpha = 100*(alpha/2)
-    bounds = [alpha, 100-alpha]
+    alpha = 100 * (alpha / 2)
+    bounds = [alpha, 100 - alpha]
     bootstrapped_ci = np.percentile(bootstrapped_corrmat, bounds, axis=-1)
 
     # remove unreliable (i.e., CI zero-crossing) correlations
@@ -101,7 +73,7 @@ def ijk_xyz_input_check(coords):
 
     Returns
     -------
-    coords : (3 x N) ndarray
+    coords : (3 x N) np.ndarray
         Coordinates to be transformed
     """
 
@@ -127,13 +99,13 @@ def ijk_to_xyz(coordinates, affine):
 
     Returns
     -------
-    (3 x N) ndarray
+    (3 x N) np.ndarray
         Provided `coordinates` in `affine` space
     """
 
     coordinates = ijk_xyz_input_check(coordinates)
 
-    return (affine[:,:-1] @ coordinates) + affine[:,[-1]]
+    return (affine[:, :-1] @ coordinates) + affine[:, [-1]]
 
 
 def xyz_to_ijk(coordinates, affine):
@@ -149,12 +121,12 @@ def xyz_to_ijk(coordinates, affine):
 
     Returns
     -------
-    (3 X N) ndarray
+    (3 X N) np.ndarray
         Provided `coordinates` in cartesian space
     """
 
     coordinates = ijk_xyz_input_check(coordinates)
 
-    trans = coordinates - affine[:,[-1]]
+    trans = coordinates - affine[:, [-1]]
 
-    return np.linalg.solve(affine[:,:-1], trans)
+    return np.linalg.solve(affine[:, :-1], trans)
