@@ -1,20 +1,58 @@
-sudo: true
-
 language: python
+sudo: false
+notifications:
+    email: change
 
 python:
-- "3.5"
-- "3.6"
+    - 3.5
+    - 3.6
+
+env:
+    - LINTING=1
+    - NUMBA=0 COVERAGE=1
+    - NUMBA=1
+    - DOCTEST=1
+
+matrix:
+    include:
+    - python: 3.7
+      dist: xenial
+      sudo: required
+
+before_install:
+    - python -m pip install --upgrade pip
+    - if [ "${LINTING}" == "1" ]; then
+          pip install flake8;
+      fi
+    - if [ "${COVERAGE}" == "1" ]; then
+          pip install coverage coveralls codecov pytest pytest-cov;
+      fi
 
 install:
-- pip install pytest pytest-cov codecov coverage
-- pip install -r requirements.txt
-
-before_script:
-- python setup.py install
+    - if [ "${NUMBA}" == "1" ]; then
+          pip install -e .[numba];
+      elif [ "${DOCTEST}" == "1" ]; then
+          pip install -e .[doc];
+      else
+          pip install -e .;
+      fi
 
 script:
-- py.test --cov-report term-missing --cov=netneurotools
+    - |
+      if [ "${LINTING}" == "1" ]; then
+          flake8 netneurotools;
+      elif [ "${DOCTEST}" == "1" ]; then
+          cd docs;
+          make html;
+          make doctest;
+      else
+          if [ "${COVERAGE}" == "1" ]; then
+              TEST_ARGS="--cov-report term-missing --cov=netneurotools";
+          fi
+          py.test ${TEST_ARGS} netneurotools;
+      fi
 
 after_success:
-- codecov
+    - if [ "${COVERAGE}" == "1" ]; then
+          coveralls; codecov;
+      fi

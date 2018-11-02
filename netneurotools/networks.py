@@ -1,213 +1,236 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import itertools
-
-import bct
 import numpy as np
-from scipy.linalg import expm
+from sklearn.utils.validation import check_random_state
 
 
-def zrand(X, Y):
+def func_correlation(data):
     """
-    Calculates the z-Rand index of two clustering assignments
+    Computes group-averaged functional correlation matrix
 
     Parameters
     ----------
-    X, Y : (N x 1) array_like
-        Clustering assignment vectors
+    data : (N, T, S) array_like
+        Pre-processed functional time series, where `N` is nodes, `T` is
+        time, and `S` is subjects
 
     Returns
     -------
-    z_rand : float
-        z-Rand index
-
-    References
-    ----------
-    .. [1] Traud, A. L., Kelsic, E. D., Mucha, P. J., & Porter, M. A. (2011).
-       Comparing community structure to characteristics in online collegiate
-       social networks. SIAM review, 53(3), 526-543.
+    corr : (N, N) array
+        GRoup average of subject-level functional correlations
     """
 
-    # we need 2d arrays for this to work; shape (n,1)
-    X, Y = np.atleast_2d(X), np.atleast_2d(Y)
-    if X.shape[0] < X.shape[1]: X = X.T
-    if Y.shape[0] < Y.shape[1]: Y = Y.T
+    corrs = [np.corrcoef(data[..., sub]) for sub in range(data.shape[-1])]
 
-    n = X.shape[0]
-
-    indx = bct.utils.dummyvar(X)
-    indy = bct.utils.dummyvar(Y)
-
-    Xa = indx @ indx.T
-    Ya = indy @ indy.T
-
-    M = n * (n - 1) / 2
-    M1 = Xa.nonzero()[0].size / 2
-    M2 = Ya.nonzero()[0].size / 2
-
-    wab = np.logical_and(Xa, Ya).nonzero()[0].size / 2
-    muab = M1 * M2 / M
-
-    nx = indx.sum(0)
-    ny = indy.sum(0)
-
-    C1 = n * (n**2 - 3 * n - 2) - 8 * (n + 1) * M1 + 4 * sum(np.power(nx, 3))
-    C2 = n * (n**2 - 3 * n - 2) - 8 * (n + 1) * M2 + 4 * sum(np.power(ny, 3))
-
-    a = M / 16
-    b = ((4 * M1 - 2 * M)**2) * ((4 * M2 - 2 * M)**2) / (256 * (M**2))
-    c = C1 * C2 / (16 * n * (n - 1) * (n - 2))
-    d = ((((4 * M1 - 2 * M)**2) - 4 * C1 - 4 * M) *
-         (((4 * M2 - 2 * M)**2) - 4 * C2 - 4 * M) /
-         (64 * n * (n - 1) * (n - 2) * (n - 3)))
-
-    sigw2 = a - b + c + d
-    if sigw2 < 0: return 0  # catch any negatives
-    sigw = np.sqrt(sigw2)
-    wz = (wab - muab) / sigw
-
-    return wz
+    # average correlations across all subjects
+    return np.mean(corrs, axis=0)
 
 
-def zrand_partitions(communities):
+def func_consensus(data, n_boot=1000, ci=95, seed=None):
     """
-    Calculates average and std of z-Rand for all pairs of `communities`
+    Calculates group-level, thresholded functional connectivity matrix
 
-    Iterates through every possible pair of community assignment vectors in
-    `communities` and calculates the z-Rand score to assess their similarity.
-    Returns the mean and standard deviation of all z-Rand scores.
+    This function concatenates all time series in `data` and computes a group
+    correlation matrix based on this extended time series. It then generates
+    length `t` bootstrapped samples from the concatenated matrix and estimates
+    confidence intervals for all correlations. Correlations whose sign is
+    consistent across bootstraps are retained; inconsistent correlationsare set
+    to zero.
 
     Parameters
     ----------
-    communities : (N x R) array_like
-        Community assignments of `N` nodes for `R` repeats of modularity
-        maximization
+    data : (N, T, S) array_like
+        Pre-processed functional time series of shape, where `N` is the number
+        of nodes, `T` is the number of volumes in the time series, and `S` is
+        the number of subjects
+    n_boot : int, optional
+        Number of bootstraps for which to generate correlation. Default: 1000
+    ci : (0, 100) float, optional
+        Confidence interval for assessing reliability of correlations with
+        bootstraps. Default: 95
+    seed : int, optional
+        Random seed. Default: None
 
     Returns
     -------
-    zrand_avg : float
-        Average z-Rand score over all pairs of community assignments
-    zrand_std : float
-        Standard deviation of z-Rand over all pairs of community assignments
+    consensus : (N, N) numpy.ndarray
+        Thresholded, group-level correlation matrix
     """
 
-    all_zrand  = [zrand(f[0], f[1]) for f in
-                  itertools.combinations(communities.T, 2)]
+    rs = check_random_state(seed)
 
-    zrand_avg, zrand_std = np.nanmean(all_zrand), np.nanstd(all_zrand)
+    if ci > 100 or ci < 0:
+        raise ValueError("`ci` must be between 0 and 100.")
 
-    return zrand_avg, zrand_std
+    collapsed_data = data.reshape((len(data), -1), order='F')
+    consensus = np.corrcoef(collapsed_data)
+
+    bootstrapped_corrmat = np.zeros((len(data), len(data), n_boot))
+
+    # generate `n_boot` bootstrap correlation matrices by sampling `t` time
+    # points from the concatenated time series
+    for boot in range(n_boot):
+        inds = rs.randint(collapsed_data.shape[-1], size=data.shape[1])
+        bootstrapped_corrmat[:, :, boot] = np.corrcoef(collapsed_data[:, inds])
+
+    # extract the CIs from the bootstrapped correlation matrices
+    bootstrapped_ci = np.percentile(bootstrapped_corrmat, [100 - ci, ci],
+                                    axis=-1)
+
+    # remove unreliable (i.e., CI zero-crossing) correlations
+    indices_to_keep = np.sign(bootstrapped_ci).sum(axis=0).astype(bool)
+    consensus[~indices_to_keep] = 0
+
+    return consensus
 
 
-def consensus_modularity(adjacency,
-                         gamma=1, B='modularity',
-                         repeats=250,
-                         null_func=np.mean):
+def ecdf(data):
     """
-    Parameters
-    ----------
-    adjacency : (N x N) array_like
-        Non-negative adjacency matrix
-    gamma : float, optional
-        Weighting parameters used in modularity maximization. Default: 1
-    B : str or array_like, optional
-        Null model for modularity maximization. Default: 'modularity'
-    repeats : int, optional
-        Number of times to repeat community detection (via modularity
-        maximization). Generated community assignments will be combined into a
-        consensus matrix. Default: 250
-    null_func : function, optional
-        Function that can accept an array and return a single number. This is
-        used during the procedure that generates the consensus community
-        assignment vector from the `repeats` individual community assignment
-        vectors. Default: numpy.mean
+    Estimates empirical cumulative distribution function of `data`
 
-    Returns
-    -------
-    consensus : np.ndarray
-        Consensus community assignments
-    Q_mean : float
-        Average modularity of generated community assignment partitions
-    zrand_avg : float
-        Average z-Rand of generated community assignment partitions
-    zrand_std : float
-        Standard deviation z-Rand of generated community assignment partitions
-
-    References
-    ----------
-    .. [1] Bassett, D. S., Porter, M. A., Wymbs, N. F., Grafton, S. T.,
-       Carlson, J. M., & Mucha, P. J. (2013). Robust detection of dynamic
-       community structure in networks. Chaos: An Interdisciplinary Journal of
-       Nonlinear Science, 23(1), 013142.
-    """
-
-    # generate community partitions `repeat` times
-    partitions = [bct.community_louvain(adjacency,
-                                        gamma=gamma,
-                                        B=B) for i in range(repeats)]
-
-    # get community labels and Qs
-    comms  = np.column_stack([f[0] for f in partitions]),
-    Q_mean = np.mean([f[1] for f in partitions])
-
-    ag = bct.clustering.agreement(comms) / repeats
-
-    # generate null agreement matrix
-    comms_null = np.zeros_like(comms)
-    for n, i in enumerate(comms.T): comms_null[:, n] = np.random.permutation(i)
-    ag_null = bct.clustering.agreement(comms_null) / repeats
-
-    # get `null_func` of null agreement matrix
-    tau = null_func(ag_null)
-
-    # consensus cluster the agreement matrix unsing `tau` as threshold
-    consensus = bct.clustering.consensus_und(ag, tau, 10)
-
-    # get zrand statistics for partition similarity
-    zrand_avg, zrand_std = zrand_partitions(comms)
-
-    return consensus, Q_mean, zrand_avg, zrand_std
-
-
-def communicability(adjacency):
-    """
-    Computes the communicability of pairs of nodes in `adjacency`
+    Taken directly from StackOverflow. See original answer at
+    https://stackoverflow.com/questions/33345780.
 
     Parameters
     ----------
-    adjacency : (N x N) array_like
-        Unweighted, direct/undirected connection weight/length array
+    data : array_like
 
     Returns
     -------
-    (N x N) ndarray
-        Symmetric array representing communicability of nodes {i, j}
+    prob : numpy.ndarray
+        Cumulative probability
+    quantiles : numpy.darray
+        Quantiles
     """
 
-    return expm(adjacency)
+    sample = np.atleast_1d(data)
+
+    # find the unique values and their corresponding counts
+    quantiles, counts = np.unique(sample, return_counts=True)
+
+    # take the cumulative sum of the counts and divide by the sample size to
+    # get the cumulative probabilities between 0 and 1
+    prob = np.cumsum(counts).astype(float) / sample.size
+
+    # match MATLAB
+    prob, quantiles = np.append([0], prob), np.append(quantiles[0], quantiles)
+
+    return prob, quantiles
 
 
-def communicability_wei(adjacency):
+def struct_consensus(data, distance, hemiid):
     """
-    Computes the communicability of pairs of nodes in `adjacency`
+    Calculates group-averaged structural connectivity matrix
+
+    Takes as input a weighted stack of connectivity matrices with dimensions
+    [n x n x subject] where n is the number of nodes and subject is the number
+    of matrices in the stack. The matrices must be weighted, and ideally with
+    continuous weights (e.g. fractional anisotropy rather than streamline
+    count). The second input is a pairwise distance matrix (i.e. distance(i,j)
+    is the Euclidean distance between nodes i and j). The final input is an
+    [n x 1] vector which labels nodes as in the left (0) or right (1)
+    hemisphere.
+
+    This function estimates the average edge length distribution and builds
+    a group-averaged connectivity matrix that approximates this
+    distribution with density equal to the mean density across subjects.
+
+    The algorithm works as follows:
+    1. Estimate the cumulative edge length distribution,
+    2. Divide the distribution into M length bins, one for each edge that
+       will be added to the group-average matrix, and
+    3. Within each bin, select the edge that is most consistently expressed
+       expressed across subjects, breaking ties according to average edge
+       weight (which is why the input matrix `data` must be weighted).
+
+    The algorithm works separately on within/between hemisphere links.
 
     Parameters
     ----------
-    adjacency : (N x N) array_like
-        Weighted, direct/undirected connection weight/length array
+    data : (N, N, S) array_like
+        Weighted connectivity matrices (i.e., fractional anisotropy), where `N`
+        is nodes and `S` is subjects
+    distance : (N, N) array_like
+        Array where `distance[i, j]` is the Euclidean distance between nodes
+        `i` and `j`
+    hemiid : (N, 1) array_like
+        Hemisphere ids for nodes (N) where right = 0 and left = 1
 
     Returns
     -------
-    cmc : (N x N) ndarray
-        Symmetric array representing communicability of nodes {i, j}
+    consensus : (N, N) numpy.ndarray
+        Binary, group-level connectivity matrix
     """
 
-    row_sum     = adjacency.sum(1)
-    neg_sqrt    = np.power(row_sum, -0.5)
-    square_sqrt = np.diag(neg_sqrt)
-    for_expm    = square_sqrt @ adjacency @ square_sqrt
+    num_node, _, num_sub = data.shape      # info on connectivity matrices
+    pos_data = data > 0                    # location of + values in matrix
+    pos_data_count = pos_data.sum(axis=2)  # num sub with + values at each node
 
-    cmc = expm(for_expm)
-    cmc[np.diag_indices_from(cmc)] = 0
+    with np.errstate(divide='ignore', invalid='ignore'):
+        average_weights = data.sum(axis=2) / pos_data_count
 
-    return cmc
+    # empty array to hold inter/intra hemispheric connections
+    consensus = np.zeros((num_node, num_node, 2))
+
+    for conn_type in range(2):  # iterate through inter/intra hemisphere conn
+        if conn_type == 0:      # get inter hemisphere edges
+            inter_hemi = (hemiid == 0) @ (hemiid == 1).T
+            keep_conn = np.logical_or(inter_hemi, inter_hemi.T)
+        else:                   # get intra hemisphere edges
+            right_hemi = (hemiid == 0) @ (hemiid == 0).T
+            left_hemi = (hemiid == 1) @ (hemiid == 1).T
+            keep_conn = np.logical_or(right_hemi @ right_hemi.T,
+                                      left_hemi @ left_hemi.T)
+
+        # mask the distance array for only those edges we want to examine
+        full_dist_conn = distance * keep_conn
+        upper_dist_conn = np.atleast_3d(np.triu(full_dist_conn))
+
+        # generate array of weighted (by distance), positive edges across subs
+        pos_dist = pos_data * upper_dist_conn
+        pos_dist = pos_dist[np.nonzero(pos_dist)]
+
+        # determine average # of positive edges across subs
+        # we will use this to bin the edge weights
+        avg_conn_num = len(pos_dist) / num_sub
+
+        # estimate empirical CDF of weighted, positive edges across subs
+        cumprob, quantiles = ecdf(pos_dist)
+        cumprob = np.round(cumprob * avg_conn_num).astype(int)
+
+        # empty array to hold group-average matrix for current connection type
+        # (i.e., inter/intra hemispheric connections)
+        group_conn_type = np.zeros((num_node, num_node))
+
+        # iterate through bins (for edge weights)
+        for n in range(1, int(avg_conn_num) + 1):
+            # get current quantile of interest
+            curr_quant = quantiles[np.logical_and(cumprob >= (n - 1),
+                                                  cumprob < n)]
+
+            # find edges in distance connectivity matrix w/i current quantile
+            mask = np.logical_and(full_dist_conn >= curr_quant.min(),
+                                  full_dist_conn <= curr_quant.max())
+            i, j = np.where(np.triu(mask))  # indices of edges of interest
+
+            c = pos_data_count[i, j]   # get num sub with + values at edges
+            w = average_weights[i, j]  # get averaged weight of edges
+
+            # find locations of edges most commonly represented across subs
+            indmax = np.argwhere(c == c.max())
+
+            # determine index of most frequent edge; break ties with higher
+            # weighted edge
+            if indmax.size == 1:  # only one edge found
+                group_conn_type[i[indmax], j[indmax]] = 1
+            else:                 # multiple edges found
+                indmax = indmax[np.argmax(w[indmax])]
+                group_conn_type[i[indmax], j[indmax]] = 1
+
+        consensus[:, :, conn_type] = group_conn_type
+
+    # collapse across hemispheric connections types and make symmetrical array
+    consensus = consensus.sum(axis=2)
+    consensus = np.logical_or(consensus, consensus.T).astype(int)
+
+    return consensus
