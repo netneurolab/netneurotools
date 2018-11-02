@@ -1,0 +1,2 @@
+include README.md LICENSE environment.yml
+recursive-include netneurotools_matlab *.m

@@ -3,8 +3,10 @@ channels:
     - conda-forge
 dependencies:
     - python=3.7
+    - matplotlib
     - numpy
     - scikit-learn
     - scipy
+    - seaborn
     - pip:
         - bctpy
