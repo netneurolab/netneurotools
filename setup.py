@@ -21,7 +21,7 @@ def main():
         ldict['LONG_DESCRPITION'] = src.read()
 
     setup(
-        # classifiers=ldict['CLASSIFIERS'],
+        classifiers=ldict['CLASSIFIERS'],
         description=ldict['DESCRIPTION'],
         download_url=ldict['DOWNLOAD_URL'],
         extras_require=ldict['EXTRAS_REQUIRE'],
