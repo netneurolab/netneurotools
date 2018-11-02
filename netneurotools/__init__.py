@@ -1,6 +1,9 @@
-__all__ = ['utils']
+__all__ = ['__version__', 'algorithms', 'metrics',
+           'consensus_modularity', 'func_consensus', 'struct_consensus',
+           'plot_mod_heatmap']
 
 from .info import (__version__)
-from .utils import (fcn_group_average, ijk_to_xyz, xyz_to_ijk)
-from .networks import (zrand, consensus_modularity, communicability,
-                       communicability_wei)
+from . import algorithms, metrics
+from .modularity import consensus_modularity
+from .networks import func_consensus, struct_consensus
+from .plotting import plot_mod_heatmap

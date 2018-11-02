@@ -1,0 +1,10 @@
+name: netneurotools
+channels:
+    - conda-forge
+dependencies:
+    - python=3.7
+    - numpy
+    - scikit-learn
+    - scipy
+    - pip:
+        - bctpy
