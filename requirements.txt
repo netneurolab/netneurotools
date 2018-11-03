@@ -1,3 +1,6 @@
-numpy
 bctpy
+matplotlib
+numpy>=1.14
+scikit-learn
 scipy
+seaborn
