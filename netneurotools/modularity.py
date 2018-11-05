@@ -12,12 +12,16 @@ from . import algorithms
 def consensus_modularity(adjacency, gamma=1, B='modularity',
                          repeats=250, null_func=np.mean):
     """
-    Runs community detection on `adjacency` `repeats` times to create consensus
+    Finds community assignments from `adjacency` through consensus
+
+    Performs `repeats` iterations of community detection on `adjacency` and
+    then uses consensus clustering on the resulting community assignments.
 
     Parameters
     ----------
     adjacency : (N, N) array_like
-        Adjacency matrix (weighted/non-weighted) to be clustered
+        Adjacency matrix (weighted/non-weighted) on which to perform consensus
+        community detection.
     gamma : float, optional
         Resolution parameter for modularity maximization. Default: 1
     B : str or (N, N) array_like, optional
@@ -33,13 +37,18 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
     Returns
     -------
     consensus : (N,) np.ndarray
-        Consensus labels
-    Q_mean : float
-        Average modularity over all repeats
-    zrand_avg : float
-        Average z-Rand index over all repeats
-    zrand_std : float
-        Standard deviation of z-Rand index over all repeats
+        Consensus-derived community assignments
+    Q_all : array_like
+        Optimized modularity over all `repeats` community assignments
+    zrand_all : float
+        z-Rand score over all pairs of `repeats` community assignment vectors
+
+    References
+    ----------
+    Bassett, D. S., Porter, M. A., Wymbs, N. F., Grafton, S. T., Carlson,
+    J. M., & Mucha, P. J. (2013). Robust detection of dynamic community
+    structure in networks. Chaos: An Interdisciplinary Journal of Nonlinear
+    Science, 23(1), 013142.
     """
 
     # generate community partitions `repeat` times
@@ -47,7 +56,6 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
                          for i in range(repeats)])
 
     comms = np.column_stack(comms)  # stack community partitions
-    Q_mean = np.mean(Q_all)  # average modularity across partitions
 
     # generate probability matrix of node co-assignment
     ag = bct.clustering.agreement(comms, buffsz=comms.shape[0]) / repeats
@@ -62,9 +70,9 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
     consensus = bct.clustering.consensus_und(ag, null_func(ag_null), 10)
 
     # get z-rand statistics for partition similarity (n.b. can take a while)
-    zrand_avg, zrand_std = algorithms.zrand_partitions(comms)
+    zrand_all = algorithms.zrand_partitions(comms)
 
-    return consensus, Q_mean, zrand_avg, zrand_std
+    return consensus, Q_all, zrand_all
 
 
 def get_modularity(adjacency, comm, gamma=1):

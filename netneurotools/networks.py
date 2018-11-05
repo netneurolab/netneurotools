@@ -1,29 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from sklearn.utils.validation import check_random_state
-
-
-def func_correlation(data):
-    """
-    Computes group-averaged functional correlation matrix
-
-    Parameters
-    ----------
-    data : (N, T, S) array_like
-        Pre-processed functional time series, where `N` is nodes, `T` is
-        time, and `S` is subjects
-
-    Returns
-    -------
-    corr : (N, N) array
-        GRoup average of subject-level functional correlations
-    """
-
-    corrs = [np.corrcoef(data[..., sub]) for sub in range(data.shape[-1])]
-
-    # average correlations across all subjects
-    return np.mean(corrs, axis=0)
+from sklearn.utils.validation import (check_random_state, check_array,
+                                      check_consistent_length)
 
 
 def func_consensus(data, n_boot=1000, ci=95, seed=None):
@@ -32,22 +11,25 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
     This function concatenates all time series in `data` and computes a group
     correlation matrix based on this extended time series. It then generates
-    length `t` bootstrapped samples from the concatenated matrix and estimates
+    length `T` bootstrapped samples from the concatenated matrix and estimates
     confidence intervals for all correlations. Correlations whose sign is
-    consistent across bootstraps are retained; inconsistent correlationsare set
-    to zero.
+    consistent across bootstraps are retained; inconsistent correlations are
+    set to zero.
+
+    If `n_boot` is set to 0 a simple, group-averaged functional connectivity
+    matrix is estimated, instead.
 
     Parameters
     ----------
     data : (N, T, S) array_like
-        Pre-processed functional time series of shape, where `N` is the number
-        of nodes, `T` is the number of volumes in the time series, and `S` is
-        the number of subjects
+        Pre-processed functional time series, where `N` is the number of nodes,
+        `T` is the number of volumes in the time series, and `S` is the number
+        of subjects
     n_boot : int, optional
         Number of bootstraps for which to generate correlation. Default: 1000
     ci : (0, 100) float, optional
-        Confidence interval for assessing reliability of correlations with
-        bootstraps. Default: 95
+        Confidence interval for which to assess the reliability of correlations
+        with bootstraps. Default: 95
     seed : int, optional
         Random seed. Default: None
 
@@ -57,10 +39,15 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
         Thresholded, group-level correlation matrix
     """
 
+    # check inputs
     rs = check_random_state(seed)
-
     if ci > 100 or ci < 0:
         raise ValueError("`ci` must be between 0 and 100.")
+
+    # group-average functional connectivity matrix desired instead of bootstrap
+    if n_boot == 0 or n_boot is None:
+        corrs = [np.corrcoef(data[..., sub]) for sub in range(data.shape[-1])]
+        return np.mean(corrs, axis=0)
 
     collapsed_data = data.reshape((len(data), -1), order='F')
     consensus = np.corrcoef(collapsed_data)
@@ -123,22 +110,22 @@ def struct_consensus(data, distance, hemiid):
     Calculates group-averaged structural connectivity matrix
 
     Takes as input a weighted stack of connectivity matrices with dimensions
-    [n x n x subject] where n is the number of nodes and subject is the number
-    of matrices in the stack. The matrices must be weighted, and ideally with
+    (N, N, S) where `N` is the number of nodes and `S` is the number of
+    matrices or subjects. The matrices must be weighted, and ideally with
     continuous weights (e.g. fractional anisotropy rather than streamline
-    count). The second input is a pairwise distance matrix (i.e. distance(i,j)
-    is the Euclidean distance between nodes i and j). The final input is an
-    [n x 1] vector which labels nodes as in the left (0) or right (1)
-    hemisphere.
+    count). The second input is a pairwise distance matrix, where distance(i,j)
+    is the Euclidean distance between nodes i and j. The final input is an
+    (N, 1) vector which labels nodes as belonging to the right (`hemiid==0`) or
+    left (`hemiid=1`) hemisphere.
 
     This function estimates the average edge length distribution and builds
-    a group-averaged connectivity matrix that approximates this
-    distribution with density equal to the mean density across subjects.
+    a group-averaged connectivity matrix that approximates this distribution
+    with density equal to the mean density across subjects.
 
     The algorithm works as follows:
     1. Estimate the cumulative edge length distribution,
-    2. Divide the distribution into M length bins, one for each edge that
-       will be added to the group-average matrix, and
+    2. Divide the distribution into M length bins, one for each edge that will
+       be added to the group-average matrix, and
     3. Within each bin, select the edge that is most consistently expressed
        expressed across subjects, breaking ties according to average edge
        weight (which is why the input matrix `data` must be weighted).
@@ -161,6 +148,10 @@ def struct_consensus(data, distance, hemiid):
     consensus : (N, N) numpy.ndarray
         Binary, group-level connectivity matrix
     """
+
+    # confirm input shapes are as expected
+    check_consistent_length(data, distance, hemiid)
+    hemiid = check_array(hemiid, ensure_2d=True)
 
     num_node, _, num_sub = data.shape      # info on connectivity matrices
     pos_data = data > 0                    # location of + values in matrix
