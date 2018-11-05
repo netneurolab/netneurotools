@@ -109,10 +109,8 @@ def zrand_partitions(communities):
 
     Returns
     -------
-    zrand_avg : float
-        Average z-Rand score over pairs of community assignments
-    zrand_std : float
-        Standard deviation of z-Rand over pairs of community assignments
+    all_zrand : array_like
+        z-Rand score over all pairs of `R` partitions of community assignments
     """
 
     n_partitions = communities.shape[-1]
@@ -123,7 +121,7 @@ def zrand_partitions(communities):
             idx = int((c1 * n_partitions) + c2 - ((c1 + 1) * (c1 + 2) // 2))
             all_zrand[idx] = zrand(communities[:, c1], communities[:, c2])
 
-    return np.nanmean(all_zrand), np.nanstd(all_zrand)
+    return all_zrand
 
 
 if use_numba:

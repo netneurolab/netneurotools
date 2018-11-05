@@ -25,5 +25,5 @@ def test_zrand_partitions():
 
     # partition of labels that are all the same should have higher average
     # zrand and lower stdev zrand
-    assert all_same[0] > all_diff[0]
-    assert all_same[1] < all_diff[1]
+    assert np.nanmean(all_same) > np.nanmean(all_diff)
+    assert np.nanstd(all_same) < np.nanstd(all_diff)
