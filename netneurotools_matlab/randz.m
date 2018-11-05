@@ -1,4 +1,7 @@
-function wz = fcn_randz(X,Y)
+function wz = randz(X,Y)
+%
+% RANDZ(X,Y) calculates the z-Rand score of two vectors X and Y, where X and Y
+% are two potential clustering assignments for a group of samples.
 %
 % Author: Bratislav Mišić
 %
@@ -11,8 +14,6 @@ indy = dummyvar(Y);
 Xa = indx*indx';
 Ya = indy*indy';
 
-% Xa = agreement(X);
-% Ya = agreement(Y);
 M = n*(n - 1)/2;
 M1 = nnz(Xa)/2;
 M2 = nnz(Ya)/2;
@@ -22,8 +23,6 @@ muab = M1*M2/M;
 
 nx = sum(indx);
 ny = sum(indy);
-% nx = hist(X,max(X));
-% ny = hist(Y,max(Y));
 
 C1 = n*(n^2 - 3*n - 2) - 8*(n + 1)*M1 + 4*sum(nx.^3);
 C2 = n*(n^2 - 3*n - 2) - 8*(n + 1)*M2 + 4*sum(ny.^3);

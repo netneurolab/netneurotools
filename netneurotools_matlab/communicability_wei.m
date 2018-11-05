@@ -1,15 +1,12 @@
-function   F = communicability_wei(CIJ)
-
-%inputs
-%           CIJ    weighted connection matrix
-%           i      row
-%           j      column
+function F = communicability_wei(CIJ)
 %
-%outputs
-%           F      communicability
+% COMMUNICABILITY_WEI(A) computes the communicability of pairs of nodes in the
+% network represented by the weighted adjacency matrix A. It returns a matrix
+% whose elements G(i,j) = G(j,i) give the the communicability between nodes i
+% and j.
 %
 % Author: Bratislav Mišić
-%=================================================
+%
 
 N = size(CIJ,1);
 
