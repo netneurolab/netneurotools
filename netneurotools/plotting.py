@@ -67,20 +67,20 @@ def sort_communities(consensus, communities):
     return inds
 
 
-def plot_mod_heatmap(consensus, communities, *, inds=None, edgecolor='black',
+def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
                      ax=None, figsize=(20, 20), **kwargs):
     """
-    Plots `consensus` as heatmap with borders drawn around `communities`
+    Plots `data` as heatmap with borders drawn around `communities`
 
     Parameters
     ----------
-    consensus : (N, N) array_like
+    data : (N, N) array_like
         Correlation matrix
     communities : (N,) array_like
-        Community assignments for correlation matrix
+        Community assignments for `data`
     inds : (N,) array_like, optional
-        Index array for sorting `consensus` within `communities`. If None,
-        these will be generated from `consensus`. Default: None
+        Index array for sorting `data` within `communities`. If None, these
+        will be generated from `data`. Default: None
     edgecolor : str, optional
         Color for lines demarcating community boundaries. Default: 'black'
     ax : matplotlib.axes.Axes, optional
@@ -99,15 +99,22 @@ def plot_mod_heatmap(consensus, communities, *, inds=None, edgecolor='black',
 
     # get indices for sorting consensus
     if inds is None:
-        inds = sort_communities(consensus, communities)
+        inds = sort_communities(data, communities)
 
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
 
-    ax = sns.heatmap(consensus[np.ix_(inds, inds)], ax=ax,
-                     mask=np.eye(len(consensus)), square=True,
-                     xticklabels=[], yticklabels=[],
-                     **kwargs)
+    opts = dict(
+        ax=ax,
+        mask=np.eye(len(data)),
+        square=True,
+        xticklabels=[],
+        yticklabels=[]
+    )
+    opts.update(**kwargs)
+
+    # plot data re-ordered based on community and node strength
+    ax = sns.heatmap(data[np.ix_(inds, inds)], **opts)
 
     # draw borders around communities
     bounds = _grid_communities(communities)
@@ -115,8 +122,7 @@ def plot_mod_heatmap(consensus, communities, *, inds=None, edgecolor='black',
     bounds[-1] -= 0.2
     for n, edge in enumerate(np.diff(bounds)):
         ax.add_patch(patches.Rectangle((bounds[n], bounds[n]),
-                                       edge, edge,
-                                       fill=False, linewidth=2,
+                                       edge, edge, fill=False, linewidth=2,
                                        edgecolor=edgecolor))
 
     return ax
