@@ -40,7 +40,7 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
         Consensus-derived community assignments
     Q_all : array_like
         Optimized modularity over all `repeats` community assignments
-    zrand_all : float
+    zrand_all : array_like
         z-Rand score over all pairs of `repeats` community assignment vectors
 
     References
@@ -72,7 +72,7 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
     # get z-rand statistics for partition similarity (n.b. can take a while)
     zrand_all = algorithms.zrand_partitions(comms)
 
-    return consensus, Q_all, zrand_all
+    return consensus.astype(int), np.array(Q_all), zrand_all
 
 
 def get_modularity(adjacency, comm, gamma=1):
