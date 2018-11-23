@@ -19,6 +19,7 @@ DOWNLOAD_URL = ('http://github.com/netneurolab/{name}/archive/{ver}.tar.gz'
 INSTALL_REQUIRES = [
     'bctpy',
     'matplotlib',
+    'nibabel',
     'numpy>=1.14',
     'scikit-learn',
     'scipy',
