@@ -3,10 +3,19 @@
 Functions for making pretty plots and whatnot
 """
 
+from pkg_resources import resource_filename
+
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+import nibabel as nib
 import numpy as np
 import seaborn as sns
+
+try:
+    from mayavi import mlab
+    mayavi_avail = True
+except ImportError:
+    mayavi_avail = False
 
 
 def _grid_communities(communities):
@@ -126,3 +135,101 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
                                        edgecolor=edgecolor))
 
     return ax
+
+
+def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
+                 vmin=None, vmax=None, colormap='viridis',
+                 colorbar=True, num_labels=4, orientation='horizontal',
+                 colorbartitle=None, **kwargs):
+
+    """
+    Plots surface `data` on Conte69 Atlas
+
+    Parameters
+    ----------
+    data : (N,) array_like
+        Surface data for N parcels
+    lhlabel : str
+        Path to .gii file (generic GIFTI file) containing labels to N/2 parcels
+        on the left hemisphere
+    rhlabel : str
+        Path to .gii file (generic GIFTI file) containing labels to N/2 parcels
+        on the right hemisphere
+    surf : str, optional
+        Type of brain surface. Can be 'very_inflated' or 'inflated' or
+        'midthickness'. Default: 'midthickness'
+    vmin : float, optional
+        Minimum value to scale the colormap. If None, the min of the data will
+        be used. Default: None
+    vmax : float, optional
+        Maximum value to scale the colormap. If None, the max of the data will
+        be used. Default: None
+    colormap : str, optional
+        Any colormap from matplotlib. Default: 'viridis'
+    colorbar : bool, optional
+        Wheter to display a colorbar. Default: True
+    num_labels : int, optional
+        The number of labels to display on the colorbar.
+        Available only if colorbar=True. Default: 4
+    orientation : str, optional
+        Defines the orientation of colorbar. Can be 'horizontal' or 'vertical'.
+        Available only if colorbar=True. Default: 'horizontal'
+    colorbartitle : str, optional
+        The title of colorbar. Available only if colorbar=True. Default: None
+    kwargs : key-value mapping
+        Keyword arguments for `mayavi.mlab.triangular_mesh()`
+
+    Returns
+    -------
+    scene : mayavi.Scene
+        Scene object containing plot
+    """
+
+    if not mayavi_avail:
+        raise ImportError('Cannot use plot_conte69() if mayavi is not '
+                          'installed. Please install mayavi and try again.')
+
+    opts = dict()
+    opts.update(**kwargs)
+
+    # load surfaces and labels
+    lhsurface = nib.load(resource_filename(
+        'netneurotools',
+        'data/Conte69_Atlas/Conte69.L.%s.32k_fs_LR.surf.gii' % surf))
+    rhsurface = nib.load(resource_filename(
+        'netneurotools',
+        'data/Conte69_Atlas/Conte69.R.%s.32k_fs_LR.surf.gii' % surf))
+
+    lhlabels = nib.load(lhlabel).darrays[0].data
+    rhlabels = nib.load(rhlabel).darrays[0].data
+    lhvert, lhface = [d.data for d in lhsurface.darrays]
+    rhvert, rhface = [d.data for d in rhsurface.darrays]
+
+    # add NaNs for subcortex
+    data = np.append(np.nan, data)
+
+    # get lh and rh data
+    lhdata = data[lhlabels.astype(int)]
+    rhdata = data[rhlabels.astype(int)]
+
+    # plot
+    lhplot = mlab.figure()
+    rhplot = mlab.figure()
+    mlab.triangular_mesh(lhvert[:, 0], lhvert[:, 1], lhvert[:, 2], lhface,
+                         figure=lhplot, colormap=colormap,
+                         mask=np.isnan(lhdata),
+                         scalars=lhdata, vmin=vmin, vmax=vmax, **opts)
+    if colorbar is True:
+        mlab.colorbar(title=colorbartitle, nb_labels=num_labels,
+                      orientation=orientation)
+    mlab.triangular_mesh(rhvert[:, 0], rhvert[:, 1], rhvert[:, 2], rhface,
+                         figure=rhplot, colormap=colormap,
+                         mask=np.isnan(rhdata),
+                         scalars=rhdata, vmin=vmin, vmax=vmax, **opts)
+    if colorbar is True:
+        mlab.colorbar(title=colorbartitle, nb_labels=num_labels,
+                      orientation=orientation)
+    mlab.view(azimuth=180, elevation=90, distance=450, figure=lhplot)
+    mlab.view(azimuth=180, elevation=-90, distance=450, figure=rhplot)
+
+    return lhplot, rhplot

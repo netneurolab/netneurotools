@@ -39,6 +39,9 @@ EXTRAS_REQUIRE = {
     'numba': [
         'numba',
     ],
+    'plotting': [
+        'mayavi',
+    ],
     'tests': TESTS_REQUIRE
 }
 
@@ -47,7 +50,7 @@ EXTRAS_REQUIRE['all'] = list(set([
 ]))
 
 PACKAGE_DATA = {
-    'netneurotools': ['tests/data/*']
+    'netneurotools': ['tests/data/*', 'data/*']
 }
 
 CLASSIFIERS = [
