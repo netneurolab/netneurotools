@@ -1,5 +1,6 @@
 bctpy
 matplotlib
+nibabel
 numpy>=1.14
 scikit-learn
 scipy
