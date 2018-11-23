@@ -19,6 +19,7 @@ DOWNLOAD_URL = ('http://github.com/netneurolab/{name}/archive/{ver}.tar.gz'
 INSTALL_REQUIRES = [
     'bctpy',
     'matplotlib',
+    'nibabel',
     'numpy>=1.14',
     'scikit-learn',
     'scipy',
@@ -39,6 +40,9 @@ EXTRAS_REQUIRE = {
     'numba': [
         'numba',
     ],
+    'plotting': [
+        'mayavi',
+    ],
     'tests': TESTS_REQUIRE
 }
 
@@ -47,7 +51,7 @@ EXTRAS_REQUIRE['all'] = list(set([
 ]))
 
 PACKAGE_DATA = {
-    'netneurotools': ['tests/data/*']
+    'netneurotools': ['tests/data/*', 'data/*']
 }
 
 CLASSIFIERS = [
