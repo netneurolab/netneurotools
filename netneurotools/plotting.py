@@ -77,7 +77,8 @@ def sort_communities(consensus, communities):
 
 
 def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
-                     ax=None, figsize=(20, 20), **kwargs):
+                     ax=None, figsize=(20, 20), xlabels=None, ylabels=None,
+                     xlabelrotation=90, ylabelrotation=0, **kwargs):
     """
     Plots `data` as heatmap with borders drawn around `communities`
 
@@ -97,6 +98,13 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         axis will be created. Default: None
     figsize : tuple, optional
         Size of figure to create if `ax` is not provided. Default: (20, 20)
+    {x,y}labels : list, optional
+        List of labels on {x,y}-axis for each community in `communities'. The
+        number of labels should match the number of unique communities.
+        Default: None
+    {x,y}labelrotation : float, optional
+        Angle of the rotation of the labels. Available only if `{x,y}labels`
+        provided. Default : xlabelrotation: 90, ylabelrotation: 0
     kwargs : key-value mapping
         Keyword arguments for `sns.heatmap()`
 
@@ -133,6 +141,32 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         ax.add_patch(patches.Rectangle((bounds[n], bounds[n]),
                                        edge, edge, fill=False, linewidth=2,
                                        edgecolor=edgecolor))
+
+    if xlabels is not None or ylabels is not None:
+        # find the tick locations
+        initloc = _grid_communities(communities)
+        tickloc = []
+        for loc in range(len(initloc) - 1):
+            tickloc.append(np.mean((initloc[loc], initloc[loc + 1])))
+
+        if xlabels is not None:
+            # make sure number of labels match the number of ticks
+            if len(tickloc) != len(xlabels):
+                raise ValueError('Number of labels do not match the number of '
+                                 'unique communities.')
+            else:
+                ax.set_xticks(tickloc)
+                ax.set_xticklabels(labels=xlabels, rotation=xlabelrotation)
+                ax.tick_params(left=False, bottom=False)
+        if ylabels is not None:
+            # make sure number of labels match the number of ticks
+            if len(tickloc) != len(ylabels):
+                raise ValueError('Number of labels do not match the number of '
+                                 'unique communities.')
+            else:
+                ax.set_yticks(tickloc)
+                ax.set_yticklabels(labels=ylabels, rotation=ylabelrotation)
+                ax.tick_params(left=False, bottom=False)
 
     return ax
 
