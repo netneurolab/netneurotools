@@ -151,7 +151,11 @@ def struct_consensus(data, distance, hemiid):
 
     # confirm input shapes are as expected
     check_consistent_length(data, distance, hemiid)
-    hemiid = check_array(hemiid, ensure_2d=True)
+    try:
+        hemiid = check_array(hemiid, ensure_2d=True)
+    except ValueError:
+        raise ValueError('Provided hemiid must be a 2D array. Reshape your '
+                         'data using array.reshape(-1, 1) and try again.')
 
     num_node, _, num_sub = data.shape      # info on connectivity matrices
     pos_data = data > 0                    # location of + values in matrix
@@ -198,6 +202,8 @@ def struct_consensus(data, distance, hemiid):
             # get current quantile of interest
             curr_quant = quantiles[np.logical_and(cumprob >= (n - 1),
                                                   cumprob < n)]
+            if curr_quant.size == 0:
+                continue
 
             # find edges in distance connectivity matrix w/i current quantile
             mask = np.logical_and(full_dist_conn >= curr_quant.min(),
