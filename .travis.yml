@@ -21,11 +21,12 @@ matrix:
 
 before_install:
     - python -m pip install --upgrade pip
+    - python -m pip install pytest>=3.6
     - if [ "${LINTING}" == "1" ]; then
           pip install flake8;
       fi
     - if [ "${COVERAGE}" == "1" ]; then
-          pip install coverage coveralls codecov pytest pytest-cov;
+          pip install coverage coveralls codecov pytest-cov;
       fi
 
 install:
