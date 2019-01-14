@@ -52,21 +52,31 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
     collapsed_data = data.reshape((len(data), -1), order='F')
     consensus = np.corrcoef(collapsed_data)
 
-    bootstrapped_corrmat = np.zeros((len(data), len(data), n_boot))
+    # only keep the upper triangle for the bootstraps to save on memory usage
+    triu_inds = np.triu_indices_from(consensus, k=1)
+    bootstrapped_corrmat = np.zeros((len(triu_inds[0]), n_boot))
 
     # generate `n_boot` bootstrap correlation matrices by sampling `t` time
     # points from the concatenated time series
     for boot in range(n_boot):
         inds = rs.randint(collapsed_data.shape[-1], size=data.shape[1])
-        bootstrapped_corrmat[:, :, boot] = np.corrcoef(collapsed_data[:, inds])
+        bootstrapped_corrmat[..., boot] = \
+            np.corrcoef(collapsed_data[:, inds])[triu_inds]
 
     # extract the CIs from the bootstrapped correlation matrices
+    # we don't need the input anymore so overwrite it
     bootstrapped_ci = np.percentile(bootstrapped_corrmat, [100 - ci, ci],
-                                    axis=-1)
+                                    axis=-1, overwrite_input=True)
 
     # remove unreliable (i.e., CI zero-crossing) correlations
-    indices_to_keep = np.sign(bootstrapped_ci).sum(axis=0).astype(bool)
-    consensus[~indices_to_keep] = 0
+    # if the signs of the bootstrapped confidence intervals are different
+    # (i.e., their signs sum to 0), then we want to remove them
+    # so, take the logical not of the CI (CI = 0 ---> True) and create a mask
+    # then, set all connections from the consensus array inside the mask to 0
+    remove_inds = np.logical_not(np.sign(bootstrapped_ci).sum(axis=0))
+    mask = np.zeros_like(consensus, dtype=bool)
+    mask[triu_inds] = remove_inds
+    consensus[mask + mask.T] = 0
 
     return consensus
 
