@@ -174,7 +174,8 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
 def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
                  vmin=None, vmax=None, colormap='viridis',
                  colorbar=True, num_labels=4, orientation='horizontal',
-                 colorbartitle=None, **kwargs):
+                 colorbartitle=None, backgroundcolor=(1, 1, 1),
+                 foregroundcolor=(0, 0, 0), **kwargs):
 
     """
     Plots surface `data` on Conte69 Atlas
@@ -210,6 +211,11 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Available only if colorbar=True. Default: 'horizontal'
     colorbartitle : str, optional
         The title of colorbar. Available only if colorbar=True. Default: None
+    backgroundcolor : tuple of float values with RGB code in [0, 1], optional
+        Defines the background color. Default: (1, 1, 1)
+    foregroundcolor : tuple of float values with RGB code in [0, 1], optional
+        Defines the foreground color (e.g., colorbartitle color).
+        Default: (0, 0, 0)
     kwargs : key-value mapping
         Keyword arguments for `mayavi.mlab.triangular_mesh()`
 
@@ -265,5 +271,10 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
                       orientation=orientation)
     mlab.view(azimuth=180, elevation=90, distance=450, figure=lhplot)
     mlab.view(azimuth=180, elevation=-90, distance=450, figure=rhplot)
+
+    mlab.figure(bgcolor=backgroundcolor, fgcolor=foregroundcolor,
+                figure=lhplot)
+    mlab.figure(bgcolor=backgroundcolor, fgcolor=foregroundcolor,
+                figure=rhplot)
 
     return lhplot, rhplot
