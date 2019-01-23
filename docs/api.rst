@@ -10,3 +10,4 @@ API
 .. autofunction:: netneurotools.consensus_modularity
 .. autofunction:: netneurotools.plot_mod_heatmap
 .. autofunction:: netneurotools.plot_conte69
+.. autofunction:: netneurotools.plot_fsaverage

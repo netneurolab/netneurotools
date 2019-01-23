@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Functions for generating group-level networks from individual measurements
+"""
 
 import numpy as np
 from sklearn.utils.validation import (check_random_state, check_array,
@@ -16,8 +19,8 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
     consistent across bootstraps are retained; inconsistent correlations are
     set to zero.
 
-    If `n_boot` is set to 0 a simple, group-averaged functional connectivity
-    matrix is estimated, instead.
+    If `n_boot` is set to 0 or None a simple, group-averaged functional
+    connectivity matrix is estimated, instead.
 
     Parameters
     ----------
@@ -37,6 +40,13 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
     -------
     consensus : (N, N) numpy.ndarray
         Thresholded, group-level correlation matrix
+
+    References
+    ----------
+    Mišić, B., Betzel, R. F., Nematzadeh, A., Goni, J., Griffa, A., Hagmann,
+    P., Flammini, A., Ahn, Y.-Y., & Sporns, O. (2015). Cooperative and
+    competitive spreading dynamics on the human connectome. Neuron, 86(6),
+    1518-1529.
     """
 
     # check inputs
@@ -81,7 +91,7 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
     return consensus
 
 
-def ecdf(data):
+def _ecdf(data):
     """
     Estimates empirical cumulative distribution function of `data`
 
@@ -126,7 +136,8 @@ def struct_consensus(data, distance, hemiid):
     count). The second input is a pairwise distance matrix, where distance(i,j)
     is the Euclidean distance between nodes i and j. The final input is an
     (N, 1) vector which labels nodes as belonging to the right (`hemiid==0`) or
-    left (`hemiid=1`) hemisphere.
+    left (`hemiid=1`) hemisphere (note that these values can be flipped as long
+    as `hemiid` contains only values of 0 and 1).
 
     This function estimates the average edge length distribution and builds
     a group-averaged connectivity matrix that approximates this distribution
@@ -151,12 +162,19 @@ def struct_consensus(data, distance, hemiid):
         Array where `distance[i, j]` is the Euclidean distance between nodes
         `i` and `j`
     hemiid : (N, 1) array_like
-        Hemisphere ids for nodes (N) where right = 0 and left = 1
+        Hemisphere designation for `N` nodes where a value of 0/1 indicates
+        node `N_{i}` is in the right/left hemisphere, respectively
 
     Returns
     -------
     consensus : (N, N) numpy.ndarray
         Binary, group-level connectivity matrix
+
+    References
+    ----------
+    Betzel, R. F., Griffa, A., Hagmann, P., & Mišić, B. (2018). Distance-
+    dependent consensus thresholds for generating group-representative
+    structural brain networks. Network Neuroscience, 1-22.
     """
 
     # confirm input shapes are as expected
@@ -200,7 +218,7 @@ def struct_consensus(data, distance, hemiid):
         avg_conn_num = len(pos_dist) / num_sub
 
         # estimate empirical CDF of weighted, positive edges across subs
-        cumprob, quantiles = ecdf(pos_dist)
+        cumprob, quantiles = _ecdf(pos_dist)
         cumprob = np.round(cumprob * avg_conn_num).astype(int)
 
         # empty array to hold group-average matrix for current connection type

@@ -20,6 +20,15 @@ def communicability(adjacency):
     -------
     (N x N) ndarray
         Symmetric array representing communicability of nodes {i, j}
+
+    See Also
+    --------
+    netneurotools_matlab/communicability.m
+
+    References
+    ----------
+    Estrada, E., & Hatano, N. (2008). Communicability in complex networks.
+    Physical Review E, 77(3), 036111.
     """
 
     return expm(adjacency)
@@ -38,6 +47,15 @@ def communicability_wei(adjacency):
     -------
     cmc : (N x N) ndarray
         Symmetric array representing communicability of nodes {i, j}
+
+    See Also
+    --------
+    netneurotools_matlab/communicability_wei.m
+
+    References
+    ----------
+    Estrada, E., & Hatano, N. (2008). Communicability in complex networks.
+    Physical Review E, 77(3), 036111.
     """
 
     row_sum = adjacency.sum(1)

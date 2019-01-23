@@ -6,7 +6,7 @@ Installation and setup
 .. _python_installation:
 
 Python installation
-------------------
+-------------------
 
 This package requires Python >= 3.5. Assuming you have the correct version of
 Python installed, you can install ``netneurotools`` by opening a terminal and
@@ -32,6 +32,13 @@ the `environment.yml` file shipped with ``netneurotools``:
 
     git clone https://github.com/netneurolab/netneurotools.git
     conda env create -f netneurotools/environment.yml
+
+.. note::
+
+    The conda installation procedure is recommended for now; there are several
+    optional plotting libraries that are very difficult to install with only
+    ``pip``, so these dependencies are only included in the ``environment.yml``
+    file.
 
 .. _matlab_installation:
 
