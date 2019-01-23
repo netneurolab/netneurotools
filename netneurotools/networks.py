@@ -144,6 +144,7 @@ def struct_consensus(data, distance, hemiid):
     with density equal to the mean density across subjects.
 
     The algorithm works as follows:
+
     1. Estimate the cumulative edge length distribution,
     2. Divide the distribution into M length bins, one for each edge that will
        be added to the group-average matrix, and
