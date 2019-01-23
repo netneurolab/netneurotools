@@ -3,6 +3,7 @@
 Functions for making pretty plots and whatnot
 """
 
+import os
 from pkg_resources import resource_filename
 
 import matplotlib.patches as patches
@@ -11,11 +12,7 @@ import nibabel as nib
 import numpy as np
 import seaborn as sns
 
-try:
-    from mayavi import mlab
-    mayavi_avail = True
-except ImportError:
-    mayavi_avail = False
+from .utils import check_fs_subjid
 
 
 def _grid_communities(communities):
@@ -225,7 +222,9 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Scene object containing plot
     """
 
-    if not mayavi_avail:
+    try:
+        from mayavi import mlab
+    except ImportError:
         raise ImportError('Cannot use plot_conte69() if mayavi is not '
                           'installed. Please install mayavi and try again.')
 
@@ -278,3 +277,155 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
                 figure=rhplot)
 
     return lhplot, rhplot
+
+
+def plot_fsaverage(data, annot, *, surf='pial', views='lat',
+                   tmin=None, tmax=None, center=None, mask=None,
+                   colormap='viridis', colorbar=True, alpha=0.8,
+                   label_fmt='%.2f', number_of_labels=3,
+                   size_per_view=500, subjects_dir=None):
+    """
+    Plots `data` to fsaverage brain using `annot` as parcellation
+
+    Parameters
+    ----------
+    data : (N,) array_like
+        Data for `N` parcels as defined in `annot`
+    annot : str
+        Annotation that defines parcellation for `data`. If available in
+        fsaverage directory then assumed to be of format '{hemi}.NAME.annot'
+        and only NAME should be provided. Otherwise, should provide full path
+        to filename but retain the '{hemi}' prefix.
+    surf : str, optional
+        Surface on which to plot data. Default: 'pial'
+    views : str or list, optional
+        Which views to plot of brain. Default: 'lat'
+    tmin : float, optional
+        Minimum value for colorbar. If not provided, a robust estimation will
+        be used from values in `data`. Default: None
+    tmax : float, optional
+        Maximum value for colorbar. If not provided, a robust estimation will
+        be used from values in `data`. Default: None
+    center : float, optional
+        Center of colormap, if desired. Default: None
+    mask : (N,) array_like, optional
+        Binary array where entries indicate whether values in `data` should be
+        masked from plotting (True = mask; False = show). Default: None
+    colormap : str, optional
+        Which colormap to use for plotting `data`. Default: 'viridis'
+    colorbar : bool, optional
+        Whether to display the colorbar in the plot. Default: True
+    alpha : [0, 1] float, optional
+        Transparency of plotted `data`. Default: 0.8
+    label_fmt : str, optional
+        Format of colorbar labels. Default: '%.2f'
+    number_of_labels : int, optional
+        Number of labels to display on colorbar. Default: 3
+    size_per_view : int, optional
+        Size, in pixels, of each frame in the plotted display. Default: 1000
+    subjects_dir : str, optional
+        Path to FreeSurfer subject directory. If not set, will inherit from
+        the environmental variable $SUBJECTS_DIR. Default: None
+
+    Returns
+    -------
+    brain : surfer.Brain
+        Plotted PySurfer brain
+    """
+
+    # hold off on imports until
+    try:
+        from surfer import Brain
+    except ImportError:
+        raise ImportError('Cannot use plot_to_fsaverage() if pysurfer is not '
+                          'installed. Please install mayavi and try again.')
+
+    subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
+
+    # check format of annotation and update, accordingly
+    if not annot.endswith('.annot'):
+        annot = annot + '.annot'
+    if not any([annot.startswith(pref) for pref in ['lh', 'rh', '{hemi}']]):
+        annot = '{hemi}.' + annot
+
+    # cast data to float (required for NaNs)
+    data = np.asarray(data, dtype='float')
+
+    if mask is not None and len(mask) != len(data):
+        raise ValueError('Provided mask must be the same length as data.')
+
+    if tmin is None:
+        tmin = np.percentile(data, 2.5)
+    if tmax is None:
+        tmax = np.percentile(data, 97.5)
+
+    # parcels that should not be included in parcellation
+    drop = [b'unknown', b'corpuscallosum']
+
+    # set up brain views
+    if not isinstance(views, (np.ndarray, list)):
+        views = [views]
+
+    # size of window will depend on # of views provided
+    size = (size_per_view * 2, size_per_view * len(views))
+    brain = Brain(subject_id='fsaverage', hemi='split', surf=surf,
+                  subjects_dir=subjects_dir, background='white',
+                  views=views, size=size)
+
+    for hemi in ['lh', 'rh']:
+        # loads annotation data for hemisphere, including vertex `labels`!
+        if not annot.startswith(os.path.abspath(os.sep)):
+            annot_fname = os.path.join(subjects_dir, 'fsaverage', 'label',
+                                       annot.format(hemi=hemi))
+        else:
+            annot_fname = annot.format(hemi=hemi)
+        labels, ctab, names = nib.freesurfer.read_annot(annot_fname)
+
+        # get appropriate data, accounting for hemispheric asymmetry
+        if hemi == 'lh':
+            ldata, rdata = np.split(data, [len(names) - len(drop)])
+            if mask is not None:
+                lmask, rmask = np.split(mask, [len(names) - len(drop)])
+        hemidata = ldata if hemi == 'lh' else rdata
+
+        # our `data` don't include unknown / corpuscallosum, but our `labels`
+        # do, so we need to account for that
+        # find the label ids that correspond to those and set them to NaN in
+        # the `data vector`
+        inds = [n for n, f in enumerate(names) if f in drop]
+        fulldata = np.insert(hemidata, inds - np.arange(len(inds)), np.nan)
+        vtx_data = fulldata[labels]
+        not_nan = ~np.isnan(vtx_data)
+
+        # we don't want the NaN vertices (unknown / corpuscallosum) plotted
+        # let's drop those and set a threshold so they're hidden
+        thresh = vtx_data[not_nan].min() - 1
+        vtx_data[np.isnan(vtx_data)] = thresh
+        # let's also mask data, if necessary
+        if mask is not None:
+            maskdata = lmask if hemi == 'lh' else rmask
+            maskdata = np.insert(maskdata, inds - np.arange(len(inds)), np.nan)
+            vtx_data[maskdata[labels] > 0] = thresh
+
+        # finally, add data to this hemisphere!
+        brain.add_data(vtx_data, tmin, tmax, hemi=hemi, mid=center,
+                       thresh=thresh + 0.5, alpha=alpha, remove_existing=False,
+                       colormap=colormap, colorbar=colorbar, verbose=False)
+
+        # if we have a colorbar, update parameters accordingly
+        if colorbar:
+            # update label format, as desired
+            surf = brain.data_dict[hemi]['surfaces']
+            cmap = brain.data_dict[hemi]['colorbars']
+            # this updates the format of the colorbar labels
+            if label_fmt is not None:
+                for n, cm in enumerate(cmap):
+                    cm.scalar_bar.label_format = label_fmt
+                    surf[n].render()
+            # this updates how many labels are shown on the colorbar
+            if number_of_labels is not None:
+                for n, cm in enumerate(cmap):
+                    cm.scalar_bar.number_of_labels = number_of_labels
+                    surf[n].render()
+
+    return brain
