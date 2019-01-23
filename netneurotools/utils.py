@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Miscellaneous functions of various utility
+"""
 
 import glob
 import os
