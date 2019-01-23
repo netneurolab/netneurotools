@@ -5,6 +5,8 @@ Miscellaneous functions of various utility
 
 import glob
 import os
+import pickle
+from pkg_resources import resource_filename
 import subprocess
 
 import numpy as np
@@ -152,3 +154,50 @@ def check_fs_subjid(subject_id, subjects_dir=None):
                                 .format(subject_id, subjects_dir))
 
     return subject_id, subjects_dir
+
+
+def get_cammoun2012_info(scale):
+    """
+    Returns centroids / hemi assignment of parcels from Cammoun et al., 2012
+
+    Centroids are defined on the spherical projection of the fsaverage cortical
+    surface reconstruciton (FreeSurfer v6.0.1)
+
+    Parameters
+    ----------
+    scale : {33, 60, 125, 250, 500}
+        Scale of parcellation for which to get centroids / hemisphere
+        assignments
+
+    Returns
+    -------
+    centroids : (N, 3) numpy.ndarray
+        Centroids of parcels defined by Cammoun et al., 2012 parcellation
+    hemiid : (N,) numpy.ndarray
+        Hemisphere assignment of `centroids`, where 0 indicates left and 1
+        indicates right hemisphere
+
+    References
+    ----------
+    Cammoun, L., Gigandet, X., Meskaldji, D., Thiran, J. P., Sporns, O., Do, K.
+    Q., Maeder, P., and Meuli, R., & Hagmann, P. (2012). Mapping the human
+    connectome at multiple scales with diffusion spectrum MRI. Journal of
+    Neuroscience Methods, 203(2), 386-397.
+    """
+
+    pckl = resource_filename('netneurotools', 'data/cammoun.pckl')
+
+    if not isinstance(scale, int):
+        try:
+            scale = int(scale)
+        except ValueError:
+            raise ValueError('Provided `scale` must be integer in [33, 60, '
+                             '125, 250, 500], not {}'.format(scale))
+    if scale not in [33, 60, 125, 250, 500]:
+        raise ValueError('Provided `scale` must be integer in [33, 60, 125, '
+                         '250, 500], not {}'.format(scale))
+
+    with open(pckl, 'rb') as src:
+        data = pickle.load(src)['cammoun{}'.format(str(scale))]
+
+    return data['centroids'], data['hemiid']
