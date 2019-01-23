@@ -2,7 +2,6 @@
 
 import glob
 import os
-import os.path as op
 import subprocess
 
 import numpy as np
@@ -24,7 +23,7 @@ def globpath(*args):
         Sorted list of files
     """
 
-    return sorted(glob.glob(op.join(*args)))
+    return sorted(glob.glob(os.path.join(*args)))
 
 
 def get_triu(data, k=1):
@@ -111,3 +110,42 @@ def run(cmd, env=None, return_proc=False, quiet=False):
 
     if return_proc:
         return proc
+
+
+def check_fs_subjid(subject_id, subjects_dir=None):
+    """
+    Checks that `subject_id` exists in provided FreeSurfer `subjects_dir`
+
+    Parameters
+    ----------
+    subject_id : str
+        FreeSurfer subject ID
+    subjects_dir : str, optional
+        Path to FreeSurfer subject directory. If not set, will inherit from
+        the environmental variable $SUBJECTS_DIR. Default: None
+
+    Returns
+    -------
+    subject_id : str
+        FreeSurfer subject ID, as provided
+    subjects_dir : str
+        Full filepath to `subjects_dir`
+
+    Raises
+    ------
+    FileNotFoundError
+    """
+
+    # check inputs for subjects_dir and subject_id
+    if subjects_dir is None or not os.path.isdir(subjects_dir):
+        subjects_dir = os.environ['SUBJECTS_DIR']
+    else:
+        subjects_dir = os.path.abspath(subjects_dir)
+
+    subjdir = os.path.join(subjects_dir, subject_id)
+    if not os.path.isdir(subjdir):
+        raise FileNotFoundError('Cannot find specified subject id {} in '
+                                'provided subject directory {}.'
+                                .format(subject_id, subjects_dir))
+
+    return subject_id, subjects_dir
