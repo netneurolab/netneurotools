@@ -219,4 +219,3 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
         permsamples[inds_r, n] = inds_r[dist_r.argmin(axis=1)]
 
     return permsamples
-
