@@ -96,7 +96,7 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     figsize : tuple, optional
         Size of figure to create if `ax` is not provided. Default: (20, 20)
     {x,y}labels : list, optional
-        List of labels on {x,y}-axis for each community in `communities'. The
+        List of labels on {x,y}-axis for each community in `communities`. The
         number of labels should match the number of unique communities.
         Default: None
     {x,y}labelrotation : float, optional
