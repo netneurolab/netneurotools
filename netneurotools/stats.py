@@ -4,6 +4,7 @@ Functions for performing statistical preprocessing and analyses
 """
 
 import numpy as np
+from scipy.spatial.distance import cdist
 from scipy.stats import zmap
 
 from . import utils
@@ -112,3 +113,110 @@ def get_mad_outliers(data, thresh=3.5):
     modified_z_score = 0.6745 * diff / med_abs_deviation
 
     return modified_z_score > thresh
+
+
+def _yield_rotations(n_rotate, seed=None):
+    """
+    Generates random matrix for rotating spherical coordinates
+
+    Parameters
+    ----------
+    n_rotate : int
+        Number of rotations to generate
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation
+
+    Yields
+    -------
+    rotate_l, rotate_r : (3, 3) numpy.ndarray
+        Rotations for left and right hemispheres, respectively
+    """
+
+    if seed is not None:
+        rs = np.random.RandomState(seed)
+    else:
+        rs = np.random
+
+    # for reflecting across Y-Z plane
+    reflect = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    for n in range(n_rotate):
+        # generate rotation for left
+        rotate_l, temp = np.linalg.qr(rs.normal(size=(3, 3)))
+        rotate_l = rotate_l @ np.diag(np.sign(np.diag(temp)))
+        if np.linalg.det(rotate_l) < 0:
+            rotate_l[:, 0] = -rotate_l[:, 0]
+
+        # reflect the left rotation across Y-Z plane
+        rotate_r = reflect @ rotate_l @ reflect
+
+        yield rotate_l, rotate_r
+
+
+def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
+    """
+    Generates permutation resampling array via rotational spins
+
+    Parameters
+    ----------
+    coords : (N, 3) array_like
+        X, Y, Z coordinates of nodes on spherical surface
+    hemiid : (N,) array_like
+        Array denoting hemisphere designation of coordinates in `coords`, where
+        `hemiid=0` is the left and `hemiid=1` is the right hemisphere
+    n_rotate : int, optional
+        Number of rotations to generate. Default: 1000
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation
+
+    Returns
+    -------
+    permsamples : (N, `n_rotate`) numpy.ndarray
+        Resampling matrix to use in permuting data based on supplied `coords`
+
+    References
+    ----------
+    Alexander-Bloch, A., Shou, H., Liu, S., Satterthwaite, T. D., Glahn, D. C.,
+    Shinohara, R. T., Vandekar, S. N., & Raznahan, A. (2018). On testing for
+    spatial correspondence between maps of human brain structure and function.
+    NeuroImage, 178, 540-51.
+    """
+
+    # check supplied coordinate shape
+    if coords.shape[-1] != 3 or coords.squeeze().ndim != 2:
+        raise ValueError('Provided `coords` must be of shape (N, 3), not {}'
+                         .format(coords.shape))
+
+    # ensure hemisphere designation array is correct
+    hemiid = hemiid.squeeze()
+    if hemiid.ndim != 1:
+        raise ValueError('Provided `hemiid` array must be one-dimensional.')
+    if len(coords) != len(hemiid):
+        raise ValueError('Provided `coords` and `hemiid` must have the same '
+                         'length. Provided lengths: coords = {}, hemiid = {}'
+                         .format(len(coords), len(hemiid)))
+    if not np.allclose(np.unique(hemiid), [0, 1]):
+        raise ValueError('Hemiid must have values of [0, 1] denoting left '
+                         'and right hemisphere coordinates, respectively. '
+                         'Provided array contains values: {}'
+                         .format(np.unique(hemiid)))
+
+    # empty array to store resampling indices
+    permsamples = np.zeros((len(coords), n_rotate), dtype=int)
+
+    # split coordinates into left / right hemispheres
+    inds_l, inds_r = np.where(hemiid == 0)[0], np.where(hemiid == 1)[0]
+    coords_l, coords_r = coords[inds_l], coords[inds_r]
+
+    # rotate coordinates and reassign indices!
+    for n, (left, right) in enumerate(_yield_rotations(n_rotate, seed=seed)):
+        # calculate Euclidean distance between original and rotated coords
+        dist_l = cdist(coords_l, coords_l @ left)
+        dist_r = cdist(coords_r, coords_r @ right)
+
+        # find index of sample with minimum distance to original and assign
+        permsamples[inds_l, n] = inds_l[dist_l.argmin(axis=1)]
+        permsamples[inds_r, n] = inds_r[dist_r.argmin(axis=1)]
+
+    return permsamples
+
