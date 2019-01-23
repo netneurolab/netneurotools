@@ -42,6 +42,7 @@ EXTRAS_REQUIRE = {
     ],
     'plotting': [
         'mayavi',
+        'pysurfer'
     ],
     'tests': TESTS_REQUIRE
 }

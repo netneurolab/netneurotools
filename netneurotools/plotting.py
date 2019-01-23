@@ -338,7 +338,7 @@ def plot_fsaverage(data, annot, *, surf='pial', views='lat',
         from surfer import Brain
     except ImportError:
         raise ImportError('Cannot use plot_to_fsaverage() if pysurfer is not '
-                          'installed. Please install mayavi and try again.')
+                          'installed. Please install pysurfer and try again.')
 
     subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
 
