@@ -37,8 +37,10 @@ the `environment.yml` file shipped with ``netneurotools``:
 
     The conda installation procedure is recommended for now; there are several
     optional plotting libraries that are very difficult to install with only
-    ``pip``, so these dependencies are only included in the ``environment.yml``
-    file.
+    ``pip`` but which conda handles elegantly. These libraries are thus listed
+    as defaults in the ``environment.yml`` file but can only be installed with
+    ``pip`` by calling ``pip install netneurotools[plotting]`` (n.b. that this
+    command may fail!).
 
 .. _matlab_installation:
 
