@@ -44,19 +44,19 @@ def _grid_communities(communities):
 
 def sort_communities(consensus, communities):
     """
-    Sorts ``communities`` in ``consensus`` according to strength
+    Sorts `communities` in `consensus` according to strength
 
     Parameters
     ----------
     consensus : array_like
         Correlation matrix
     communities : array_like
-        Community assignments for ``consensus``
+        Community assignments for `consensus`
 
     Returns
     -------
     inds : np.ndarray
-        Index array for sorting ``consensus``
+        Index array for sorting `consensus`
     """
 
     if 0 in communities:

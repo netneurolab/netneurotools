@@ -15,12 +15,12 @@ from sklearn.utils.validation import check_array
 
 def globpath(*args):
     """"
-    Joins provided `args` with os.path.join and then returns sorted glob
+    Joins `args` with :py:func:`os.path.join` and returns sorted glob output
 
     Parameters
     ----------
     args : str
-        Paths / glob-compatible regex
+        Paths / `glob`-compatible regex strings
 
     Returns
     -------
@@ -46,6 +46,14 @@ def get_triu(data, k=1):
     -------
     triu : (N * N-1 / 2) numpy.ndarray
         Upper triangle of `data`
+
+    Examples
+    --------
+    >>> from netneurotools.utils import get_triu
+    >>> X = np.array([[1, 0.5, 0.25], [0.5, 1, 0.33], [0.25, 0.33, 1]])
+    >>> tri = get_triu(X)
+    >>> tri
+    array([0.5 , 0.25, 0.33])
     """
 
     return data[np.triu_indices(len(data), k=1)].copy()
@@ -57,13 +65,25 @@ def add_constant(data):
 
     Parameters
     -----------
-    data : (N x M) array_like
+    data : (N, M) array_like
         Samples by features data array
 
     Returns
     -------
-    data : (N x F) np.ndarray
-        Where ``F`` is ``M + 1``
+    data : (N, F) np.ndarray
+        Where `F` is `M + 1`
+
+    Examples
+    --------
+    >>> from netneurotools.utils import add_constant
+    >>> A = np.zeros((5, 5))
+    >>> Ac = add_constant(A)
+    >>> Ac
+    array([[0., 0., 0., 0., 0., 1.],
+           [0., 0., 0., 0., 0., 1.],
+           [0., 0., 0., 0., 0., 1.],
+           [0., 0., 0., 0., 0., 1.],
+           [0., 0., 0., 0., 0., 1.]])
     """
 
     data = check_array(data, ensure_2d=False)
@@ -95,6 +115,15 @@ def run(cmd, env=None, return_proc=False, quiet=False):
     ------
     subprocess.CalledProcessError
         If subprocess does not exit cleanly
+
+    Examples
+    --------
+    >>> from netneurotools.utils import run
+    >>> p = run('echo "hello world"', return_proc=True, quiet=True)
+    >>> p.returncode
+    0
+    >>> p.stdout
+    'hello world\\n'
     """
 
     merged_env = os.environ.copy()
@@ -107,8 +136,6 @@ def run(cmd, env=None, return_proc=False, quiet=False):
     opts = {}
     if quiet:
         opts = dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    else:
-        print('Running command: {}'.format(cmd))
 
     proc = subprocess.run(cmd, env=merged_env, shell=True, check=True,
                           universal_newlines=True, **opts)
@@ -156,7 +183,7 @@ def check_fs_subjid(subject_id, subjects_dir=None):
     return subject_id, subjects_dir
 
 
-def get_cammoun2012_info(scale):
+def get_cammoun2012_info(scale, surface=True):
     """
     Returns centroids / hemi assignment of parcels from Cammoun et al., 2012
 
@@ -168,6 +195,9 @@ def get_cammoun2012_info(scale):
     scale : {33, 60, 125, 250, 500}
         Scale of parcellation for which to get centroids / hemisphere
         assignments
+    surface : bool, optional
+        Whether to return coordinates from surface instead of volume
+        reconstruction. Default: True
 
     Returns
     -------
@@ -183,6 +213,19 @@ def get_cammoun2012_info(scale):
     Q., Maeder, P., and Meuli, R., & Hagmann, P. (2012). Mapping the human
     connectome at multiple scales with diffusion spectrum MRI. Journal of
     Neuroscience Methods, 203(2), 386-397.
+
+    Examples
+    --------
+    >>> from netneurotools.utils import get_cammoun2012_info
+    >>> coords, hemiid = get_cammoun2012_info(scale=33)
+    >>> coords.shape, hemiid.shape
+    ((68, 3), (68,))
+
+    ``hemiid`` is a vector of 0 and 1 denoting which ``coords`` are in the
+    left / right hemisphere, respectively:
+
+    >>> np.sum(hemiid == 0), np.sum(hemiid == 1)
+    (34, 34)
     """
 
     pckl = resource_filename('netneurotools', 'data/cammoun.pckl')
