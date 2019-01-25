@@ -5,10 +5,13 @@
 Reference API
 =============
 
+.. contents:: **List of modules**
+   :local:
+
 .. _ref_network:
 
-:mod:`netneurotools.networks` - Group networks
-----------------------------------------------
+:mod:`netneurotools.networks` - Constructing networks
+-----------------------------------------------------
 
 .. automodule:: netneurotools.networks
    :no-members:
@@ -22,11 +25,13 @@ Reference API
 
    func_consensus
    struct_consensus
+   threshold_network
+   binarize_network
 
 .. _ref_modularity:
 
-:mod:`netneurotools.modularity` - Network modularity statistics
----------------------------------------------------------------
+:mod:`netneurotools.modularity` - Calculating network modularity
+----------------------------------------------------------------
 
 .. automodule:: netneurotools.modularity
    :no-members:
@@ -80,13 +85,14 @@ Reference API
 
    gen_spinsamples
    residualize
+   perm_1samp
    get_mad_outliers
 
 
 .. _ref_metrics:
 
-:mod:`netneurotools.metrics` - Graph metrics
---------------------------------------------
+:mod:`netneurotools.metrics` - Calculating graph metrics
+--------------------------------------------------------
 
 .. automodule:: netneurotools.metrics
    :no-members:
@@ -103,8 +109,8 @@ Reference API
 
 .. _ref_utils:
 
-:mod:`netneurotools.utils` - Various utilities
-----------------------------------------------
+:mod:`netneurotools.utils` - Miscellaneous, grab bag utilities
+--------------------------------------------------------------
 
 .. automodule:: netneurotools.utils
    :no-members:
