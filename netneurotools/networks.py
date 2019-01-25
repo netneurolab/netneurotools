@@ -4,13 +4,16 @@ Functions for generating group-level networks from individual measurements
 """
 
 import numpy as np
+from scipy.sparse import csgraph
 from sklearn.utils.validation import (check_random_state, check_array,
                                       check_consistent_length)
+
+from . import utils
 
 
 def func_consensus(data, n_boot=1000, ci=95, seed=None):
     """
-    Calculates group-level, thresholded functional connectivity matrix
+    Calculates group-level, thresholded functional connectivity graph
 
     This function concatenates all time series in `data` and computes a group
     correlation matrix based on this extended time series. It then generates
@@ -127,7 +130,7 @@ def _ecdf(data):
 
 def struct_consensus(data, distance, hemiid):
     """
-    Calculates group-averaged structural connectivity matrix
+    Calculates distance-dependent group consensus structural connectivity graph
 
     Takes as input a weighted stack of connectivity matrices with dimensions
     (N, N, S) where `N` is the number of nodes and `S` is the number of
@@ -260,3 +263,98 @@ def struct_consensus(data, distance, hemiid):
     consensus = np.logical_or(consensus, consensus.T).astype(int)
 
     return consensus
+
+
+def binarize_network(network, retain=10, keep_diag=False):
+    """
+    Keeps top `retain` % of connections in `network` and binarizes
+
+    Uses the upper triangle for determining connection percentage. Note that
+    this does NOT ensure a connected graph.
+
+    Parameters
+    ----------
+    network : (N, N) array_like
+        Input graph
+    retain : [0, 100] float, optional
+        Percent connections to retain. Default: 10
+    keep_diag : bool, optional
+        Whether to keep the diagonal instead of setting it to 0. Default: False
+
+    Returns
+    -------
+    binarized : (N, N) array_like
+
+    See Also
+    --------
+    netneurotools.networks.threshold_network
+    """
+
+    if retain < 0 or retain > 100:
+        raise ValueError('Value provided for `retain` is outside [0, 100]: {}'
+                         .format(retain))
+
+    prctile = 100 - retain
+    triu = utils.get_triu(network)
+    thresh = np.percentile(triu, prctile, axis=0, keepdims=True)
+    binarized = np.array(network > thresh, dtype=int)
+
+    if not keep_diag:
+        binarized[np.diag_indices(len(binarized))] = 0
+
+    return binarized
+
+
+def threshold_network(network, density=10):
+    """
+    Thresholds `network` to `density` % connection density
+
+    Uses minimum spanning tree to ensure that no nodes are disconnected from
+    graph. If you do not care about a connected graph
+
+    Parameters
+    ----------
+    network : (N, N[, S]) array_like
+        Input graph
+    density : [0, 100] float, optional
+        Desired connection density, in percent. Default: 10
+
+    Returns
+    -------
+    thresholded : (N, N) array_like
+
+    See Also
+    --------
+    netneurotools.networks.binarize_network
+    """
+
+    if density < 0 or density > 100:
+        raise ValueError('Value provided for `density` must be a percent '
+                         'in range [0, 100]. Provided: {}'.format(density))
+
+    # get number of nodes in graph and invert weights (MINIMUM spanning tree)
+    nodes = len(network)
+    graph = np.triu(network * -1)
+
+    # find MST and count # of edges in graph
+    mst = csgraph.minimum_spanning_tree(graph).todense()
+    mst_edges = np.sum(mst != 0)
+
+    # determine # of remaining edges and ensure we're not over the limit
+    remain = int((density / 100) * ((nodes * (nodes - 1)) / 2)) - mst_edges
+    if remain < 0:
+        raise ValueError('Minimum spanning tree with {} edges exceeds desired '
+                         'connection density of {}% ({} edges). Cannot '
+                         'proceed with graph creation.'
+                         .format(mst_edges, density, remain + mst_edges))
+
+    # zero out edges already in MST and then get indices of next best edges
+    graph -= mst
+    inds = utils.get_triu(graph).argsort()[:remain]
+    inds = tuple(e[inds] for e in np.triu_indices_from(graph, k=1))
+
+    # add edges to MST, symmetrize, and convert to binary matrix
+    mst[inds] = graph[inds]
+    mst = np.array((mst + mst.T) != 0, dtype=int)
+
+    return mst

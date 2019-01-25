@@ -106,3 +106,8 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'sklearn': ('http://scikit-learn.org/stable', None),
 }
+
+doctest_global_setup = """\
+import numpy as np
+np.random.seed(1234)\
+"""

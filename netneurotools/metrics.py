@@ -29,7 +29,20 @@ def communicability(adjacency):
     ----------
     Estrada, E., & Hatano, N. (2008). Communicability in complex networks.
     Physical Review E, 77(3), 036111.
+
+    Examples
+    --------
+    >>> from netneurotools.metrics import communicability
+    >>> A = np.array([[1, 0, 1], [0, 1, 1], [1, 0, 1]])
+    >>> Q = communicability(A)
+    >>> Q
+    array([[4.19452805, 0.        , 3.19452805],
+           [1.47624622, 2.71828183, 3.19452805],
+           [3.19452805, 0.        , 4.19452805]])
     """
+
+    if not np.any(np.logical_or(adjacency == 0, adjacency == 1)):
+        raise ValueError('Provided adjancecy matrix must be unweighted.')
 
     return expm(adjacency)
 
@@ -56,6 +69,16 @@ def communicability_wei(adjacency):
     ----------
     Estrada, E., & Hatano, N. (2008). Communicability in complex networks.
     Physical Review E, 77(3), 036111.
+
+    Examples
+    --------
+    >>> from netneurotools.metrics import communicability_wei
+    >>> A = np.array([[2, 0, 3], [0, 2, 1], [0.5, 0, 1]])
+    >>> Q = communicability_wei(A)
+    >>> Q
+    array([[0.        , 0.        , 1.93581903],
+           [0.07810379, 0.        , 0.94712177],
+           [0.32263651, 0.        , 0.        ]])
     """
 
     row_sum = adjacency.sum(1)

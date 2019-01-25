@@ -6,13 +6,14 @@ Functions for performing statistical preprocessing and analyses
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.stats import zmap
+from sklearn.utils.validation import check_random_state
 
 from . import utils
 
 
 def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
     """
-    Residualizes `X` from `Y`, optionally using betas from `Yc ~ Xc`
+    Returns residuals of `Y ~ X`
 
     Parameters
     ----------
@@ -37,6 +38,11 @@ def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
     -------
     Y_resid : (N, F) numpy.ndarray
         Residuals of `Y ~ X`
+
+    Notes
+    -----
+    If both `Xc` and `Yc` are provided, these are used to calculate betas which
+    are then applied to `X` and `Y`.
     """
 
     if ((Yc is None and Xc is not None) or (Yc is not None and Xc is None)):
@@ -87,15 +93,23 @@ def get_mad_outliers(data, thresh=3.5):
     outliers : (N,) numpy.ndarray
         Boolean array where True indicates an outlier
 
+    Notes
+    -----
+    Taken directly from https://stackoverflow.com/a/22357811
+
     References
     ----------
     Boris Iglewicz and David Hoaglin (1993), "Volume 16: How to Detect and
     Handle Outliers", The ASQC Basic References in Quality Control: Statistical
     Techniques, Edward F. Mykytka, Ph.D., Editor.
 
-    Notes
-    -----
-    Taken directly from https://stackoverflow.com/a/22357811.
+    Examples
+    --------
+    >>> from netneurotools.stats import get_mad_outliers
+    >>> X = np.array([[0, 5, 10, 15], [1, 4, 11, 16], [20, 20, 20, 20]])
+    >>> outliers = get_mad_outliers(X)
+    >>> outliers
+    array([False, False,  True])
     """
 
     data = np.asarray(data)
@@ -115,6 +129,33 @@ def get_mad_outliers(data, thresh=3.5):
     return modified_z_score > thresh
 
 
+def perm_1samp(data, n_perm=1000):
+    """
+    Non-parametric equivalent of :py:func:`scipy.stats.ttest_1samp`
+
+    Generates null distribution of `data` via sign flipping and regeneration of
+    mean
+
+    Parameters
+    ----------
+    data : (N, M) array_like
+        Where `N` is samples and `M` is features
+
+    Returns
+    -------
+    permutations : (M, P)
+        Null distribution for each of `M` features from `data`
+    """
+
+    permutations = np.zeros((data.shape[-1], n_perm))
+
+    for perm in range(n_perm):
+        flip = np.random.choice([-1, 1], size=data.shape)
+        permutations[:, perm] = np.mean(data * flip, axis=0)
+
+    return permutations
+
+
 def _yield_rotations(n_rotate, seed=None):
     """
     Generates random matrix for rotating spherical coordinates
@@ -132,10 +173,7 @@ def _yield_rotations(n_rotate, seed=None):
         Rotations for left and right hemispheres, respectively
     """
 
-    if seed is not None:
-        rs = np.random.RandomState(seed)
-    else:
-        rs = np.random
+    rs = check_random_state(seed)
 
     # for reflecting across Y-Z plane
     reflect = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -155,19 +193,24 @@ def _yield_rotations(n_rotate, seed=None):
 
 def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
     """
-    Generates permutation resampling array via rotational spins
+    Generates resampling array for `coords` via rotational spins
+
+    Using the method initially proposed in [ST1]_ (and later modified / updated
+    based on findings in [ST2]_ and [ST3]_), this function can be used to
+    generate a resampling array for conducting spatial permutation tests.
 
     Parameters
     ----------
     coords : (N, 3) array_like
-        X, Y, Z coordinates of nodes on spherical surface
+        X, Y, Z coordinates of `N` nodes/parcels/regions/vertices defined on a
+        sphere
     hemiid : (N,) array_like
         Array denoting hemisphere designation of coordinates in `coords`, where
-        `hemiid=0` is the left and `hemiid=1` is the right hemisphere
+        `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
     n_rotate : int, optional
-        Number of rotations to generate. Default: 1000
+        Number of random rotations to generate. Default: 1000
     seed : {int, np.random.RandomState instance, None}, optional
-        Seed for random number generation
+        Seed for random number generation. Default: None
 
     Returns
     -------
@@ -176,10 +219,89 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
 
     References
     ----------
-    Alexander-Bloch, A., Shou, H., Liu, S., Satterthwaite, T. D., Glahn, D. C.,
-    Shinohara, R. T., Vandekar, S. N., & Raznahan, A. (2018). On testing for
-    spatial correspondence between maps of human brain structure and function.
-    NeuroImage, 178, 540-51.
+    .. [ST1] Alexander-Bloch, A., Shou, H., Liu, S., Satterthwaite, T. D.,
+       Glahn, D. C., Shinohara, R. T., Vandekar, S. N., & Raznahan, A. (2018).
+       On testing for spatial correspondence between maps of human brain
+       structure and function. NeuroImage, 178, 540-51.
+
+    .. [ST2] Blaser, R., & Fryzlewicz, P. (2016). Random Rotation Ensembles.
+       Journal of Machine Learning Research, 17(4), 1–26.
+
+    .. [ST3] Lefèvre, J., Pepe, A., Muscato, J., De Guio, F., Girard, N.,
+       Auzias, G., & Germanaud, D. (2018). SPANOL (SPectral ANalysis of Lobes):
+       A Spectral Clustering Framework for Individual and Group Parcellation of
+       Cortical Surfaces in Lobes. Frontiers in Neuroscience, 12, 354.
+
+    Examples
+    --------
+    Let's say we have two vectors of data, defined for a set of 68 brain
+    regions:
+
+    >>> from netneurotools.tests import make_correlated_xy
+    >>> x, y = make_correlated_xy(size=(68,))
+    >>> x.shape, y.shape
+    ((68,), (68,))
+
+    We can correlate the vectors to see how related they are:
+
+    >>> from scipy.stats import pearsonr
+    >>> r, p = pearsonr(x, y)
+    >>> r, p
+    (0.6961556744296582, 4.376432884386363e-11)
+
+    These vectors are quite correlated, and the correlation appears to be very
+    significant. Unfortunately, there's a possibility that the correlation of
+    these two vectors is inflated by the spatial organization of the brain. We
+    want to create a null distribution of correlations via permutation to
+    assess whether this correlation is truly significant or not.
+
+    We could just randomly permute one of the vectors and regenerate the
+    correlation:
+
+    >>> r_perm = np.zeros((1000,))
+    >>> for perm in range(1000):
+    ...     r_perm[perm] = pearsonr(np.random.permutation(x), y)[0]
+    >>> p_perm = (np.sum(r_perm > r) + 1) / (len(r_perm) + 1)
+    >>> p_perm
+    0.000999000999000999
+
+    The permuted p-value suggests that our data are, indeed, highly correlated.
+    Unfortunately this does not take into account that the data are constrained
+    by a spatial toplogy (i.e., the brain) and thus are not entirely
+    exchangeable as is assumed by a normal permutation test.
+
+    Instead, we can resample the data by thinking about the brain as a sphere
+    and considering random rotations of this sphere. If we rotate the data and
+    resample datapoints based on their rotated values, we can generate a null
+    distribution that is more appropriate.
+
+    To do this we need the spatial coordinates of our brain regions as well as
+    an array indicating to which hemisphere each region belongs. We'll use one
+    of the parcellations commonly employed in the lab (Cammoun et al., 2012):
+
+    >>> from netneurotools.utils import get_cammoun2012_info
+    >>> coords, hemi = get_cammoun2012_info(scale=33)
+    >>> coords.shape, hemi.shape
+    ((68, 3), (68,))
+
+    Next, we generate a resampling array based on this "rotation" concept:
+
+    >>> from netneurotools.stats import gen_spinsamples
+    >>> spin = gen_spinsamples(coords, hemi)
+    >>> spin.shape
+    (68, 1000)
+
+    We can use this to resample one of our data vectors and regenerate the
+    correlations:
+
+    >>> r_spinperm = np.zeros((1000,))
+    >>> for perm in range(1000):
+    ...     r_spinperm[perm] = pearsonr(x[spin[:, perm]], y)[0]
+    >>> p_spinperm = (np.sum(r_perm > r) + 1) / (len(r_perm) + 1)
+    >>> p_spinperm
+    0.000999000999000999
+
+    We see that the original correlation is still significant!
     """
 
     # check supplied coordinate shape
