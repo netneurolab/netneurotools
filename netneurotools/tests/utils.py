@@ -35,6 +35,10 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.05):
 
     rs = check_random_state(seed)
 
+    # no correlations outside [-1, 1] bounds
+    if np.any(np.abs(corr) > 1):
+        raise ValueError('Provided `corr` must be in range [-1, 1].')
+
     # if we're given a single number, assume two vectors are desired
     if isinstance(corr, (int, float)):
         covs = np.ones((2, 2)) * 0.111
@@ -42,8 +46,11 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.05):
     # if we're given a correlation matrix, assume `N` vectors are desired
     elif isinstance(corr, (list, np.ndarray)):
         corr = np.asarray(corr)
+        if corr.ndim != 2 or len(corr) != len(corr.T):
+            raise ValueError('If `corr` is a list or array, must be a 2D '
+                             'square array, not {}'.format(corr.shape))
         if np.any(np.diag(corr) != 1):
-            raise ValueError('Diagonal of `corr` must be set to 1.')
+            raise ValueError('Diagonal of `corr` must be 1.')
         covs = corr * 0.111
     means = [0] * len(covs)
 
