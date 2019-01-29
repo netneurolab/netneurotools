@@ -13,7 +13,7 @@ __description__ = """\
 Commonly used tools in the Network Neuroscience Lab\
 """
 __longdesc__ = 'README.rst'
-__longdesctype = 'text/x-rst'
+__longdesctype__ = 'text/x-rst'
 
 INSTALL_REQUIRES = [
     'bctpy',
