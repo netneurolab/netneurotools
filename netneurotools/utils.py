@@ -5,30 +5,42 @@ Miscellaneous functions of various utility
 
 import glob
 import os
-import pickle
-from pkg_resources import resource_filename
 import subprocess
 
 import numpy as np
 from sklearn.utils.validation import check_array
 
 
-def globpath(*args):
-    """"
-    Joins `args` with :py:func:`os.path.join` and returns sorted glob output
+def add_constant(data):
+    """
+    Adds a constant (i.e., intercept) term to `data`
 
     Parameters
-    ----------
-    args : str
-        Paths / `glob`-compatible regex strings
+    -----------
+    data : (N, M) array_like
+        Samples by features data array
 
     Returns
     -------
-    files : list
-        Sorted list of files
+    data : (N, F) np.ndarray
+        Where `F` is `M + 1`
+
+    Examples
+    --------
+    >>> from netneurotools import utils
+
+    >>> A = np.zeros((5, 5))
+    >>> Ac = utils.add_constant(A)
+    >>> Ac
+    array([[0., 0., 0., 0., 0., 1.],
+           [0., 0., 0., 0., 0., 1.],
+           [0., 0., 0., 0., 0., 1.],
+           [0., 0., 0., 0., 0., 1.],
+           [0., 0., 0., 0., 0., 1.]])
     """
 
-    return sorted(glob.glob(os.path.join(*args)))
+    data = check_array(data, ensure_2d=False)
+    return np.column_stack([data, np.ones(len(data))])
 
 
 def get_triu(data, k=1):
@@ -49,9 +61,10 @@ def get_triu(data, k=1):
 
     Examples
     --------
-    >>> from netneurotools.utils import get_triu
+    >>> from netneurotools import utils
+
     >>> X = np.array([[1, 0.5, 0.25], [0.5, 1, 0.33], [0.25, 0.33, 1]])
-    >>> tri = get_triu(X)
+    >>> tri = utils.get_triu(X)
     >>> tri
     array([0.5 , 0.25, 0.33])
     """
@@ -59,35 +72,47 @@ def get_triu(data, k=1):
     return data[np.triu_indices(len(data), k=1)].copy()
 
 
-def add_constant(data):
-    """
-    Adds a constant (i.e., intercept) term to `data`
+def globpath(*args):
+    """"
+    Joins `args` with :py:func:`os.path.join` and returns sorted glob output
 
     Parameters
-    -----------
-    data : (N, M) array_like
-        Samples by features data array
+    ----------
+    args : str
+        Paths / `glob`-compatible regex strings
 
     Returns
     -------
-    data : (N, F) np.ndarray
-        Where `F` is `M + 1`
-
-    Examples
-    --------
-    >>> from netneurotools.utils import add_constant
-    >>> A = np.zeros((5, 5))
-    >>> Ac = add_constant(A)
-    >>> Ac
-    array([[0., 0., 0., 0., 0., 1.],
-           [0., 0., 0., 0., 0., 1.],
-           [0., 0., 0., 0., 0., 1.],
-           [0., 0., 0., 0., 0., 1.],
-           [0., 0., 0., 0., 0., 1.]])
+    files : list
+        Sorted list of files
     """
 
-    data = check_array(data, ensure_2d=False)
-    return np.column_stack([data, np.ones(len(data))])
+    return sorted(glob.glob(os.path.join(*args)))
+
+
+def rescale(data, low=0, high=1):
+    """
+    Rescales `data` so it is within [`low`, `high`]
+
+    Parameters
+    ----------
+    data : array_like
+        Input data array
+    low : float, optional
+        Lower bound for rescaling. Default: -1
+    high : float, optional
+        Upper bound for rescaling. Default: 1
+
+    Returns
+    -------
+    rescaled : np.ndarray
+        Rescaled data
+    """
+
+    data = np.asarray(data)
+    rescaled = np.interp(data, (data.min(), data.max()), (low, high))
+
+    return rescaled
 
 
 def run(cmd, env=None, return_proc=False, quiet=False):
@@ -118,8 +143,8 @@ def run(cmd, env=None, return_proc=False, quiet=False):
 
     Examples
     --------
-    >>> from netneurotools.utils import run
-    >>> p = run('echo "hello world"', return_proc=True, quiet=True)
+    >>> from netneurotools import utils
+    >>> p = utils.run('echo "hello world"', return_proc=True, quiet=True)
     >>> p.returncode
     0
     >>> p.stdout
@@ -181,66 +206,3 @@ def check_fs_subjid(subject_id, subjects_dir=None):
                                 .format(subject_id, subjects_dir))
 
     return subject_id, subjects_dir
-
-
-def get_cammoun2012_info(scale, surface=True):
-    """
-    Returns centroids / hemi assignment of parcels from Cammoun et al., 2012
-
-    Centroids are defined on the spherical projection of the fsaverage cortical
-    surface reconstruciton (FreeSurfer v6.0.1)
-
-    Parameters
-    ----------
-    scale : {33, 60, 125, 250, 500}
-        Scale of parcellation for which to get centroids / hemisphere
-        assignments
-    surface : bool, optional
-        Whether to return coordinates from surface instead of volume
-        reconstruction. Default: True
-
-    Returns
-    -------
-    centroids : (N, 3) numpy.ndarray
-        Centroids of parcels defined by Cammoun et al., 2012 parcellation
-    hemiid : (N,) numpy.ndarray
-        Hemisphere assignment of `centroids`, where 0 indicates left and 1
-        indicates right hemisphere
-
-    References
-    ----------
-    Cammoun, L., Gigandet, X., Meskaldji, D., Thiran, J. P., Sporns, O., Do, K.
-    Q., Maeder, P., and Meuli, R., & Hagmann, P. (2012). Mapping the human
-    connectome at multiple scales with diffusion spectrum MRI. Journal of
-    Neuroscience Methods, 203(2), 386-397.
-
-    Examples
-    --------
-    >>> from netneurotools.utils import get_cammoun2012_info
-    >>> coords, hemiid = get_cammoun2012_info(scale=33)
-    >>> coords.shape, hemiid.shape
-    ((68, 3), (68,))
-
-    ``hemiid`` is a vector of 0 and 1 denoting which ``coords`` are in the
-    left / right hemisphere, respectively:
-
-    >>> np.sum(hemiid == 0), np.sum(hemiid == 1)
-    (34, 34)
-    """
-
-    pckl = resource_filename('netneurotools', 'data/cammoun.pckl')
-
-    if not isinstance(scale, int):
-        try:
-            scale = int(scale)
-        except ValueError:
-            raise ValueError('Provided `scale` must be integer in [33, 60, '
-                             '125, 250, 500], not {}'.format(scale))
-    if scale not in [33, 60, 125, 250, 500]:
-        raise ValueError('Provided `scale` must be integer in [33, 60, 125, '
-                         '250, 500], not {}'.format(scale))
-
-    with open(pckl, 'rb') as src:
-        data = pickle.load(src)['cammoun{}'.format(str(scale))]
-
-    return data['centroids'], data['hemiid']
