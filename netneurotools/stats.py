@@ -6,6 +6,7 @@ Functions for performing statistical preprocessing and analyses
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.stats import zmap
+from scipy.stats.stats import _chk_asarray, _chk2_asarray
 from sklearn.utils.validation import check_random_state
 
 from . import utils
@@ -13,30 +14,30 @@ from . import utils
 
 def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
     """
-    Returns residuals of `Y ~ X`
+    Returns residuals of regression equation from `Y ~ X`
 
     Parameters
     ----------
-    X : (S1[, R]) array_like
-        Coefficient matrix of `R` variables for `S1` subjects
-    Y : (S1[, F]) array_like
-        Dependent variable matrix of `F` variables for `S1` subjects
-    Xc : (S2[, R]) array_like, optional
-        Coefficient matrix of `R` variables for `S2` subjects. If not specified
+    X : (N[, R]) array_like
+        Coefficient matrix of `R` variables for `N` subjects
+    Y : (N[, F]) array_like
+        Dependent variable matrix of `F` variables for `N` subjects
+    Xc : (M[, R]) array_like, optional
+        Coefficient matrix of `R` variables for `M` subjects. If not specified
         then `X` is used to estimate betas. Default: None
-    Yc : (S2[, F]) array_like, optional
-        Dependent variable matrix of `F` variables for `S1` subjects. If not
+    Yc : (M[, F]) array_like, optional
+        Dependent variable matrix of `F` variables for `M` subjects. If not
         specified then `Y` is used to estimate betas. Default: None
     normalize : bool, optional
-        Whether to normalize (i.e., z-score) residuals. Default: True
+        Whether to normalize (i.e., z-score) residuals. Will use residuals from
+        `Yc ~ Xc` for generating mean and variance. Default: True
     add_intercept : bool, optional
         Whether to add intercept to `X` (and `Xc`, if provided). The intercept
-        will not be included in the residualizing process, just the beta
-        estimation. Default: True
+        will not be removed, just used in beta estimation. Default: True
 
     Returns
     -------
-    Y_resid : (N, F) numpy.ndarray
+    Yr : (N, F) numpy.ndarray
         Residuals of `Y ~ X`
 
     Notes
@@ -47,7 +48,7 @@ def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
 
     if ((Yc is None and Xc is not None) or (Yc is not None and Xc is None)):
         raise ValueError('If processing against a comparative group, you must '
-                         'provide both `comp` and `comp_reg` variables.')
+                         'provide both `Xc` and `Yc`.')
 
     if Yc is None:
         Yc, Xc = Y.copy(), X.copy()
@@ -63,13 +64,13 @@ def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
         X, Xc = X[:, :-1], Xc[:, :-1]
 
     # calculate residuals
-    Y_resid = Y - (X @ betas)
-    Yc_resid = Yc - (Xc @ betas)
+    Yr = Y - (X @ betas)
+    Ycr = Yc - (Xc @ betas)
 
     if normalize:
-        Y_resid = zmap(Y_resid, compare=Yc_resid)
+        Yr = zmap(Yr, compare=Ycr)
 
-    return Y_resid
+    return Yr
 
 
 def get_mad_outliers(data, thresh=3.5):
@@ -105,9 +106,19 @@ def get_mad_outliers(data, thresh=3.5):
 
     Examples
     --------
-    >>> from netneurotools.stats import get_mad_outliers
-    >>> X = np.array([[0, 5, 10, 15], [1, 4, 11, 16], [20, 20, 20, 20]])
-    >>> outliers = get_mad_outliers(X)
+    >>> from netneurotools import stats
+
+    Create array with three samples of four features each:
+
+    >>> X = np.array([[0, 5, 10, 15], [1, 4, 11, 16], [100, 100, 100, 100]])
+    >>> X
+    array([[  0,   5,  10,  15],
+           [  1,   4,  11,  16],
+           [100, 100, 100, 100]])
+
+    Determine which sample(s) is outlier:
+
+    >>> outliers = stats.get_mad_outliers(X)
     >>> outliers
     array([False, False,  True])
     """
@@ -129,31 +140,152 @@ def get_mad_outliers(data, thresh=3.5):
     return modified_z_score > thresh
 
 
-def perm_1samp(data, n_perm=1000):
+def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
     """
     Non-parametric equivalent of :py:func:`scipy.stats.ttest_1samp`
 
-    Generates null distribution of `data` via sign flipping and regeneration of
-    mean
+    Generates two-tailed p-value for hypothesis of whether `a` differs from
+    `popmean`
 
     Parameters
     ----------
-    data : (N, M) array_like
-        Where `N` is samples and `M` is features
+    a : array_like
+        Sample observations
+    popmean : float or array_like
+        Expected valued in null hypothesis. If array_like then it must have the
+        same shape as `a` excluding the `axis` dimension
+    axis : int or None, optional
+        Axis along which to compute test. If None, compute over the whole array
+        of `a`. Default: 0
+    n_perm : int, optional
+        Number of permutations to assess. Unless `a` is very small along `axis`
+        this will approximate a randomization test via Monte Carlo simulations.
+        Default: 1000
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation. Set to None for "randomness".
+        Default: 0
 
     Returns
     -------
-    permutations : (M, P)
-        Null distribution for each of `M` features from `data`
+    pvalue : float or numpy.ndarray
+        Non-parametric p-value
+
+    Notes
+    -----
+    Providing multiple values to `popmean` to run *independent* tests in
+    parallel is not currently supported.
+
+    Examples
+    --------
+    >>> from netneurotools import stats
+    >>> np.random.seed(7654567)  # set random seed for reproducible results
+    >>> rvs = np.random.normal(loc=5, scale=10, size=(50, 2))
+
+    Test if mean of random sample is equal to true mean, and different mean. We
+    reject the null hypothesis in the second case and don't reject it in the
+    first case.
+
+    >>> stats.permtest_1samp(rvs, 5.0)
+    array([0.48551449, 0.95904096])
+    >>> stats.permtest_1samp(rvs, 0.0)
+    array([0.00699301, 0.000999  ])
+
+    Example using axis and non-scalar dimension for population mean
+
+    >>> stats.permtest_1samp(rvs, [5.0, 0.0])
+    array([0.48551449, 0.000999  ])
+    >>> stats.permtest_1samp(rvs.T, [5.0, 0.0], axis=1)
+    array([0.51548452, 0.000999  ])
     """
 
-    permutations = np.zeros((data.shape[-1], n_perm))
+    a, axis = _chk_asarray(a, axis)
+    rs = check_random_state(seed)
+
+    # ensure popmean will broadcast to `a` correctly
+    popmean = np.asarray(popmean)
+    if popmean.ndim != a.ndim:
+        popmean = np.expand_dims(popmean, axis=axis)
+
+    # center `a` around `popmean` and calculate original mean
+    zeroed = a - popmean
+    true_mean = zeroed.mean(axis=axis)
+
+    # array to hold counts; use 1s instead of 0s to account for original value
+    permutations = np.ones(np.delete(a.shape, axis)) if axis is not None else 1
+
+    # this for loop is not _the fastest_ but is memory efficient
+    # the broadcasting alt. would mean storing zeroed.size * n_perm in memory
+    for perm in range(n_perm):
+        flipped = zeroed * rs.choice([-1, 1], size=zeroed.shape)  # sign flip
+        permutations += np.abs(flipped.mean(axis=axis)) >= np.abs(true_mean)
+
+    return permutations / (n_perm + 1)  # + 1 in denom accounts for true_mean
+
+
+def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
+    """
+    Non-parametric equivalent of :py:func:`scipy.stats.ttest_rel`
+
+    Generates two-tailed p-value for hypothesis of whether related samples `a`
+    and `b` differ
+
+    Parameters
+    ----------
+    a, b : array_like
+        Sample observations. These arrays must have the same shape.
+    axis : int or None, optional
+        Axis along which to compute test. If None, compute over whole arrays
+        of `a` and `b`. Default: 0
+    n_perm : int, optional
+        Number of permutations to assess. Unless `a` and `b` are very small
+        along `axis` this will approximate a randomization test via Monte
+        Carlo simulations. Default: 1000
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation. Set to None for "randomness".
+        Default: 0
+
+    Returns
+    -------
+    pvalue : float or numpy.ndarray
+        Non-parametric p-value
+
+    Examples
+    --------
+    >>> from netneurotools import stats
+
+    >>> np.random.seed(12345678)  # set random seed for reproducible results
+    >>> rvs1 = np.random.normal(loc=5, scale=10, size=500)
+    >>> rvs2 = (np.random.normal(loc=5, scale=10, size=500)
+    ...         + np.random.normal(scale=0.2, size=500))
+    >>> stats.permtest_rel(rvs1, rvs2)
+    0.8021978021978022
+
+    >>> rvs3 = (np.random.normal(loc=8, scale=10, size=500)
+    ...         + np.random.normal(scale=0.2, size=500))
+    >>> stats.permtest_rel(rvs1, rvs3)
+    0.000999000999000999
+    """
+
+    a, b, axis = _chk2_asarray(a, b, axis)
+    rs = check_random_state(seed)
+
+    # calculate original difference in means
+    ab = np.stack([a, b], axis=0)
+    true_diff = np.diff(ab, axis=0).squeeze().mean(axis=axis)
+
+    # array to hold counts; use 1s instead of 0s to account for original value
+    permutations = np.ones(np.delete(a.shape, axis)) if axis is not None else 1
+
+    # idx array
+    reidx = np.meshgrid(*[range(f) for f in ab.shape], indexing='ij')
 
     for perm in range(n_perm):
-        flip = np.random.choice([-1, 1], size=data.shape)
-        permutations[:, perm] = np.mean(data * flip, axis=0)
+        # swap matched samples between `a` and `b` randomly and recompute diff
+        reidx[0] = rs.random_sample(ab.shape).argsort(axis=0)
+        perm_diff = np.diff(ab[tuple(reidx)], axis=0).squeeze().mean(axis=axis)
+        permutations += np.abs(perm_diff) >= np.abs(true_diff)
 
-    return permutations
+    return permutations / (n_perm + 1)  # + 1 in denom accounts for true_diff
 
 
 def _yield_rotations(n_rotate, seed=None):
@@ -237,8 +369,9 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
     Let's say we have two vectors of data, defined for a set of 68 brain
     regions:
 
-    >>> from netneurotools.tests import make_correlated_xy
-    >>> x, y = make_correlated_xy(size=(68,))
+    >>> from netneurotools import datasets
+    >>> np.random.seed(1234)  # set random seed for reproducible results
+    >>> x, y = datasets.make_correlated_xy(size=(68,))
     >>> x.shape, y.shape
     ((68,), (68,))
 
@@ -247,7 +380,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
     >>> from scipy.stats import pearsonr
     >>> r, p = pearsonr(x, y)
     >>> r, p
-    (0.6961556744296582, 4.376432884386363e-11)
+    (0.8504392136292929, 4.441430678595365e-20)
 
     These vectors are quite correlated, and the correlation appears to be very
     significant. Unfortunately, there's a possibility that the correlation of
@@ -279,15 +412,14 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
     an array indicating to which hemisphere each region belongs. We'll use one
     of the parcellations commonly employed in the lab (Cammoun et al., 2012):
 
-    >>> from netneurotools.utils import get_cammoun2012_info
-    >>> coords, hemi = get_cammoun2012_info(scale=33)
+    >>> coords, hemi = datasets.get_cammoun2012_info(scale=33)
     >>> coords.shape, hemi.shape
     ((68, 3), (68,))
 
     Next, we generate a resampling array based on this "rotation" concept:
 
-    >>> from netneurotools.stats import gen_spinsamples
-    >>> spin = gen_spinsamples(coords, hemi)
+    >>> from netneurotools import stats
+    >>> spin = stats.gen_spinsamples(coords, hemi)
     >>> spin.shape
     (68, 1000)
 
