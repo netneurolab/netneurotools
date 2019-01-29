@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.utils.validation import check_random_state
 
 
-def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.05):
+def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     """
     Generates random vectors that are correlated to approximately `corr`
 
@@ -33,6 +33,34 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.05):
     -------
     vectors : numpy.ndarray
         Random vectors of size `size` with correlation specified by `corr`
+
+    Examples
+    --------
+    >>> from netneurotools import datasets
+
+    By default two vectors are generated with specified correlation
+
+    >>> x, y = datasets.make_correlated_xy()
+    >>> np.corrcoef(x, y)
+    array([[1.        , 0.85083661],
+           [0.85083661, 1.        ]])
+    >>> x, y = datasets.make_correlated_xy(corr=0.2)
+    >>> np.corrcoef(x, y)
+    array([[1.        , 0.20069953],
+           [0.20069953, 1.        ]])
+
+    You can also provide correlation matrices to generate more than two vectors
+    if desired. Note that this makes it more difficult to ensure the actual
+    correlations are close to the desired values:
+
+    >>> corr = [[1, 0.5, 0.3], [0.5, 1, 0], [0.3, 0, 1]]
+    >>> out = datasets.make_correlated_xy(corr=corr)
+    >>> out.shape
+    (3, 10000)
+    >>> np.corrcoef(out)
+    array([[1.        , 0.50965273, 0.30235686],
+           [0.50965273, 1.        , 0.01089107],
+           [0.30235686, 0.01089107, 1.        ]])
     """
 
     rs = check_random_state(seed)
@@ -102,16 +130,20 @@ def get_cammoun2012_info(scale, surface=True):
 
     Examples
     --------
-    >>> from netneurotools import utils
-    >>> coords, hemiid = utils.get_cammoun2012_info(scale=33)
+    >>> from netneurotools import datasets
+
+    >>> coords, hemiid = datasets.get_cammoun2012_info(scale=33)
     >>> coords.shape, hemiid.shape
     ((68, 3), (68,))
 
     ``hemiid`` is a vector of 0 and 1 denoting which ``coords`` are in the
     left / right hemisphere, respectively:
 
-    >>> np.sum(hemiid == 0), np.sum(hemiid == 1)
-    (34, 34)
+    >>> hemiid
+    array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+           1, 1])
     """
 
     pckl = resource_filename('netneurotools', 'data/cammoun.pckl')
