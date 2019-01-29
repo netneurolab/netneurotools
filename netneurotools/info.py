@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.0.1'
-
-NAME = 'netneurotools'
-MAINTAINER = 'Network Neuroscience Lab'
-EMAIL = 'rossmarkello@gmail.com'
-VERSION = __version__
-LICENSE = 'BSD-3'
-DESCRIPTION = """\
+__author__ = 'netneurolab'
+__copyright__ = 'Copyright 2018, netneurotools developers'
+__credits__ = ['Ross Markello', 'Bratislav Misic', 'Golia Shafiei']
+__license__ = 'BSD-3'
+__maintainer__ = 'Network Neuroscience Lab'
+__email__ = 'rossmarkello@gmail.com'
+__status__ = 'Prototype'
+__url__ = 'https://github.com/netneurolab/netneurotools'
+__packagename__ = 'netneurotools'
+__description__ = """\
 Commonly used tools in the Network Neuroscience Lab\
 """
-LONG_DESCRIPTION = 'README.rst'
-LONG_DESCRIPTION_CONTENT_TYPE = 'text/x-rst'
-URL = 'https://github.com/netneurolab/{name}'.format(name=NAME)
-DOWNLOAD_URL = ('http://github.com/netneurolab/{name}/archive/{ver}.tar.gz'
-                .format(name=NAME, ver=__version__))
+__longdesc__ = 'README.rst'
+__longdesctype = 'text/x-rst'
 
 INSTALL_REQUIRES = [
     'bctpy',
@@ -52,7 +51,9 @@ EXTRAS_REQUIRE['all'] = list(set([
 ]))
 
 PACKAGE_DATA = {
-    'netneurotools': ['tests/data/*', 'data/*']
+    'netneurotools': [
+        'tests/data/*', 'data/*'
+    ]
 }
 
 CLASSIFIERS = [
