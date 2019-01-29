@@ -39,7 +39,7 @@ def main():
         license=ldict['__license__'],
         classifiers=ldict['CLASSIFIERS'],
         download_url=DOWNLOAD_URL,
-        install_requires=ldict['REQUIRES'],
+        install_requires=ldict['INSTALL_REQUIRES'],
         packages=find_packages(exclude=['pyls/tests']),
         package_data=ldict['PACKAGE_DATA'],
         tests_require=ldict['TESTS_REQUIRE'],
