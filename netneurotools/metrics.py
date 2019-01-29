@@ -32,9 +32,10 @@ def communicability(adjacency):
 
     Examples
     --------
-    >>> from netneurotools.metrics import communicability
+    >>> from netneurotools import metrics
+
     >>> A = np.array([[1, 0, 1], [0, 1, 1], [1, 0, 1]])
-    >>> Q = communicability(A)
+    >>> Q = metrics.communicability(A)
     >>> Q
     array([[4.19452805, 0.        , 3.19452805],
            [1.47624622, 2.71828183, 3.19452805],
@@ -72,9 +73,10 @@ def communicability_wei(adjacency):
 
     Examples
     --------
-    >>> from netneurotools.metrics import communicability_wei
+    >>> from netneurotools import metrics
+
     >>> A = np.array([[2, 0, 3], [0, 2, 1], [0.5, 0, 1]])
-    >>> Q = communicability_wei(A)
+    >>> Q = metrics.communicability_wei(A)
     >>> Q
     array([[0.        , 0.        , 1.93581903],
            [0.07810379, 0.        , 0.94712177],
