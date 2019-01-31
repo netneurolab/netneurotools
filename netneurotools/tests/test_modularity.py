@@ -7,14 +7,14 @@ rs = np.random.RandomState(1234)
 
 
 def test_dummyvar():
-    out = modularity._dummyvar([1, 1, 2, 3, 3])
+    out = modularity._dummyvar(np.array([1, 1, 2, 3, 3]))
     assert np.all(out == np.array([[1, 0, 0],
                                    [1, 0, 0],
                                    [0, 1, 0],
                                    [0, 0, 1],
                                    [0, 0, 1]]))
 
-    allones = [1, 1, 1, 1, 1, 1, 1, 1]
+    allones = np.array([1, 1, 1, 1, 1, 1, 1, 1])
     assert np.all(modularity._dummyvar(allones) == allones)
 
 
