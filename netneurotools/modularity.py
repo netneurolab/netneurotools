@@ -171,11 +171,10 @@ def zrand(X, Y):
 
 def _zrand_partitions(communities):
     """
-    Calculates average and std of z-Rand for all pairs of community assignments
+    Calculates z-Rand for all pairs of assignments in `communities`
 
     Iterates through every pair of community assignment vectors in
     `communities` and calculates the z-Rand score to assess their similarity.
-    Returns the mean and standard deviation of all z-Rand scores.
 
     Parameters
     ----------
@@ -267,6 +266,11 @@ def get_modularity_z(adjacency, comm, gamma=1, n_perm=10000, seed=None):
     -------
     q_z : float
         Average Z-score of modularity of communities
+
+    See Also
+    --------
+    netneurotools.modularity.get_modularity
+    netneurotools.modularity.get_modularity_sig
     """
 
     rs = check_random_state(seed)
@@ -310,6 +314,11 @@ def get_modularity_sig(adjacency, comm, gamma=1, n_perm=10000, alpha=0.01,
     -------
     ndarray
         Significance of each community in `comm` (boolean)
+
+    See Also
+    --------
+    netneurotools.modularity.get_modularity_z
+    netneurotools.modularity.get_modularity_sig
     """
 
     rs = check_random_state(seed)

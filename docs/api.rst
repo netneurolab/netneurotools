@@ -85,9 +85,9 @@ Reference API
 
    gen_spinsamples
    residualize
-   perm_1samp
    get_mad_outliers
-
+   permtest_1samp
+   permtest_rel
 
 .. _ref_metrics:
 
@@ -107,6 +107,24 @@ Reference API
    communicability
    communicability_wei
 
+.. _ref_datasets:
+
+:mod:`netneurotools.datasets` - Fetching and generating datasets
+----------------------------------------------------------------
+
+.. automodule:: netneurotools.datasets
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.datasets
+
+.. autosummary::
+   :template: function.rst
+   :toctree: _generated/
+
+    get_cammoun2012_info
+    make_correlated_xy
+
 .. _ref_utils:
 
 :mod:`netneurotools.utils` - Miscellaneous, grab bag utilities
@@ -122,7 +140,6 @@ Reference API
    :template: function.rst
    :toctree: _generated/
 
-   get_cammoun2012_info
    run
    add_constant
    get_triu
