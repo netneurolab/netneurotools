@@ -13,7 +13,7 @@ from . import utils
 
 def func_consensus(data, n_boot=1000, ci=95, seed=None):
     """
-    Calculates group-level, thresholded functional connectivity graph
+    Calculates thresholded group consensus functional connectivity graph
 
     This function concatenates all time series in `data` and computes a group
     correlation matrix based on this extended time series. It then generates
@@ -269,8 +269,9 @@ def binarize_network(network, retain=10, keep_diag=False):
     """
     Keeps top `retain` % of connections in `network` and binarizes
 
-    Uses the upper triangle for determining connection percentage. Note that
-    this does NOT ensure a connected graph.
+    Uses the upper triangle for determining connection percentage, which may
+    result in disconnected nodes. If this behavior is not desired see
+    :py:func:`netneurotools.networks.threshold_network`.
 
     Parameters
     ----------
@@ -283,7 +284,8 @@ def binarize_network(network, retain=10, keep_diag=False):
 
     Returns
     -------
-    binarized : (N, N) array_like
+    binarized : (N, N) numpy.ndarray
+        Binarized, thresholded graph
 
     See Also
     --------
@@ -305,32 +307,33 @@ def binarize_network(network, retain=10, keep_diag=False):
     return binarized
 
 
-def threshold_network(network, density=10):
+def threshold_network(network, retain=10):
     """
-    Thresholds `network` to `density` % connection density
+    Keeps top `retain` % of connections in `network` and binarizes
 
-    Uses minimum spanning tree to ensure that no nodes are disconnected from
-    graph. If you do not care about a connected graph
+    Uses a minimum spanning tree to ensure that no nodes are disconnected from
+    the resulting thresholded graph
 
     Parameters
     ----------
-    network : (N, N[, S]) array_like
+    network : (N, N) array_like
         Input graph
-    density : [0, 100] float, optional
-        Desired connection density, in percent. Default: 10
+    retain : [0, 100] float, optional
+        Percent connections to retain. Default: 10
 
     Returns
     -------
-    thresholded : (N, N) array_like
+    thresholded : (N, N) numpy.ndarray
+        Binarized, thresholded graph
 
     See Also
     --------
     netneurotools.networks.binarize_network
     """
 
-    if density < 0 or density > 100:
-        raise ValueError('Value provided for `density` must be a percent '
-                         'in range [0, 100]. Provided: {}'.format(density))
+    if retain < 0 or retain > 100:
+        raise ValueError('Value provided for `retain` must be a percent '
+                         'in range [0, 100]. Provided: {}'.format(retain))
 
     # get number of nodes in graph and invert weights (MINIMUM spanning tree)
     nodes = len(network)
@@ -341,12 +344,12 @@ def threshold_network(network, density=10):
     mst_edges = np.sum(mst != 0)
 
     # determine # of remaining edges and ensure we're not over the limit
-    remain = int((density / 100) * ((nodes * (nodes - 1)) / 2)) - mst_edges
+    remain = int((retain / 100) * ((nodes * (nodes - 1)) / 2)) - mst_edges
     if remain < 0:
         raise ValueError('Minimum spanning tree with {} edges exceeds desired '
                          'connection density of {}% ({} edges). Cannot '
                          'proceed with graph creation.'
-                         .format(mst_edges, density, remain + mst_edges))
+                         .format(mst_edges, retain, remain + mst_edges))
 
     # zero out edges already in MST and then get indices of next best edges
     graph -= mst
