@@ -7,10 +7,12 @@ dependencies:
     - mkl
     - nibabel
     - numpy
+    - pandas
     - pip
     - pyface
     - pygments
     - "pyqt>=5.9"
+    - requests
     - scikit-learn
     - scipy
     - seaborn

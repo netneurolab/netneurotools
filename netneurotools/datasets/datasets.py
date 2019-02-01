@@ -97,7 +97,7 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     return vectors
 
 
-def get_cammoun2012_info(scale, surface=True):
+def load_cammoun2012(scale, surface=True):
     """
     Returns centroids / hemi assignment of parcels from Cammoun et al., 2012
 
@@ -132,7 +132,7 @@ def get_cammoun2012_info(scale, surface=True):
     --------
     >>> from netneurotools import datasets
 
-    >>> coords, hemiid = datasets.get_cammoun2012_info(scale=33)
+    >>> coords, hemiid = datasets.load_cammoun2012(scale=33)
     >>> coords.shape, hemiid.shape
     ((68, 3), (68,))
 

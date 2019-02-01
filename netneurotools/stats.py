@@ -412,7 +412,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
     an array indicating to which hemisphere each region belongs. We'll use one
     of the parcellations commonly employed in the lab (Cammoun et al., 2012):
 
-    >>> coords, hemi = datasets.get_cammoun2012_info(scale=33)
+    >>> coords, hemi = datasets.load_cammoun2012(scale=33)
     >>> coords.shape, hemi.shape
     ((68, 3), (68,))
 
