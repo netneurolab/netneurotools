@@ -122,7 +122,8 @@ Reference API
    :template: function.rst
    :toctree: _generated/
 
-    get_cammoun2012_info
+    load_cammoun2012
+    load_mirchi2018
     make_correlated_xy
 
 .. _ref_utils:
