@@ -3,8 +3,6 @@
 Dataset fetcher / creation / whathaveyou
 """
 
-import pickle
-from pkg_resources import resource_filename
 import numpy as np
 from sklearn.utils.validation import check_random_state
 
@@ -95,70 +93,3 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
         count += 1
 
     return vectors
-
-
-def load_cammoun2012(scale, surface=True):
-    """
-    Returns centroids / hemi assignment of parcels from Cammoun et al., 2012
-
-    Centroids are defined on the spherical projection of the fsaverage cortical
-    surface reconstruciton (FreeSurfer v6.0.1)
-
-    Parameters
-    ----------
-    scale : {33, 60, 125, 250, 500}
-        Scale of parcellation for which to get centroids / hemisphere
-        assignments
-    surface : bool, optional
-        Whether to return coordinates from surface instead of volume
-        reconstruction. Default: True
-
-    Returns
-    -------
-    centroids : (N, 3) numpy.ndarray
-        Centroids of parcels defined by Cammoun et al., 2012 parcellation
-    hemiid : (N,) numpy.ndarray
-        Hemisphere assignment of `centroids`, where 0 indicates left and 1
-        indicates right hemisphere
-
-    References
-    ----------
-    Cammoun, L., Gigandet, X., Meskaldji, D., Thiran, J. P., Sporns, O., Do, K.
-    Q., Maeder, P., and Meuli, R., & Hagmann, P. (2012). Mapping the human
-    connectome at multiple scales with diffusion spectrum MRI. Journal of
-    Neuroscience Methods, 203(2), 386-397.
-
-    Examples
-    --------
-    >>> from netneurotools import datasets
-
-    >>> coords, hemiid = datasets.load_cammoun2012(scale=33)
-    >>> coords.shape, hemiid.shape
-    ((68, 3), (68,))
-
-    ``hemiid`` is a vector of 0 and 1 denoting which ``coords`` are in the
-    left / right hemisphere, respectively:
-
-    >>> hemiid
-    array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-           1, 1])
-    """
-
-    pckl = resource_filename('netneurotools', 'data/cammoun.pckl')
-
-    if not isinstance(scale, int):
-        try:
-            scale = int(scale)
-        except ValueError:
-            raise ValueError('Provided `scale` must be integer in [33, 60, '
-                             '125, 250, 500], not {}'.format(scale))
-    if scale not in [33, 60, 125, 250, 500]:
-        raise ValueError('Provided `scale` must be integer in [33, 60, 125, '
-                         '250, 500], not {}'.format(scale))
-
-    with open(pckl, 'rb') as src:
-        data = pickle.load(src)['cammoun{}'.format(str(scale))]
-
-    return data['centroids'], data['hemiid']
