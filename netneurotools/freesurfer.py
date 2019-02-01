@@ -1,0 +1,193 @@
+# -*- coding: utf-8 -*-
+"""
+Functions for working with FreeSurfer data and parcellations
+"""
+import os
+import os.path as op
+import shutil
+
+import nibabel as nib
+import numpy as np
+import pandas as pd
+
+from ..utils import check_fs_subjid, run
+
+
+def create_annotation(subject_id, gcs, hemi, *, orig='white', annot=None,
+                      ctab=None, subjects_dir=None, use_cache=True,
+                      quiet=False):
+    """
+    Creates an annotation file for `subjid` using `gcs`
+
+    Parameters
+    ----------
+    subject_id : str
+        FreeSurfer subject ID
+    gcs : str
+        Filepath to .gcs file containing classifier array. Should be of the
+        format {hemi}.{name}.gcs.
+    hemi : {'lh', 'rh'}
+        Hemisphere corresponding to `gcs`
+    annot : str, optional
+        Path to output annotation file to generate. If set to None, the name is
+        created from the provided `hemi` and `gcs`. If provided as a
+        relative path, it is assumed to stem from `subjects_dir/subject_id`.
+        Default: None
+    orig : str, optional
+        Original surface to which to apply classifer. Default: 'white'
+    ctab : str, optional
+        Path to colortable corresponding to `gcs`. Default: None
+    subjects_dir : str, optional
+        Path to FreeSurfer subject directory. If not set, will inherit from
+        the environmental variable $SUBJECTS_DIR. Default: None
+    use_cache : bool, optional
+        Whether to check for existence of `annot` in directory specified by
+        `{subjects_dir}/{subject_id}/label' and use that, if it exists. If
+        False, will create a new annot file. Default: True
+
+    Returns
+    -------
+    annot : str
+        Path to generated annotation file
+    """
+
+    cmd = 'mris_ca_label {opts}{subject_id} {hemi} {hemi}.sphere.reg {gcs} {annot}' # noqa
+
+    if hemi not in ['rh', 'lh']:
+        raise ValueError('Provided hemisphere designation hemi must be one of '
+                         '\'rh\' or \'lh\'. Provided: {}'.format(hemi))
+    if not len(op.basename(gcs).split('.')) == 3 or \
+            not op.basename(gcs).startswith(hemi + '.'):
+        raise ValueError('Cannot understand naming convention of provided '
+                         'gcs file {gcs}. Must be of format {hemi}.NAME.gcs.'
+                         .format(gcs=gcs, hemi=hemi))
+    subject_id, subjects_dir = check_fs_subjid(subject_id, subjects_dir)
+
+    # add all the options together, as specified
+    opts = ''
+    if ctab is not None and op.isfile(ctab):
+        opts += '-t {} '.format(ctab)
+    if orig is not None:
+        opts += '-orig {} '.format(orig)
+    if subjects_dir is not None:
+        opts += '-sdir {} '.format(subjects_dir)
+    else:
+        subjects_dir = os.environ['SUBJECTS_DIR']
+
+    # generate output filename
+    if annot is None:
+        base = '{}.{}.annot'.format(hemi, gcs.split('.')[1])
+        annot = op.join(subjects_dir, subject_id, 'label', base)
+    else:
+        # if not a full path, assume relative from subjects_dir/subject_id
+        if not annot.startswith(op.abspath(os.sep)):
+            annot = op.join(subjects_dir, subject_id, annot)
+
+    # if annotation file doesn't exist or we explicitly want to make a new one
+    if not op.isfile(annot) or not use_cache:
+        run(cmd.format(opts=opts, subject_id=subject_id, hemi=hemi,
+                       gcs=gcs, annot=annot),
+            quiet=quiet)
+
+    return annot
+
+
+def combine_cammoun_500(subject_id, subjects_dir=None, use_cache=True,
+                        quiet=False):
+    """
+    Combines highest scale parcellation from Cammoun 2012 for `subject_id`
+
+    The parcellations from Cammoun, 2012 have five distinct scales; the highest
+    resolution parcellation (scale 500) is split into three GCS files for what
+    are likely historical purposes. This is a bit annoying for calculating
+    statistics, plotting, etc., so this function can be run once all the GCS
+    files have been used to produce annotations files for `subject_id` (using
+    `create_annotations`). This function will combine the three files that
+    correspond to the highest resolution scale into a single annot file for a
+    given subject, and then run `get_statistics` on that file to cache it
+
+    Parameters
+    ----------
+    subject_id : str
+        FreeSurfer subject ID
+    subjects_dir : str, optional
+        Path to FreeSurfer subject directory. If not set, will inherit from
+        the environmental variable `$SUBJECTS_DIR`. Default: None
+    use_cache : bool, optional
+        Whether to check for existence of relevant statistics file in directory
+        specified by `{subjects_dir}/{subject_id}/stats' and use, if it exists.
+        If False, will create a new stats file. Default: True
+
+    Returns
+    -------
+    cammoun500 : list
+        List of created annotation files
+    """
+
+    tolabel = 'mri_annotation2label --subject {subject_id} --hemi {hemi} --outdir {label_dir} --annotation {annot} --sd {subjects_dir}'  # noqa
+    toannot = 'mris_label2annot --sd {subjects_dir} --s {subject_id} --ldir {label_dir} --hemi {hemi} --annot-path {annot} --ctab {ctab} {label}'  # noqa
+
+    gcs_files = [
+        '{hemi}.cammounP1_16.gcs',
+        '{hemi}.cammounP17_28.gcs',
+        '{hemi}.cammounP29_36.gcs'
+    ]
+    subject_id, subjects_dir = check_fs_subjid(subject_id, subjects_dir)
+
+    created = []
+    for hemi in ['lh', 'rh']:
+        # don't overwrite annotation file if it's already been created
+        cammoun500 = op.join(subjects_dir, subject_id, 'label',
+                             '{}.cammoun500.annot'.format(hemi))
+        if op.isfile(cammoun500) and use_cache:
+            created.append(cammoun500)
+            continue
+
+        # make directory to temporarily store labels
+        label_dir = op.join(subjects_dir, subject_id,
+                            '{}.cammoun500.labels'.format(hemi))
+        os.makedirs(label_dir, exist_ok=True)
+
+        ctab = pd.DataFrame(columns=range(5))
+        for gcs in gcs_files:
+            # grab relevant annotation file and convert to labels
+            annot = create_annotation(subject_id, gcs.format(hemi=hemi),
+                                      hemi=hemi, subjects_dir=subjects_dir)
+            run(tolabel.format(subject_id=subject_id, hemi=hemi,
+                               label_dir=label_dir, annot=annot,
+                               subjects_dir=subjects_dir),
+                quiet=quiet)
+
+            # save ctab information from annotation file
+            vtx, ct, names = nib.freesurfer.read_annot(annot)
+            data = np.column_stack([[f.decode() for f in names], ct[:, :-1]])
+            ctab = ctab.append(pd.DataFrame(data), ignore_index=True)
+
+        # get rid of duplicate entries and add back in unknown/corpuscallosum
+        ctab = ctab.drop_duplicates(subset=[0], keep=False)
+        add_back = pd.DataFrame([['unknown', 25, 5, 25, 0],
+                                 ['corpuscallosum', 120, 70, 50, 0]],
+                                index=[0, 4])
+        ctab = ctab.append(add_back).sort_index().reset_index(drop=True)
+        # save ctab to temporary file for creation of annotation file
+        ctab_fname = op.join(label_dir, '{}.cammoun500.ctab'.format(hemi))
+        ctab.to_csv(ctab_fname, header=False, sep='\t', index=True)
+
+        # get all labels EXCEPT FOR UNKNOWN to combine into annotation
+        # unknown will be regenerated as all the unmapped vertices
+        label = ' '.join(['--l {}'
+                         .format(op.join(label_dir,
+                                         '{hemi}.{lab}.label'.format(hemi=hemi,
+                                                                     lab=lab)))
+                          for lab in ctab.iloc[1:, 0]])
+        # combine labels into annotation file
+        run(toannot.format(subjects_dir=subjects_dir, subject_id=subject_id,
+                           label_dir=label_dir, hemi=hemi, ctab=ctab_fname,
+                           annot=cammoun500, label=label),
+            quiet=quiet)
+        created.append(cammoun500)
+
+        # remove temporary label directory
+        shutil.rmtree(label_dir)
+
+    return created
