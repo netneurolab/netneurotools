@@ -20,6 +20,8 @@ INSTALL_REQUIRES = [
     'matplotlib',
     'nibabel',
     'numpy>=1.14',
+    'pandas',
+    'requests',
     'scikit-learn',
     'scipy',
     'seaborn'
