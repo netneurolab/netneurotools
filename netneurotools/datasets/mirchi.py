@@ -5,11 +5,13 @@ Code for re-generating results from Mirchi et al., 2018 (SCAN)
 
 from io import StringIO
 import os
-import os.path as op
 
 import numpy as np
 import pandas as pd
 import requests
+
+from .utils import _get_dataset_dir
+
 
 TIMESERIES = 'https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.2/uncompressed/derivatives/sub-01/ses-{0}/sub-01_ses-{0}_task-rest_run-001_parcel-timeseries.txt'  # noqa
 BEHAVIOR = 'https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.4/uncompressed/sub-01/sub-01_sessions.tsv'  # noqa
@@ -128,9 +130,9 @@ def _get_panas():
     return (panas - panas.mean(axis=0)) / panas.std(axis=0, ddof=1)
 
 
-def load_mirchi2018(data_dir=None):
+def fetch_mirchi2018(data_dir=None):
     """
-    Loads datasets for analysis in Mirchi et al., 2018 (SCAN)
+    Download (and creates) dataset for replicating Mirchi et al., 2018, SCAN
 
     Parameters
     ----------
@@ -148,21 +150,19 @@ def load_mirchi2018(data_dir=None):
         PANAS subscales from MyConnectome behavioral data
     """
 
-    if data_dir is None:
-        data_dir = os.getcwd()
-    else:
-        os.makedirs(data_dir, exist_ok=True)
+    data_dir = _get_dataset_dir('mirchi2018', data_dir=data_dir)
+    os.makedirs(data_dir, exist_ok=True)
 
-    X_fname = op.join(data_dir, 'myconnectome_fc.npy')
-    Y_fname = op.join(data_dir, 'myconnectome_panas.csv')
+    X_fname = os.path.join(data_dir, 'myconnectome_fc.npy')
+    Y_fname = os.path.join(data_dir, 'myconnectome_panas.csv')
 
-    if not op.exists(X_fname):
+    if not os.path.exists(X_fname):
         X = _get_fc()
         np.save(X_fname, X)
     else:
         X = np.load(X_fname)
 
-    if not op.exists(Y_fname):
+    if not os.path.exists(Y_fname):
         Y = _get_panas()
         Y.to_csv(Y_fname)
     else:
