@@ -13,8 +13,11 @@ import requests
 from .utils import _get_dataset_dir
 
 
-TIMESERIES = 'https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.2/uncompressed/derivatives/sub-01/ses-{0}/sub-01_ses-{0}_task-rest_run-001_parcel-timeseries.txt'  # noqa
-BEHAVIOR = 'https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.4/uncompressed/sub-01/sub-01_sessions.tsv'  # noqa
+TIMESERIES = ("https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.2"
+              "/uncompressed/derivatives/sub-01/ses-{0}/"
+              "sub-01_ses-{0}_task-rest_run-001_parcel-timeseries.txt")
+BEHAVIOR = ("https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.4"
+            "/uncompressed/sub-01/sub-01_sessions.tsv")
 SESSIONS = [  # list of sessions with parcelled time series and all PANAS items
     '016', '019', '025', '026', '028', '029', '030', '032', '035', '037',
     '038', '039', '040', '041', '042', '043', '044', '045', '046', '047',
@@ -132,7 +135,7 @@ def _get_panas():
 
 def fetch_mirchi2018(data_dir=None):
     """
-    Download (and creates) dataset for replicating Mirchi et al., 2018, SCAN
+    Downloads (and creates) dataset for replicating Mirchi et al., 2018, SCAN
 
     Parameters
     ----------
