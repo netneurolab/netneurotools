@@ -19,6 +19,7 @@ INSTALL_REQUIRES = [
     'bctpy',
     'matplotlib',
     'nibabel',
+    'nilearn',
     'numpy>=1.14',
     'pandas',
     'requests',
