@@ -137,22 +137,23 @@ def fetch_cammoun2012(ctab=False, data_dir=None, url=None, resume=True,
     filenames = []
     for hemi in ['rh', 'lh']:
         h = hemi[0].capitalize()  # hemi designations differ b/w gcs and ctab
+        rename = f'{hemi}.cammoun'
         filenames += [
             # alternating GCS, CTAB file
-            (f'my_atlas_gcs/myatlas_36_{hemi}.gcs', f'{hemi}.cammoun36.gcs'),
-            (f'original_color_36_{h}.txt', f'{hemi}.cammoun36.ctab'),
-            (f'my_atlas_gcs/myatlas_60_{hemi}.gcs', f'{hemi}.cammoun60.gcs'),
-            (f'original_color_60_{h}.txt', f'{hemi}.cammoun60.ctab'),
-            (f'my_atlas_gcs/myatlas_125_{hemi}.gcs', f'{hemi}.cammoun125.gcs'),
-            (f'original_color_125_{h}.txt', f'{hemi}.cammoun125.ctab'),
-            (f'my_atlas_gcs/myatlas_250_{hemi}.gcs', f'{hemi}.cammoun250.gcs'),
-            (f'original_color_250_{h}.txt', f'{hemi}.cammoun250.ctab'),
-            (f'my_atlas_gcs/myatlasP1_16_{hemi}.gcs', f'{hemi}.cammounP1_16.gcs'),  # noqa
-            (f'original_color_P1_16_{h}.txt', f'{hemi}.cammounP1_16.ctab'),
-            (f'my_atlas_gcs/myatlasP17_28_{hemi}.gcs', f'{hemi}.cammounP17_28.gcs'),  # noqa
-            (f'original_color_P17_28_{h}.txt', f'{hemi}.cammounP17_28.ctab'),
-            (f'my_atlas_gcs/myatlasP29_36_{hemi}.gcs', f'{hemi}.cammounP29_36.gcs'),  # noqa
-            (f'original_color_P29_36_{h}.txt', f'{hemi}.cammounP29_36.ctab')
+            (f'my_atlas_gcs/myatlas_36_{hemi}.gcs', f'{rename}36.gcs'),
+            (f'original_color_36_{h}.txt', f'{rename}36.ctab'),
+            (f'my_atlas_gcs/myatlas_60_{hemi}.gcs', f'{rename}60.gcs'),
+            (f'original_color_60_{h}.txt', f'{rename}60.ctab'),
+            (f'my_atlas_gcs/myatlas_125_{hemi}.gcs', f'{rename}125.gcs'),
+            (f'original_color_125_{h}.txt', f'{rename}125.ctab'),
+            (f'my_atlas_gcs/myatlas_250_{hemi}.gcs', f'{rename}250.gcs'),
+            (f'original_color_250_{h}.txt', f'{rename}250.ctab'),
+            (f'my_atlas_gcs/myatlasP1_16_{hemi}.gcs', f'{rename}P1_16.gcs'),
+            (f'original_color_P1_16_{h}.txt', f'{rename}P1_16.ctab'),
+            (f'my_atlas_gcs/myatlasP17_28_{hemi}.gcs', f'{rename}P17_28.gcs'),
+            (f'original_color_P17_28_{h}.txt', f'{rename}P17_28.ctab'),
+            (f'my_atlas_gcs/myatlasP29_36_{hemi}.gcs', f'{rename}P29_36.gcs'),
+            (f'original_color_P29_36_{h}.txt', f'{rename}P29_36.ctab')
         ]
     if not ctab:  # drop colortable files if we don't want to download them
         filenames = filenames[::2]
