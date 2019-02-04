@@ -412,14 +412,14 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
     an array indicating to which hemisphere each region belongs. We'll use one
     of the parcellations commonly employed in the lab (Cammoun et al., 2012):
 
-    >>> coords, hemi = datasets.load_cammoun2012(scale=33)
-    >>> coords.shape, hemi.shape
+    >>> cammoun = datasets.load_cammoun2012(scale=33)
+    >>> cammoun.coords.shape, cammoun.hemi.shape
     ((68, 3), (68,))
 
     Next, we generate a resampling array based on this "rotation" concept:
 
     >>> from netneurotools import stats
-    >>> spin = stats.gen_spinsamples(coords, hemi)
+    >>> spin = stats.gen_spinsamples(cammoun.coords, cammoun.hemi)
     >>> spin.shape
     (68, 1000)
 

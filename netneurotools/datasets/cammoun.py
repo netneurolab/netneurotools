@@ -35,11 +35,12 @@ def load_cammoun2012(scale, surface=True):
 
     Returns
     -------
-    centroids : (N, 3) numpy.ndarray
-        Centroids of parcels defined by Cammoun et al., 2012 parcellation
-    hemiid : (N,) numpy.ndarray
-        Hemisphere assignment of `centroids`, where 0 indicates left and 1
-        indicates right hemisphere
+    info : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys ['coords', 'hemi'], where
+        corresponding values are an array of coordinates indicating the
+        centroids of parcels defined by Cammoun et al., 2012 and an array
+        indicating to which hemisphere each coordinate belongs (0 = left,
+        1 = right)
 
     References
     ----------
@@ -52,14 +53,14 @@ def load_cammoun2012(scale, surface=True):
     --------
     >>> from netneurotools import datasets
 
-    >>> coords, hemiid = datasets.load_cammoun2012(scale=33)
-    >>> coords.shape, hemiid.shape
+    >>> info = datasets.load_cammoun2012(scale=33)
+    >>> info.coords.shape, info.hemi.shape
     ((68, 3), (68,))
 
-    ``hemiid`` is a vector of 0 and 1 denoting which ``coords`` are in the
+    ``info.hemi`` is a vector of 0 and 1 denoting which ``coords`` are in the
     left / right hemisphere, respectively:
 
-    >>> hemiid
+    >>> info.hemi
     array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -81,7 +82,7 @@ def load_cammoun2012(scale, surface=True):
     with open(pckl, 'rb') as src:
         data = pickle.load(src)['cammoun{}'.format(str(scale))]
 
-    return Bunch(**data)
+    return Bunch(coords=data['centroids'], hemi=data['hemiid'])
 
 
 def fetch_cammoun2012(ctab=False, data_dir=None, url=None, resume=True,
