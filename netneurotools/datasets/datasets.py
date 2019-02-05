@@ -3,8 +3,181 @@
 Dataset fetcher / creation / whathaveyou
 """
 
+import itertools
+import json
+import os
+
+from nilearn.datasets.utils import _fetch_files
 import numpy as np
+from sklearn.utils import Bunch
 from sklearn.utils.validation import check_random_state
+
+from .utils import _get_data_dir, _get_dataset_info
+
+
+def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
+                      verbose=1):
+    """
+    Downloads files for Cammoun et al., 2012 multiscale parcellation
+
+    Parameters
+    ----------
+    version : {'volume', 'surface', 'gcs'}
+        Specifies which version of the dataset to download, where 'volume' will
+        return .nii.gz atlas files defined in MNI152 space, 'surface' will
+        return .annot files defined in fsaverage space (FreeSurfer 6.0.1), and
+        'gcs' will return FreeSurfer-style .gcs probabilistic atlas files for
+        generating new, subject-specific parcellations
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Does nothing. Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Busnch`
+        Dictionary-like object with keys ['scale033', 'scale060', 'scale125',
+        'scale250', 'scale500'], where corresponding values are lists of
+        filepaths to downloaded parcellation files.
+
+    References
+    ----------
+    Cammoun, L., Gigandet, X., Meskaldji, D., Thiran, J. P., Sporns, O., Do, K.
+    Q., Maeder, P., and Meuli, R., & Hagmann, P. (2012). Mapping the human
+    connectome at multiple scales with diffusion spectrum MRI. Journal of
+    Neuroscience Methods, 203(2), 386-397.
+
+    Notes
+    -----
+    License: https://raw.githubusercontent.com/LTS5/cmp/master/COPYRIGHT
+    """
+
+    versions = ['volume', 'surface', 'gcs']
+    if version not in versions:
+        raise ValueError('The version of Cammoun et al., 2012 parcellation '
+                         'requested "{}" does not exist. Must be one of {}'
+                         .format(version, versions))
+
+    dataset_name = 'atl-cammoun2012'
+    keys = ['scale033', 'scale060', 'scale125', 'scale250', 'scale500']
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    alturl, md5sum = _get_dataset_info(dataset_name)
+    if url is None:
+        url = alturl
+
+    opts = {'uncompress': True, 'md5sum': md5sum, 'move': 'tmp.tar.gz'}
+
+    # filenames differ based on selected version of dataset
+    if version == 'volume':
+        filenames = [
+            'atl-Cammoun2012_space-MNI152NLin2009aSym_res-{}_deterministic{}'
+            .format(res[-3:], suff) for res in keys for suff in ['.nii.gz']
+        ] + ['atl-Cammoun2012_space-MNI152NLin2009aSym_info.csv']
+    elif version == 'surface':
+        filenames = [
+            'atl-Cammoun2012_space-fsaverage_res-{}_hemi-{}_deterministic{}'
+            .format(res[-3:], hemi, suff) for res in keys
+            for hemi in ['R', 'L'] for suff in ['.annot']
+        ]
+    else:
+        filenames = [
+            'atl-Cammoun2012_res-{}_hemi-{}_probabilistic{}'
+            .format(res[5:], hemi, suff)
+            for res in keys[:-1] + ['scale500v1', 'scale500v2', 'scale500v3']
+            for hemi in ['R', 'L'] for suff in ['.gcs', '.ctab']
+        ]
+
+    files = [(os.path.join(dataset_name, f), url, opts) for f in filenames]
+    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+
+    if version == 'volume':
+        keys += ['description']
+    elif version == 'surface':
+        data = [data[n::5] for n in range(5)]
+    else:
+        data = [data[::2][i:i + 2] for i in range(0, 14, 2)]
+        # deal with the fact that last scale is split into three files :sigh:
+        data = data[:-3] + [list(itertools.chain.from_iterable(data[-3:]))]
+
+    return Bunch(**dict(zip(keys, data)))
+
+
+def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
+    """
+    Downloads files for Van Essen et al., 2012 Conte69 template
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Does nothing. Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Busnch`
+        Dictionary-like object with keys ['midthickness', 'inflated',
+        'vinflated'], where corresponding values are lists of filepaths to
+        downloaded template files.
+
+    References
+    ----------
+    http://brainvis.wustl.edu/wiki/index.php//Caret:Atlases/Conte69_Atlas
+
+    Van Essen, D. C., Glasser, M. F., Dierker, D. L., Harwell, J., & Coalson,
+    T. (2011). Parcellations and hemispheric asymmetries of human cerebral
+    cortex analyzed on surface-based atlases. Cerebral cortex, 22(10),
+    2241-2262.
+
+    Notes
+    -----
+    License: ???
+    """
+
+    dataset_name = 'tpl-conte69'
+    keys = ['midthickness', 'inflated', 'vinflated']
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    alturl, md5sum = _get_dataset_info(dataset_name)
+    if url is None:
+        url = alturl
+
+    opts = {
+        'uncompress': True,
+        'md5sum': md5sum,
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+
+    filenames = [
+        'tpl-conte69/tpl-conte69_space-MNI305_variant-fsLR32k_{}.{}.surf.gii'
+        .format(res, hemi) for res in keys for hemi in ['L', 'R']
+    ] + ['tpl-conte69/template_description.json']
+
+    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+                        resume=resume, verbose=verbose)
+
+    with open(data[-1], 'r') as src:
+        data[-1] = json.load(src)
+
+    # bundle hemispheres together
+    data = [data[:-1][i:i + 2] for i in range(0, 6, 2)] + [data[-1]]
+
+    return Bunch(**dict(zip(keys + ['description'], data)))
 
 
 def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):

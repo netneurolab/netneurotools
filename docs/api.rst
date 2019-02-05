@@ -118,16 +118,16 @@ Reference API
 
 .. currentmodule:: netneurotools.datasets
 
-Functions to download datasets from the internet
+Functions to download datasets (atlases, templates, etc)
 
 .. autosummary::
    :template: function.rst
    :toctree: _generated/
 
     fetch_cammoun2012
-    fetch_mirchi2018
+    fetch_conte69
 
-Functions to generate (random) datasets locally
+Functions to generate (pseudo-random) datasets
 
 .. autosummary::
    :template: function.rst
