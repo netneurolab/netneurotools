@@ -4,7 +4,6 @@ Functions for making pretty plots and whatnot
 """
 
 import os
-from pkg_resources import resource_filename
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -13,6 +12,7 @@ import numpy as np
 import seaborn as sns
 
 from .utils import check_fs_subjid
+from .datasets import fetch_conte69
 
 
 def _grid_communities(communities):
@@ -187,9 +187,8 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     rhlabel : str
         Path to .gii file (generic GIFTI file) containing labels to N/2 parcels
         on the right hemisphere
-    surf : str, optional
-        Type of brain surface. Can be 'very_inflated' or 'inflated' or
-        'midthickness'. Default: 'midthickness'
+    surf : {'midthickness', 'inflated', 'vinflated'}, optional
+        Type of brain surface. Default: 'midthickness'
     vmin : float, optional
         Minimum value to scale the colormap. If None, the min of the data will
         be used. Default: None
@@ -231,13 +230,13 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     opts = dict()
     opts.update(**kwargs)
 
-    # load surfaces and labels
-    lhsurface = nib.load(resource_filename(
-        'netneurotools',
-        'data/Conte69_Atlas/Conte69.L.%s.32k_fs_LR.surf.gii' % surf))
-    rhsurface = nib.load(resource_filename(
-        'netneurotools',
-        'data/Conte69_Atlas/Conte69.R.%s.32k_fs_LR.surf.gii' % surf))
+    try:
+        surface = fetch_conte69()[surf]
+    except KeyError:
+        raise ValueError('Provided surf "{}" is not valid. Must be one of '
+                         '[\'midthickness\', \'inflated\', \'vinflated\']'
+                         .format(surf))
+    lhsurface, rhsurface = [nib.load(s) for s in surface]
 
     lhlabels = nib.load(lhlabel).darrays[0].data
     rhlabels = nib.load(rhlabel).darrays[0].data

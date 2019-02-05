@@ -5,14 +5,19 @@ Code for re-generating results from Mirchi et al., 2018 (SCAN)
 
 from io import StringIO
 import os
-import os.path as op
 
 import numpy as np
 import pandas as pd
 import requests
 
-TIMESERIES = 'https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.2/uncompressed/derivatives/sub-01/ses-{0}/sub-01_ses-{0}_task-rest_run-001_parcel-timeseries.txt'  # noqa
-BEHAVIOR = 'https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.4/uncompressed/sub-01/sub-01_sessions.tsv'  # noqa
+from .utils import _get_data_dir
+
+
+TIMESERIES = ("https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.2"
+              "/uncompressed/derivatives/sub-01/ses-{0}/"
+              "sub-01_ses-{0}_task-rest_run-001_parcel-timeseries.txt")
+BEHAVIOR = ("https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.4"
+            "/uncompressed/sub-01/sub-01_sessions.tsv")
 SESSIONS = [  # list of sessions with parcelled time series and all PANAS items
     '016', '019', '025', '026', '028', '029', '030', '032', '035', '037',
     '038', '039', '040', '041', '042', '043', '044', '045', '046', '047',
@@ -70,7 +75,7 @@ PANAS = {  # specification for creation of PANAS subscales for item scores
 }
 
 
-def _get_fc():
+def _get_fc(data_dir=None, resume=True, verbose=1):
     """
     Gets functional connections from MyConnectome parcelled time series data
 
@@ -94,7 +99,7 @@ def _get_fc():
     return np.row_stack(fc)
 
 
-def _get_panas():
+def _get_panas(data_dir=None, resume=True, verbose=1):
     """
     Gets PANAS subscales from MyConnectome behavioral data
 
@@ -128,9 +133,9 @@ def _get_panas():
     return (panas - panas.mean(axis=0)) / panas.std(axis=0, ddof=1)
 
 
-def load_mirchi2018(data_dir=None):
+def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
     """
-    Loads datasets for analysis in Mirchi et al., 2018 (SCAN)
+    Downloads (and creates) dataset for replicating Mirchi et al., 2018, SCAN
 
     Parameters
     ----------
@@ -148,24 +153,22 @@ def load_mirchi2018(data_dir=None):
         PANAS subscales from MyConnectome behavioral data
     """
 
-    if data_dir is None:
-        data_dir = os.getcwd()
-    else:
-        os.makedirs(data_dir, exist_ok=True)
+    data_dir = os.path.join(_get_data_dir(data_dir=data_dir), 'ds-mirchi2018')
+    os.makedirs(data_dir, exist_ok=True)
 
-    X_fname = op.join(data_dir, 'myconnectome_fc.npy')
-    Y_fname = op.join(data_dir, 'myconnectome_panas.csv')
+    X_fname = os.path.join(data_dir, 'myconnectome_fc.npy')
+    Y_fname = os.path.join(data_dir, 'myconnectome_panas.csv')
 
-    if not op.exists(X_fname):
-        X = _get_fc()
+    if not os.path.exists(X_fname):
+        X = _get_fc(data_dir=data_dir, resume=resume, verbose=verbose)
         np.save(X_fname, X)
     else:
         X = np.load(X_fname)
 
-    if not op.exists(Y_fname):
-        Y = _get_panas()
+    if not os.path.exists(Y_fname):
+        Y = _get_panas(data_dir=data_dir, resume=resume, verbose=verbose)
         Y.to_csv(Y_fname)
     else:
-        Y = pd.read_csv(Y_fname)
+        Y = pd.read_csv(Y_fname, index_col=0)
 
     return X, Y
