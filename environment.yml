@@ -6,6 +6,7 @@ dependencies:
     - matplotlib
     - mkl
     - nibabel
+    - nilearn
     - numpy
     - pandas
     - pip

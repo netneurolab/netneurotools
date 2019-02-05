@@ -1,6 +1,9 @@
+"""
+Functions for fetching and generating datasets
+"""
+
 __all__ = [
-    'load_mirchi2018', 'load_cammoun2012', 'make_correlated_xy'
+    'fetch_cammoun2012', 'fetch_conte69', 'make_correlated_xy'
 ]
 
-from .datasets import load_cammoun2012, make_correlated_xy
-from .mirchi import load_mirchi2018
+from .datasets import fetch_cammoun2012, fetch_conte69, make_correlated_xy

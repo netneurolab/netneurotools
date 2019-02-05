@@ -109,8 +109,8 @@ Reference API
 
 .. _ref_datasets:
 
-:mod:`netneurotools.datasets` - Fetching and generating datasets
-----------------------------------------------------------------
+:mod:`netneurotools.datasets` - Automatic dataset fetching
+----------------------------------------------------------
 
 .. automodule:: netneurotools.datasets
    :no-members:
@@ -118,12 +118,21 @@ Reference API
 
 .. currentmodule:: netneurotools.datasets
 
+Functions to download datasets (atlases, templates, etc)
+
 .. autosummary::
    :template: function.rst
    :toctree: _generated/
 
-    load_cammoun2012
-    load_mirchi2018
+    fetch_cammoun2012
+    fetch_conte69
+
+Functions to generate (pseudo-random) datasets
+
+.. autosummary::
+   :template: function.rst
+   :toctree: _generated/
+
     make_correlated_xy
 
 .. _ref_utils:
