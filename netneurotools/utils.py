@@ -7,7 +7,10 @@ import glob
 import os
 import subprocess
 
+import nibabel as nib
+from nilearn._utils import check_niimg_3d
 import numpy as np
+from scipy import ndimage
 from sklearn.utils.validation import check_array
 
 
@@ -206,3 +209,40 @@ def check_fs_subjid(subject_id, subjects_dir=None):
                                 .format(subject_id, subjects_dir))
 
     return subject_id, subjects_dir
+
+
+def get_centroids(img, labels=None, image_space=False):
+    """
+    Finds centroids of `labels` in `img`
+
+    Parameters
+    ----------
+    img : niimg-like object
+        3D image containing integer label at each point
+    labels : array_like, optional
+        List of labels for which to find centroids. If not specified all
+        labels present in `img` will be used. Default: None
+    image_space : bool, optional
+        Whether to return xyz (image space) coordinates for centroids based
+        on transformation in `img.affine`. Default: False
+
+    Returns
+    -------
+    centroids : (N, 3) np.ndarray
+        Coordinates of centroids for ROIs in input data
+    """
+
+    img = check_niimg_3d(img)
+    data = img.get_data()
+
+    if labels is None:
+        labels = np.unique(data)
+
+    centroids = ndimage.center_of_mass(data, labels=data, index=labels)
+
+    if image_space:
+        centroids = nib.affines.apply_affine(img.affine, centroids)
+    else:
+        centroids = np.column_stack(centroids)
+
+    return centroids
