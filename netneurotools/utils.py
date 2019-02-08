@@ -72,7 +72,7 @@ def get_triu(data, k=1):
     array([0.5 , 0.25, 0.33])
     """
 
-    return data[np.triu_indices(len(data), k=1)].copy()
+    return data[np.triu_indices(len(data), k=k)].copy()
 
 
 def globpath(*args):
@@ -221,7 +221,8 @@ def get_centroids(img, labels=None, image_space=False):
         3D image containing integer label at each point
     labels : array_like, optional
         List of labels for which to find centroids. If not specified all
-        labels present in `img` will be used. Default: None
+        labels present in `img` will be used. Zero will be ignored as it is
+        considered "background." Default: None
     image_space : bool, optional
         Whether to return xyz (image space) coordinates for centroids based
         on transformation in `img.affine`. Default: False
@@ -236,13 +237,12 @@ def get_centroids(img, labels=None, image_space=False):
     data = img.get_data()
 
     if labels is None:
-        labels = np.unique(data)
+        labels = np.trim_zeros(np.unique(data))
 
-    centroids = ndimage.center_of_mass(data, labels=data, index=labels)
+    centroids = np.row_stack(ndimage.center_of_mass(data, labels=data,
+                                                    index=labels))
 
     if image_space:
         centroids = nib.affines.apply_affine(img.affine, centroids)
-    else:
-        centroids = np.column_stack(centroids)
 
     return centroids

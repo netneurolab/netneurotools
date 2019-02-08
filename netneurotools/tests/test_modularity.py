@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+
 from netneurotools import modularity
 
 rs = np.random.RandomState(1234)
 
 
 def test_dummyvar():
+    # generate small example dummy variable code
     out = modularity._dummyvar(np.array([1, 1, 2, 3, 3]))
     assert np.all(out == np.array([[1, 0, 0],
                                    [1, 0, 0],
