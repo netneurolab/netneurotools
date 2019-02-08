@@ -6,10 +6,10 @@ For testing netneurotools.datasets functionality
 import os
 
 import numpy as np
+import pytest
+
 from netneurotools import datasets
 from netneurotools.datasets import utils
-
-import pytest
 
 
 @pytest.mark.parametrize('corr, size, tol, seed', [
@@ -72,7 +72,9 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
             assert isinstance(out, str) and out.endswith('.nii.gz')
 
 
-@pytest.mark.parametrize('dset', ['atl-cammoun2012', 'tpl-conte69'])
+@pytest.mark.parametrize('dset', [
+    'atl-cammoun2012', 'tpl-conte69'
+])
 def test_get_dataset_info(dset):
     url, md5 = utils._get_dataset_info(dset)
     assert isinstance(url, str) and isinstance(md5, str)

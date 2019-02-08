@@ -4,9 +4,9 @@ For testing netneurotools.metrics functionality
 """
 
 import numpy as np
-from netneurotools import metrics
-
 import pytest
+
+from netneurotools import metrics
 
 rs = np.random.RandomState(1234)
 
