@@ -2,8 +2,8 @@
 
 .. currentmodule:: netneurotools
 
-Reference API
-=============
+Python Reference API
+====================
 
 .. contents:: **List of modules**
    :local:
@@ -153,3 +153,4 @@ Functions to generate (pseudo-random) datasets
    run
    add_constant
    get_triu
+   get_centroids
