@@ -180,6 +180,71 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**dict(zip(keys + ['description'], data)))
 
 
+def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
+    """
+    Downloads files for Pauli et al., 2018 subcortical parcellation
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Does nothing. Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys ['probabilistic', 'deterministic'],
+        where corresponding values are filepaths to downloaded atlas files.
+
+    References
+    ----------
+    Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution
+    probabilistic in vivo atlas of human subcortical brain nuclei. Scientific
+    Data, 5, 180063.
+
+    Notes
+    -----
+    License: CC-BY Attribution 4.0 International
+    """
+
+    dataset_name = 'atl-pauli2018'
+    atl_name = 'atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_{}.nii.gz'
+    keys = ['probabilistic', 'deterministic', 'info']
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+
+    if url is None:
+        url = "https://files.osf.io/v1/resources/jkzwp/providers/osfstorage/{}"
+
+    filenames = [  # format: (desired filename, OSF file id, MD5 checksum)
+        # probabilistic atlas
+        (os.path.join(dataset_name, atl_name.format('probabilistic')),
+         '5b11fa3364f25a001973dce0',
+         '62dd6ff405d3a8b89ee188cafa3a7f6a'),
+        # deterministic atlas
+        (os.path.join(dataset_name, atl_name.format('deterministic')),
+         '5b11fa2ff1f288000e625a7f',
+         '5a5b6246921be08456304875447c68ed')
+    ]
+
+    # format the query how _fetch_files() wants things and then download data
+    files = [
+        (filename, url.format(fileid), dict(md5sum=md5sum, move=filename))
+        for (filename, fileid, md5sum) in filenames
+    ]
+    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+
+    return Bunch(**dict(zip(keys, data)))
+
+
 def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     """
     Generates random vectors that are correlated to approximately `corr`

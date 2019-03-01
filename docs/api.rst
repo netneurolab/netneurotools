@@ -126,6 +126,7 @@ Functions to download datasets (atlases, templates, etc)
 
     fetch_cammoun2012
     fetch_conte69
+    fetch_pauli2018
 
 Functions to generate (pseudo-random) datasets
 
