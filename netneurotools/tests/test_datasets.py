@@ -52,6 +52,12 @@ def test_fetch_conte69(tmpdir):
                ['midthickness', 'inflated', 'vinflated', 'description'])
 
 
+def test_fetch_pauli2018(tmpdir):
+    pauli = datasets.fetch_pauli2018(data_dir=tmpdir, verbose=0)
+    assert all(hasattr(pauli, k) and os.path.isfile(pauli[k]) for k in
+               ['probabilistic', 'deterministic'])
+
+
 @pytest.mark.parametrize('version, expected', [
     ('volume', [1, 1, 1, 1, 1]),
     ('surface', [2, 2, 2, 2, 2]),
