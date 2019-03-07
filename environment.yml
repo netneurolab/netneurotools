@@ -7,7 +7,8 @@ dependencies:
     - mkl
     - nibabel
     - nilearn
-    - numpy
+    - numba
+    - "numpy>1.14"
     - pandas
     - pip
     - pyface
@@ -21,7 +22,7 @@ dependencies:
     - traitsui
     - "vtk>8"
     - pip:
-        - bctpy
+        - "bctpy>=0.5.1"
         - imageio
         - mayavi
         - pysurfer

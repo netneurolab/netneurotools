@@ -1,4 +1,4 @@
-bctpy
+bctpy>=0.5.1
 matplotlib
 nibabel
 nilearn
