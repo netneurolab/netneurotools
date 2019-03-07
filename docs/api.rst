@@ -104,7 +104,7 @@ Python Reference API
    :template: function.rst
    :toctree: _generated/
 
-   communicability
+   communicability_bin
    communicability_wei
 
 .. _ref_datasets:
