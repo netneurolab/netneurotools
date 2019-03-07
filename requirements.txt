@@ -1,4 +1,4 @@
-bctpy
+https://github.com/aestrivex/bctpy/archive/0.5.1.tar.gz
 matplotlib
 nibabel
 nilearn

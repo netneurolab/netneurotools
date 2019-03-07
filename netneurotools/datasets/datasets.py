@@ -277,11 +277,11 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     By default two vectors are generated with specified correlation
 
     >>> x, y = datasets.make_correlated_xy()
-    >>> np.corrcoef(x, y)
+    >>> np.corrcoef(x, y)  # doctest: +SKIP
     array([[1.        , 0.85083661],
            [0.85083661, 1.        ]])
     >>> x, y = datasets.make_correlated_xy(corr=0.2)
-    >>> np.corrcoef(x, y)
+    >>> np.corrcoef(x, y)  # doctest: +SKIP
     array([[1.        , 0.20069953],
            [0.20069953, 1.        ]])
 
@@ -293,7 +293,7 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     >>> out = datasets.make_correlated_xy(corr=corr)
     >>> out.shape
     (3, 10000)
-    >>> np.corrcoef(out)
+    >>> np.corrcoef(out)  # doctest: +SKIP
     array([[1.        , 0.50965273, 0.30235686],
            [0.50965273, 1.        , 0.01089107],
            [0.30235686, 0.01089107, 1.        ]])
