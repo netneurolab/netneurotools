@@ -1,6 +1,6 @@
-function wz = randz(X,Y)
+function wz = zrand(X,Y)
 %
-% RANDZ(X,Y) calculates the z-Rand score of two vectors X and Y, where X and Y
+% ZRAND(X,Y) calculates the z-Rand score of two vectors X and Y, where X and Y
 % are two potential clustering assignments for a group of samples.
 %
 % Author: Bratislav Mišić
