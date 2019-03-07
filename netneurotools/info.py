@@ -16,7 +16,7 @@ __longdesc__ = 'README.rst'
 __longdesctype__ = 'text/x-rst'
 
 INSTALL_REQUIRES = [
-    'bctpy',
+    'bctpy>=0.5.1',
     'matplotlib',
     'nibabel',
     'nilearn',
@@ -29,8 +29,7 @@ INSTALL_REQUIRES = [
 ]
 
 TESTS_REQUIRE = [
-    'codecov',
-    'pytest',
+    'pytest>=3.6',
     'pytest-cov'
 ]
 
@@ -55,7 +54,8 @@ EXTRAS_REQUIRE['all'] = list(set([
 
 PACKAGE_DATA = {
     'netneurotools': [
-        'tests/data/*', 'data/*'
+        'tests/data/*',
+        'data/*'
     ]
 }
 
