@@ -2,53 +2,92 @@ language: python
 sudo: false
 dist: xenial
 notifications:
-    email: change
+  email: change
 
 python:
-    - 3.6.5
-    - 3.7.1
+  - 3.6
+  - 3.7
 
 env:
-    - LINTING=1
-    - NUMBA=0 COVERAGE=1
-    - NUMBA=1
-    - DOCTEST=1
+  matrix:
+    - CHECK_TYPE=linting
+    - CHECK_TYPE=docdoctest
+    - CHECK_TYPE=test
+    - CHECK_TYPE=test INSTALL_NUMBA=true
+  global:
+    - INSTALL_TYPE=setup
+
+matrix:
+  include:
+    - python: 3.6
+      env:
+        - INSTALL_TYPE=sdist
+        - CHECK_TYPE=test
+    - python: 3.6
+      env:
+        - INSTALL_TYPE=wheel
+        - CHECK_TYPE=test
+    - python: 3.6
+      env:
+        - INSTALL_TYPE=conda
+        - CHECK_TYPE=test
 
 before_install:
-    - python -m pip install --upgrade pip
-    - python -m pip install pytest>=3.6
-    - if [ "${LINTING}" == "1" ]; then
-          pip install flake8;
-      fi
-    - if [ "${COVERAGE}" == "1" ]; then
-          pip install coverage coveralls codecov pytest-cov;
-      fi
+  - python -m pip install --upgrade pip
+  - if [ "${INSTALL_TYPE}" == "conda" ]; then
+      wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+      bash miniconda.sh -b -p $HOME/miniconda;
+      export PATH="$HOME/miniconda/bin:$PATH";
+      hash -r;
+      conda config --set always_yes yes --set changeps1 no;
+      conda update -q conda;
+      conda env create -f environment.yml;
+      source activate netneurotools;
+    fi
+  - if [ "${CHECK_TYPE}" == "linting" ]; then
+      pip install flake8;
+    fi
+  - if [ "${CHECK_TYPE}" == "test" ]; then
+      pip install "pytest>=3.6" pytest-cov coverage coveralls codecov;
+    fi
+  - if [ ! -z "${INSTALL_NUMBA}"]; then
+      pip install numba;
+    fi
 
 install:
-    - if [ "${NUMBA}" == "1" ]; then
-          pip install -e .[numba];
-      elif [ "${DOCTEST}" == "1" ]; then
-          pip install -e .[doc];
-      else
-          pip install -e .;
-      fi
+  - |
+    if [ "${INSTALL_TYPE}" == "setup" ]; then
+      python setup.py install;
+    elif [ "${INSTALL_TYPE}" == "sdist" ]; then
+      python setup.py sdist;
+      pip install dist/*.tar.gz;
+    elif [ "${INSTALL_TYPE}" == "wheel" ]; then
+      python setup.py bdist_wheel;
+      pip install dist/*.whl;
+    elif [ "${INSTALL_TYPE}" == "conda" ]; then
+      pip install --no-deps .;
+    else
+      false;
+    fi
 
 script:
-    - |
-      if [ "${LINTING}" == "1" ]; then
-          flake8 netneurotools;
-      elif [ "${DOCTEST}" == "1" ]; then
-          cd docs;
-          make html;
-          make doctest;
-      else
-          if [ "${COVERAGE}" == "1" ]; then
-              TEST_ARGS="--cov-report term-missing --cov=netneurotools";
-          fi
-          py.test ${TEST_ARGS} netneurotools;
-      fi
+  - |
+    if [ "${CHECK_TYPE}" == "linting" ]; then
+      flake8 netneurotools;
+    elif [ "${CHECK_TYPE}" == "docdoctest" ]; then
+      cd docs;
+      pip install -r ./requirements.txt;
+      make html;
+      make doctest;
+    elif [ "${CHECK_TYPE}" == "test" ]; then
+      py.test --doctest-modules --cov-report term-missing --cov=netneurotools netneurotools;
+    else
+      false;
+    fi
 
 after_success:
-    - if [ "${COVERAGE}" == "1" ]; then
-          coveralls; codecov;
-      fi
+  # codecov with numba installed doesn't make sense, so don't do that
+  - if [ "${CHECK_TYPE}" == "test" ] && [ -z "${INSTALL_NUMBA}" ]; then
+      coveralls; codecov;
+    fi
+
