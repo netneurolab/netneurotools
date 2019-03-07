@@ -12,11 +12,11 @@ rs = np.random.RandomState(1234)
 
 
 def test_communicability():
-    comm = metrics.communicability(rs.choice([0, 1], size=(100, 100)))
+    comm = metrics.communicability_bin(rs.choice([0, 1], size=(100, 100)))
     assert comm.shape == (100, 100)
 
     with pytest.raises(ValueError):
-        metrics.communicability(rs.rand(100, 100))
+        metrics.communicability_bin(rs.rand(100, 100))
 
 
 def test_communicability_wei():
