@@ -35,7 +35,7 @@ def communicability_bin(adjacency, normalize=False):
     >>> from netneurotools import metrics
 
     >>> A = np.array([[1, 0, 1], [0, 1, 1], [1, 0, 1]])
-    >>> Q = metrics.communicability(A)
+    >>> Q = metrics.communicability_bin(A)
     >>> Q
     array([[4.19452805, 0.        , 3.19452805],
            [1.47624622, 2.71828183, 3.19452805],
