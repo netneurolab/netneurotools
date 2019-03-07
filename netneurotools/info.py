@@ -16,7 +16,7 @@ __longdesc__ = 'README.rst'
 __longdesctype__ = 'text/x-rst'
 
 INSTALL_REQUIRES = [
-    'bctpy>=0.5.1',
+    'bctpy @ https://github.com/aestrivex/bctpy/archive/0.5.1.tar.gz',
     'matplotlib',
     'nibabel',
     'nilearn',
