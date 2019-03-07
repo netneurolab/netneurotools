@@ -22,7 +22,7 @@ dependencies:
     - traitsui
     - "vtk>8"
     - pip:
-        - "bctpy>=0.5.1"
+        - git+https://github.com/aestrivex/bctpy/archive/0.5.1.tar.gz
         - imageio
         - mayavi
         - pysurfer
