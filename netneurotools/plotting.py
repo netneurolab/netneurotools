@@ -11,8 +11,9 @@ import nibabel as nib
 import numpy as np
 import seaborn as sns
 
+from .datasets import fetch_conte69, fetch_fsaverage
+from .datasets.utils import _get_data_dir
 from .utils import check_fs_subjid
-from .datasets import fetch_conte69
 
 
 def _grid_communities(communities):
@@ -278,10 +279,10 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     return lhplot, rhplot
 
 
-def plot_fsaverage(data, annot, *, surf='pial', views='lat',
-                   tmin=None, tmax=None, center=None, mask=None,
+def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
+                   vmin=None, vmax=None, center=None, mask=None,
                    colormap='viridis', colorbar=True, alpha=0.8,
-                   label_fmt='%.2f', number_of_labels=3,
+                   label_fmt='%.2f', num_labels=3,
                    size_per_view=500, subjects_dir=None):
     """
     Plots `data` to fsaverage brain using `annot` as parcellation
@@ -290,19 +291,22 @@ def plot_fsaverage(data, annot, *, surf='pial', views='lat',
     ----------
     data : (N,) array_like
         Data for `N` parcels as defined in `annot`
-    annot : str
-        Annotation that defines parcellation for `data`. If available in
-        fsaverage directory then assumed to be of format '{hemi}.NAME.annot'
-        and only NAME should be provided. Otherwise, should provide full path
-        to filename but retain the '{hemi}' prefix.
+    lhannot : str
+        Filepath to .annot file containing labels to parcels on the left
+        hemisphere. If a full path is not provided the file is assumed to
+        exist inside the `subjects_dir`/fsaverage/label directory.
+    rhannot : str
+        Filepath to .annot file containing labels to parcels on the right
+        hemisphere. If a full path is not provided the file is assumed to
+        exist inside the `subjects_dir`/fsaverage/label directory.
     surf : str, optional
         Surface on which to plot data. Default: 'pial'
     views : str or list, optional
         Which views to plot of brain. Default: 'lat'
-    tmin : float, optional
+    vmin : float, optional
         Minimum value for colorbar. If not provided, a robust estimation will
         be used from values in `data`. Default: None
-    tmax : float, optional
+    vmax : float, optional
         Maximum value for colorbar. If not provided, a robust estimation will
         be used from values in `data`. Default: None
     center : float, optional
@@ -339,13 +343,13 @@ def plot_fsaverage(data, annot, *, surf='pial', views='lat',
         raise ImportError('Cannot use plot_to_fsaverage() if pysurfer is not '
                           'installed. Please install pysurfer and try again.')
 
-    subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
-
-    # check format of annotation and update, accordingly
-    if not annot.endswith('.annot'):
-        annot = annot + '.annot'
-    if not any([annot.startswith(pref) for pref in ['lh', 'rh', '{hemi}']]):
-        annot = '{hemi}.' + annot
+    # check for FreeSurfer install w/fsaverage; otherwise, fetch required
+    try:
+        subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
+    except FileNotFoundError:
+        fetch_fsaverage()
+        subjects_dir = _get_data_dir()
+        subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
 
     # cast data to float (required for NaNs)
     data = np.asarray(data, dtype='float')
@@ -353,10 +357,10 @@ def plot_fsaverage(data, annot, *, surf='pial', views='lat',
     if mask is not None and len(mask) != len(data):
         raise ValueError('Provided mask must be the same length as data.')
 
-    if tmin is None:
-        tmin = np.percentile(data, 2.5)
-    if tmax is None:
-        tmax = np.percentile(data, 97.5)
+    if vmin is None:
+        vmin = np.percentile(data, 2.5)
+    if vmax is None:
+        vmax = np.percentile(data, 97.5)
 
     # parcels that should not be included in parcellation
     drop = [b'unknown', b'corpuscallosum']
@@ -371,14 +375,11 @@ def plot_fsaverage(data, annot, *, surf='pial', views='lat',
                   subjects_dir=subjects_dir, background='white',
                   views=views, size=size)
 
-    for hemi in ['lh', 'rh']:
+    for annot, hemi in zip([lhannot, rhannot], ['lh', 'rh']):
         # loads annotation data for hemisphere, including vertex `labels`!
         if not annot.startswith(os.path.abspath(os.sep)):
-            annot_fname = os.path.join(subjects_dir, 'fsaverage', 'label',
-                                       annot.format(hemi=hemi))
-        else:
-            annot_fname = annot.format(hemi=hemi)
-        labels, ctab, names = nib.freesurfer.read_annot(annot_fname)
+            annot = os.path.join(subjects_dir, 'fsaverage', 'label', annot)
+        labels, ctab, names = nib.freesurfer.read_annot(annot)
 
         # get appropriate data, accounting for hemispheric asymmetry
         if hemi == 'lh':
@@ -407,7 +408,7 @@ def plot_fsaverage(data, annot, *, surf='pial', views='lat',
             vtx_data[maskdata[labels] > 0] = thresh
 
         # finally, add data to this hemisphere!
-        brain.add_data(vtx_data, tmin, tmax, hemi=hemi, mid=center,
+        brain.add_data(vtx_data, vmin, vmax, hemi=hemi, mid=center,
                        thresh=thresh + 0.5, alpha=alpha, remove_existing=False,
                        colormap=colormap, colorbar=colorbar, verbose=False)
 
@@ -422,9 +423,9 @@ def plot_fsaverage(data, annot, *, surf='pial', views='lat',
                     cm.scalar_bar.label_format = label_fmt
                     surf[n].render()
             # this updates how many labels are shown on the colorbar
-            if number_of_labels is not None:
+            if num_labels is not None:
                 for n, cm in enumerate(cmap):
-                    cm.scalar_bar.number_of_labels = number_of_labels
+                    cm.scalar_bar.number_of_labels = num_labels
                     surf[n].render()
 
     return brain
