@@ -9,7 +9,9 @@ import shutil
 import nibabel as nib
 import numpy as np
 import pandas as pd
+from scipy.spatial.distance import cdist
 
+from .datasets import fetch_fsaverage
 from .utils import check_fs_subjid, run
 
 
@@ -193,3 +195,49 @@ def combine_cammoun_500(files, subject_id, subjects_dir=None,
         shutil.rmtree(label_dir)
 
     return created
+
+
+def find_fsaverage_centroids(lhannot, rhannot, surf='sphere'):
+    """
+    Finds vertices corresponding to centroids of parcels in annotation files
+
+    Note that using anything other than `surf=sphere` may result in centroids
+    that are not directly within the parcels themselves due to sulcal folding.
+
+    Parameters
+    ----------
+    lhannot : str
+        Filepath to .annot file containing labels to parcels on the left
+        hemisphere
+    rhannot : str
+        Filepath to .annot file containing labels to parcels on the right
+        hemisphere
+    surf : str, optional
+        Surface on which to find parcel centroids. Default: 'sphere'
+
+    Returns
+    -------
+    centroids : (N, 3) numpy.ndarray
+        xyz coordinates of vertices closest to the centroid of each parcel
+        defined in `lhannot` and `rhannot`
+    hemiid : (N,) numpy.ndarray
+        Array denoting hemisphere designation of coordinates in `centroids`,
+        where `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
+    """
+
+    surfaces = fetch_fsaverage()[surf]
+
+    centroids, hemiid = [], []
+    for n, (annot, surf) in enumerate(zip([lhannot, rhannot], surfaces)):
+        vertices, faces = nib.freesurfer.read_geometry(surf)
+        labels, ctab, names = nib.freesurfer.read_annot(annot)
+
+        for lab in range(1, len(names)):
+            if names[lab] == b'corpuscallosum':
+                continue
+            coords = np.atleast_2d(vertices[labels == lab].mean(axis=0))
+            roi = vertices[np.argmin(cdist(vertices, coords), axis=0)[0]]
+            centroids.append(roi)
+            hemiid.append(n)
+
+    return np.row_stack(centroids), np.asarray(hemiid)
