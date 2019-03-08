@@ -103,7 +103,7 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     elif version == 'surface':
         data = [data[i:i + 2] for i in range(0, len(data), 2)]
     else:
-        data = [data[::2][i:i + 2] for i in range(0, len(data), 2)]
+        data = [data[::2][i:i + 2] for i in range(0, len(data) // 2, 2)]
         # deal with the fact that last scale is split into three files :sigh:
         data = data[:-3] + [list(itertools.chain.from_iterable(data[-3:]))]
 
