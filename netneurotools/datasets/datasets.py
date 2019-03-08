@@ -69,11 +69,11 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     keys = ['scale033', 'scale060', 'scale125', 'scale250', 'scale500']
 
     data_dir = _get_data_dir(data_dir=data_dir)
-    alturl, md5sum = _get_dataset_info(dataset_name)
+    info = _get_dataset_info(dataset_name)
     if url is None:
-        url = alturl
+        url = info['url']
 
-    opts = {'uncompress': True, 'md5sum': md5sum, 'move': 'tmp.tar.gz'}
+    opts = {'uncompress': True, 'md5sum': info['md5'], 'move': 'tmp.tar.gz'}
 
     # filenames differ based on selected version of dataset
     if version == 'volume':
@@ -85,14 +85,14 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
         filenames = [
             'atl-Cammoun2012_space-fsaverage_res-{}_hemi-{}_deterministic{}'
             .format(res[-3:], hemi, suff) for res in keys
-            for hemi in ['R', 'L'] for suff in ['.annot']
+            for hemi in ['L', 'R'] for suff in ['.annot']
         ]
     else:
         filenames = [
             'atl-Cammoun2012_res-{}_hemi-{}_probabilistic{}'
             .format(res[5:], hemi, suff)
             for res in keys[:-1] + ['scale500v1', 'scale500v2', 'scale500v3']
-            for hemi in ['R', 'L'] for suff in ['.gcs', '.ctab']
+            for hemi in ['L', 'R'] for suff in ['.gcs', '.ctab']
         ]
 
     files = [(os.path.join(dataset_name, f), url, opts) for f in filenames]
@@ -101,9 +101,9 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     if version == 'volume':
         keys += ['description']
     elif version == 'surface':
-        data = [data[n::5] for n in range(5)]
+        data = [data[i:i + 2] for i in range(0, len(data), 2)]
     else:
-        data = [data[::2][i:i + 2] for i in range(0, 14, 2)]
+        data = [data[::2][i:i + 2] for i in range(0, len(data) // 2, 2)]
         # deal with the fact that last scale is split into three files :sigh:
         data = data[:-3] + [list(itertools.chain.from_iterable(data[-3:]))]
 
@@ -153,13 +153,13 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
     keys = ['midthickness', 'inflated', 'vinflated']
 
     data_dir = _get_data_dir(data_dir=data_dir)
-    alturl, md5sum = _get_dataset_info(dataset_name)
+    info = _get_dataset_info(dataset_name)
     if url is None:
-        url = alturl
+        url = info['url']
 
     opts = {
         'uncompress': True,
-        'md5sum': md5sum,
+        'md5sum': info['md5'],
         'move': '{}.tar.gz'.format(dataset_name)
     }
 
@@ -216,31 +216,74 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
     """
 
     dataset_name = 'atl-pauli2018'
-    atl_name = 'atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_{}.nii.gz'
-    keys = ['probabilistic', 'deterministic', 'info']
+    keys = ['probabilistic', 'deterministic']
 
     data_dir = _get_data_dir(data_dir=data_dir)
-
-    if url is None:
-        url = "https://files.osf.io/v1/resources/jkzwp/providers/osfstorage/{}"
-
-    filenames = [  # format: (desired filename, OSF file id, MD5 checksum)
-        # probabilistic atlas
-        (os.path.join(dataset_name, atl_name.format('probabilistic')),
-         '5b11fa3364f25a001973dce0',
-         '62dd6ff405d3a8b89ee188cafa3a7f6a'),
-        # deterministic atlas
-        (os.path.join(dataset_name, atl_name.format('deterministic')),
-         '5b11fa2ff1f288000e625a7f',
-         '5a5b6246921be08456304875447c68ed')
-    ]
+    info = _get_dataset_info(dataset_name)
 
     # format the query how _fetch_files() wants things and then download data
     files = [
-        (filename, url.format(fileid), dict(md5sum=md5sum, move=filename))
-        for (filename, fileid, md5sum) in filenames
+        (i['name'], i['url'], dict(md5sum=i['md5'], move=i['name']))
+        for i in info
     ]
+
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+
+    return Bunch(**dict(zip(keys, data)))
+
+
+def fetch_fsaverage(data_dir=None, url=None, resume=True, verbose=1):
+    """
+    Downloads files for fsaverage FreeSurfer template
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Does nothing. Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys ['surf'] where corresponding values
+        are length-2 lists downloaded template files (each list composed of
+        files for the left and right hemisphere).
+
+    References
+    ----------
+
+    """
+
+    dataset_name = 'tpl-fsaverage'
+    keys = ['orig', 'white', 'smoothwm', 'pial', 'inflated', 'sphere']
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)
+    if url is None:
+        url = info['url']
+
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+
+    filenames = [
+        'fsaverage/surf/{}.{}'
+        .format(hemi, surf) for surf in keys for hemi in ['lh', 'rh']
+    ]
+
+    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+                        resume=resume, verbose=verbose)
+    data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
 

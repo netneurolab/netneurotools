@@ -7,11 +7,31 @@ import os
 
 OSF_API = "https://files.osf.io/v1/resources/{}/providers/osfstorage/{}"
 OSF_RESOURCES = {
-    'atl-cammoun2012': (OSF_API.format('mb37e', '5c59c82576653c001b27d7e4'),
-                        '14fa050e65e7e23e79a0a3f9f3e6c56d'),
-    # thanks niworkflows team for uploading these useful datasets in one place!
-    'tpl-conte69': (OSF_API.format('fvuh8', '5b198ec5ec24e20011b48548'),
-                    'bd944e3f9f343e0e51e562b440960529')
+    'atl-cammoun2012': {
+        'url': OSF_API.format('mb37e', '5c59c82576653c001b27d7e4'),
+        'md5': 'e5ff57e8970b13c5cd1b2348f70a685b'
+    },
+    'atl-pauli2018': [
+        {
+            'url': OSF_API.format('jkzwp', '5b11fa3364f25a001973dce0'),
+            'md5': '62dd6ff405d3a8b89ee188cafa3a7f6a',
+            'name': 'atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_probabilistic.nii.gz'  # noqa
+        },
+        {
+            'url': OSF_API.format('jkzwp', '5b11fa2ff1f288000e625a7f'),
+            'md5': '5a5b6246921be08456304875447c68ed',
+            'name': 'atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_deterministic.nii.gz'  # noqa
+        }
+    ],
+    # thanks to poldracklab team for uploading these useful datasets!
+    'tpl-conte69': {
+        'url': OSF_API.format('fvuh8', '5b198ec5ec24e20011b48548'),
+        'md5': 'bd944e3f9f343e0e51e562b440960529'
+    },
+    'tpl-fsaverage': {
+        'url': OSF_API.format('mb37e', '5c82830a1d73810018bdacea'),
+        'md5': '3d2b99fd6c623e17ace6409c4207027a',
+    }
 }
 
 

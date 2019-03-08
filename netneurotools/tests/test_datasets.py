@@ -58,6 +58,15 @@ def test_fetch_pauli2018(tmpdir):
                ['probabilistic', 'deterministic'])
 
 
+def test_fetch_fsaverage(tmpdir):
+    fsaverage = datasets.fetch_fsaverage(data_dir=tmpdir, verbose=0)
+    assert all(hasattr(fsaverage, k)
+               and len(fsaverage[k]) == 2
+               and all(os.path.isfile(hemi)
+               for hemi in fsaverage[k]) for k in
+               ['orig', 'white', 'smoothwm', 'pial', 'inflated', 'sphere'])
+
+
 @pytest.mark.parametrize('version, expected', [
     ('volume', [1, 1, 1, 1, 1]),
     ('surface', [2, 2, 2, 2, 2]),
@@ -78,12 +87,21 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
             assert isinstance(out, str) and out.endswith('.nii.gz')
 
 
-@pytest.mark.parametrize('dset', [
-    'atl-cammoun2012', 'tpl-conte69'
+@pytest.mark.parametrize('dset, expected', [
+    ('atl-cammoun2012', ['url', 'md5']),
+    ('tpl-conte69', ['url', 'md5']),
+    ('atl-pauli2018', ['url', 'md5', 'name']),
+    ('tpl-fsaverage', ['url', 'md5'])
 ])
-def test_get_dataset_info(dset):
-    url, md5 = utils._get_dataset_info(dset)
-    assert isinstance(url, str) and isinstance(md5, str)
+def test_get_dataset_info(dset, expected):
+    info = utils._get_dataset_info(dset)
+    if isinstance(info, dict):
+        assert all(k in info.keys() for k in expected)
+    elif isinstance(info, list):
+        for f in info:
+            assert all(k in f.keys() for k in expected)
+    else:
+        assert False
 
     with pytest.raises(KeyError):
         utils._get_dataset_info('notvalid')
