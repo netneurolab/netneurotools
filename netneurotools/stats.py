@@ -50,8 +50,12 @@ def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
         raise ValueError('If processing against a comparative group, you must '
                          'provide both `Xc` and `Yc`.')
 
+    X, Y = np.asarray(X), np.asarray(Y)
+
     if Yc is None:
-        Yc, Xc = Y.copy(), X.copy()
+        Xc, Yc = X.copy(), Y.copy()
+    else:
+        Xc, Yc = np.asarray(Xc), np.asarray(Yc)
 
     # add intercept to regressors if requested and calculate fit
     if add_intercept:
