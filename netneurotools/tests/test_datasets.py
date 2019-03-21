@@ -55,7 +55,7 @@ def test_fetch_conte69(tmpdir):
 def test_fetch_pauli2018(tmpdir):
     pauli = datasets.fetch_pauli2018(data_dir=tmpdir, verbose=0)
     assert all(hasattr(pauli, k) and os.path.isfile(pauli[k]) for k in
-               ['probabilistic', 'deterministic'])
+               ['probabilistic', 'deterministic', 'info'])
 
 
 def test_fetch_fsaverage(tmpdir):
