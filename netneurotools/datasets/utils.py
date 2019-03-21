@@ -25,7 +25,7 @@ OSF_RESOURCES = {
         {
             'url': OSF_API.format('mb37e', '5c93b4f034062c001b1ef50d'),
             'md5': '390a693abeb1a583151f30aa8798bab5',
-            'name': 'atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_info.nii.gz'  # noqa
+            'name': 'atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_info.csv'  # noqa
         }
     ],
     # thanks to poldracklab team for uploading these useful datasets!
