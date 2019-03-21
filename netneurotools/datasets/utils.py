@@ -9,7 +9,7 @@ OSF_API = "https://files.osf.io/v1/resources/{}/providers/osfstorage/{}"
 OSF_RESOURCES = {
     'atl-cammoun2012': {
         'url': OSF_API.format('mb37e', '5c59c82576653c001b27d7e4'),
-        'md5': 'e5ff57e8970b13c5cd1b2348f70a685b'
+        'md5': '68ea0c7e3de7fbd0fd92220efd02d73e'
     },
     'atl-pauli2018': [
         {

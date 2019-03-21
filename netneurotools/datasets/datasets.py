@@ -99,7 +99,7 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     if version == 'volume':
-        keys += ['description']
+        keys += ['info']
     elif version == 'surface':
         data = [data[i:i + 2] for i in range(0, len(data), 2)]
     else:
@@ -177,7 +177,7 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
     # bundle hemispheres together
     data = [data[:-1][i:i + 2] for i in range(0, 6, 2)] + [data[-1]]
 
-    return Bunch(**dict(zip(keys + ['description'], data)))
+    return Bunch(**dict(zip(keys + ['info'], data)))
 
 
 def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):

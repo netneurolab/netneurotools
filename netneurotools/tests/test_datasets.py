@@ -49,7 +49,7 @@ def test_make_correlated_xy_errors(corr):
 def test_fetch_conte69(tmpdir):
     conte = datasets.fetch_conte69(data_dir=tmpdir, verbose=0)
     assert all(hasattr(conte, k) for k in
-               ['midthickness', 'inflated', 'vinflated', 'description'])
+               ['midthickness', 'inflated', 'vinflated', 'info'])
 
 
 def test_fetch_pauli2018(tmpdir):
