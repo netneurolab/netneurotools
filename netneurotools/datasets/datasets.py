@@ -216,7 +216,7 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
     """
 
     dataset_name = 'atl-pauli2018'
-    keys = ['probabilistic', 'deterministic']
+    keys = ['probabilistic', 'deterministic', 'info']
 
     data_dir = _get_data_dir(data_dir=data_dir)
     info = _get_dataset_info(dataset_name)
