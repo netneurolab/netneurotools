@@ -21,6 +21,11 @@ OSF_RESOURCES = {
             'url': OSF_API.format('jkzwp', '5b11fa2ff1f288000e625a7f'),
             'md5': '5a5b6246921be08456304875447c68ed',
             'name': 'atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_deterministic.nii.gz'  # noqa
+        },
+        {
+            'url': OSF_API.format('mb37e', '5c93b4f034062c001b1ef50d'),
+            'md5': '390a693abeb1a583151f30aa8798bab5',
+            'name': 'atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_info.nii.gz'  # noqa
         }
     ],
     # thanks to poldracklab team for uploading these useful datasets!
