@@ -4,11 +4,14 @@ Functions for making pretty plots and whatnot
 """
 
 import os
+from typing import Iterable
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa
 import nibabel as nib
 import numpy as np
+from scipy.stats import zscore
 import seaborn as sns
 
 from .datasets import fetch_conte69, fetch_fsaverage
@@ -429,3 +432,82 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
                     surf[n].render()
 
     return brain
+
+
+def plot_point_brain(data, coords, views=None, cbar=False, figsize=(5, 5),
+                     robust=True, size=50, **kwargs):
+    """
+    Plots `data` as a cloud of points in 3D space based on specified `coords`
+
+    Parameters
+    ----------
+    data : (N,) array_like
+        Data for an `N` node parcellation; determines color of points
+    coords : (N, 3) array_like
+        x, y, z coordinates for `N` node parcellation
+    views : list, optional
+        List specifying which views to use. Can be any of {'sagittal', 'sag',
+        'coronal', 'cor', 'axial', 'ax'}. If not specified will use 'sagittal'
+        and 'axial'. Default: None
+    cbar : bool, optional
+        Whether to also show colorbar. Default: False
+    figsize : tuple, optional
+        Figure size. Default: (5, 5)
+    robust : bool, optional
+        Whether to use robust calculation of `vmin` and `vmax` for color scale.
+    size : int, optional
+        Size of points on plot. Default: 50
+    **kwargs
+        Key-value pairs passed to `matplotlib.axes.Axis.scatter`
+
+    Returns
+    -------
+    fig : :class:`matplotlib.figure.Figure`
+    """
+
+    _views = dict(sagittal=(0, 180), sag=(0, 180),
+                  axial=(90, 180), ax=(90, 180),
+                  coronal=(0, 90), cor=(0, 90))
+
+    # coordinate space needs to be centered around zero for aspect ratio
+    coords = zscore(coords)
+    x, y, z = coords[:, 0], coords[:, 1], coords[:, 2]
+    if views is None:
+        views = [_views[f] for f in ['sagittal', 'axial']]
+    else:
+        if not isinstance(views, Iterable) or isinstance(views, str):
+            views = [views]
+        views = [_views[f] for f in views]
+
+    # create figure and axes (3d projections)
+    fig, axes = plt.subplots(ncols=1, nrows=len(views),
+                             figsize=figsize,
+                             subplot_kw=dict(projection='3d'))
+
+    opts = dict(linewidth=0.5, edgecolor='gray', cmap='viridis')
+    if robust:
+        vmin, vmax = np.percentile(data, [2.5, 97.5])
+        opts.update(dict(vmin=vmin, vmax=vmax))
+    opts.update(kwargs)
+
+    # iterate through saggital/axial views and plot, rotating as needed
+    for n, view in enumerate(views):
+        # if only one view then axes is not a list!
+        ax = axes[n] if len(views) > 1 else axes
+        # make the actual scatterplot and update the view / aspect ratios
+        col = ax.scatter(x, y, z, c=data, s=size, **opts)
+        ax.view_init(*view)
+        ax.axis('off')
+        ax.set(xlim=0.57 * np.array(ax.get_xlim()),
+               ylim=0.57 * np.array(ax.get_ylim()),
+               zlim=0.60 * np.array(ax.get_zlim()),
+               aspect=0.55 if view != (0, 90) else 0.7)
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+
+    # add colorbar to axes
+    if cbar:
+        cbar = fig.colorbar(col, ax=axes.flatten(),
+                            drawedges=False, shrink=0.7)
+        cbar.outline.set_linewidth(0)
+
+    return fig

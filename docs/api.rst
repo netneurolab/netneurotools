@@ -66,6 +66,7 @@ Python Reference API
 
    plot_mod_heatmap
    plot_conte69
+   plot_point_brain
    plot_fsaverage
 
 .. _ref_stats:
