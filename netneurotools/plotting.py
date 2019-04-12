@@ -570,3 +570,45 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
         cbar.outline.set_linewidth(0)
 
     return fig
+
+
+def circleplot(data, vmin=None, vmax=None, xticklabels=None, yticklabels=None,
+               cmap='rocket', cbar=True, ax=None, cbar_kws=None):
+    """
+    """
+
+    data = np.asarray(data)
+
+    if vmin is None:
+        vmin = np.percentile(data, 2)
+    if vmax is None:
+        vmax = np.percentile(data, 98)
+
+    # size must be bounded by vmin and vmax so it is comparable across graphs
+    size = data.copy()
+    size[size < vmin] = vmin
+    size[size > vmax] = vmax
+    rescaled = np.ravel((size - vmin) / (vmax - vmin)) + 1.0001
+    if vmin < 0:  # cannot be negative
+        rescaled += np.abs(vmin)
+
+    if ax is None:
+        ax = plt.gca()
+
+    x = np.tile(np.linspace(0, 1, len(data.T)), len(data.T))
+    y = np.repeat(np.linspace(1, 0, len(data)), len(data))
+    coll = ax.scatter(x, y, s=np.log(rescaled) * 1500, c=np.ravel(data),
+                      cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.set(xlim=(-0.1, 1.1), ylim=(-0.1, 1.1), xticks=x, yticks=x)
+    if cbar:
+        if cbar_kws is None:
+            cbar_kws = {}
+        cbar = plt.colorbar(coll, ax=ax, **cbar_kws)
+        cbar.outline.set_linewidth(0)
+    if xticklabels is not None:
+        ax.set(xticklabels=xticklabels)
+    if yticklabels is not None:
+        ax.set(yticklabels=yticklabels[::-1])
+    sns.despine(left=True, bottom=True)
+
+    return ax
