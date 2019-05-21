@@ -49,6 +49,26 @@ Python Reference API
    get_modularity_z
    get_modularity_sig
 
+.. _ref_cluster:
+
+:mod:`netneurotools.cluster` - Working with clusters
+----------------------------------------------------
+
+.. automodule:: netneurotools.cluster
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.cluster
+
+.. autosummary::
+   :template: function.rst
+   :toctree: _generated/
+
+   find_consensus
+   match_assignments
+   reorder_assignments
+   match_cluster_labels
+
 .. _ref_plotting:
 
 :mod:`netneurotools.plotting` - Plotting brain data
