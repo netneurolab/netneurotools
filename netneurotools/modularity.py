@@ -6,6 +6,7 @@ Functions for working with network modularity
 import bct
 import numpy as np
 from sklearn.utils.validation import check_random_state
+from . import cluster
 
 try:
     from numba import njit, prange
@@ -16,7 +17,7 @@ except ImportError:
 
 
 def consensus_modularity(adjacency, gamma=1, B='modularity',
-                         repeats=250, null_func=np.mean):
+                         repeats=250, null_func=np.mean, seed=None):
     """
     Finds community assignments from `adjacency` through consensus
 
@@ -36,9 +37,12 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
         'modularity'
     repeats : int, optional
         Number of times to repeat Louvain algorithm clustering. Default: 250
-    null_func : function, optional
-        Null function for generation of resolution parameter for reclustering.
+    null_func : callable, optional
+        Function used to generate null model when performing consensus-based
+        clustering. Must accept a 2D array as input and return a single value.
         Default: `np.mean`
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation. Default: None
 
     Returns
     -------
@@ -60,25 +64,15 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
     # generate community partitions `repeat` times
     comms, Q_all = zip(*[bct.community_louvain(adjacency, gamma=gamma, B=B)
                          for i in range(repeats)])
+    comms = np.column_stack(comms)
 
-    comms = np.column_stack(comms)  # stack community partitions
-
-    # generate probability matrix of node co-assignment
-    ag = bct.clustering.agreement(comms, buffsz=comms.shape[0]) / repeats
-
-    # generate null probability matrix via permutation
-    comms_null = np.zeros_like(comms)
-    for n, i in enumerate(comms.T):
-        comms_null[:, n] = np.random.permutation(i)
-    ag_null = bct.clustering.agreement(comms_null, buffsz=len(comms)) / repeats
-
-    # consensus cluster the original probability matrix with null as threshold
-    consensus = bct.clustering.consensus_und(ag, null_func(ag_null), 10)
+    # find consensus cluster assignments across all partitoning solutions
+    consensus = cluster.find_consensus(comms, thresh_func=null_func, seed=seed)
 
     # get z-rand statistics for partition similarity (n.b. can take a while)
     zrand_all = _zrand_partitions(comms)
 
-    return consensus.astype(int), np.array(Q_all), zrand_all
+    return consensus, np.array(Q_all), zrand_all
 
 
 def _dummyvar(labels):
@@ -259,8 +253,8 @@ def get_modularity_z(adjacency, comm, gamma=1, n_perm=10000, seed=None):
         Default: 1
     n_perm : int, optional
         Number of permutations. Default: 10000
-    seed : int, optional
-        Seed for reproducibility. Default: None
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation. Default: None
 
     Returns
     -------
@@ -307,8 +301,8 @@ def get_modularity_sig(adjacency, comm, gamma=1, n_perm=10000, alpha=0.01,
         Number of permutations to test against. Default: 10000
     alpha : (0,1) float, optional
         Alpha level to assess signifiance. Default: 0.01
-    seed : int, optional
-        Seed for reproducibility. Default: None
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation. Default: None
 
     Returns
     -------
