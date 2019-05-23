@@ -7,8 +7,6 @@ import glob
 import os
 import subprocess
 
-import nibabel as nib
-from nilearn._utils import check_niimg_3d
 import numpy as np
 from scipy import ndimage
 from sklearn.utils.validation import check_array
@@ -233,6 +231,9 @@ def get_centroids(img, labels=None, image_space=False):
         Coordinates of centroids for ROIs in input data
     """
 
+    import nibabel as nib
+    from nilearn._utils import check_niimg_3d
+    
     img = check_niimg_3d(img)
     data = img.get_data()
 
