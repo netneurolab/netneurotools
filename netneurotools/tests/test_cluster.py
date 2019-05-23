@@ -28,7 +28,7 @@ from netneurotools import cluster
      np.array([1, 1, 1, 3, 3, 3, 2, 2, 2]))
 ])
 def test_match_cluster_labels(c1, c2, out):
-    assert np.allclose(cluster.match_cluster_labels(c1, c2), out)
+    assert np.all(cluster.match_cluster_labels(c1, c2) == out)
 
 
 @pytest.mark.xfail
@@ -41,6 +41,11 @@ def test_reorder_assignments(assignments):
     assert False
 
 
-@pytest.mark.xfail
-def test_find_consensus(assignments):
-    assert False
+@pytest.mark.parametrize('assignments, clusters', [
+    (np.array([[0, 1, 2], [0, 1, 2], [0, 1, 2],
+               [1, 2, 0], [1, 2, 0], [1, 2, 0],
+               [2, 0, 1], [2, 0, 1], [2, 0, 1]]),
+     np.array([1, 1, 1, 2, 2, 2, 3, 3, 3]))
+])
+def test_find_consensus(assignments, clusters):
+    assert np.all(cluster.find_consensus(assignments) == clusters)
