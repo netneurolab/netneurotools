@@ -233,7 +233,7 @@ def get_centroids(img, labels=None, image_space=False):
 
     import nibabel as nib
     from nilearn._utils import check_niimg_3d
-    
+
     img = check_niimg_3d(img)
     data = img.get_data()
 
