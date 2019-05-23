@@ -4,6 +4,7 @@ Functions for performing statistical preprocessing and analyses
 """
 
 import numpy as np
+from scipy import optimize
 from scipy.spatial.distance import cdist
 from scipy.stats import zmap
 from scipy.stats.stats import _chk_asarray, _chk2_asarray
@@ -327,7 +328,7 @@ def _yield_rotations(n_rotate, seed=None):
         yield rotate_l, rotate_r
 
 
-def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
+def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
     """
     Generates resampling array for `coords` via rotational spins
 
@@ -343,6 +344,10 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
     hemiid : (N,) array_like
         Array denoting hemisphere designation of coordinates in `coords`, where
         `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
+    exact : bool, optional
+        Whether each node/parcel/region must be uniquely re-assigned in every
+        rotation. Setting to True will drastically increase the runtime of this
+        function! Default: False
     n_rotate : int, optional
         Number of random rotations to generate. Default: 1000
     seed : {int, np.random.RandomState instance, None}, optional
@@ -352,6 +357,9 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
     -------
     permsamples : (N, `n_rotate`) numpy.ndarray
         Resampling matrix to use in permuting data based on supplied `coords`
+    cost : (`n_rotate`,) numpy.ndarray
+        Cost (in distance between node assignments) of each rotation in
+        `permsamples`
 
     References
     ----------
@@ -368,6 +376,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
        A Spectral Clustering Framework for Individual and Group Parcellation of
        Cortical Surfaces in Lobes. Frontiers in Neuroscience, 12, 354.
     """
+
+    seed = check_random_state(seed)
 
     # check supplied coordinate shape
     if coords.shape[-1] != 3 or coords.squeeze().ndim != 2:
@@ -390,6 +400,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
 
     # empty array to store resampling indices
     permsamples = np.zeros((len(coords), n_rotate), dtype=int)
+    cost = np.zeros(n_rotate)
 
     # split coordinates into left / right hemispheres
     inds_l, inds_r = np.where(hemiid == 0)[0], np.where(hemiid == 1)[0]
@@ -401,8 +412,24 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, seed=None):
         dist_l = cdist(coords_l, coords_l @ left)
         dist_r = cdist(coords_r, coords_r @ right)
 
-        # find index of sample with minimum distance to original and assign
-        permsamples[inds_l, n] = inds_l[dist_l.argmin(axis=1)]
-        permsamples[inds_r, n] = inds_r[dist_r.argmin(axis=1)]
+        # find mapping of rotated coords to original coords
+        # if we need an exact mapping (i.e., every node needs to have a unique
+        # assignment in the rotation) then we need to use an optimization
+        # procedure (i.e., the Hungarian algorithm) to minimize the distances.
+        if exact:
+            lrow, lcol = optimize.linear_sum_assignment(dist_l)
+            rrow, rcol = optimize.linear_sum_assignment(dist_r)
+        # otherwise, if nodes can be assigned multiple targets, we can just
+        # use the absolute minimum of the distances.
+        else:
+            lrow, lcol = range(len(dist_l)), dist_l.argmin(axis=1)
+            rrow, rcol = range(len(dist_r)), dist_r.argmin(axis=1)
 
-    return permsamples
+        # find cost of rotation in terms of distance between node assignments
+        cost[n] = dist_l[lrow, lcol].sum() + dist_r[rrow, rcol].sum()
+
+        # assign new indices to permutation resample array
+        permsamples[inds_l, n] = inds_l[lcol]
+        permsamples[inds_r, n] = inds_r[rcol]
+
+    return permsamples, cost
