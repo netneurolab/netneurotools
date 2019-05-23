@@ -69,7 +69,7 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     keys = ['scale033', 'scale060', 'scale125', 'scale250', 'scale500']
 
     data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
+    info = _get_dataset_info(dataset_name)[version]
     if url is None:
         url = info['url']
 

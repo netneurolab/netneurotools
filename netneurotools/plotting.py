@@ -9,14 +9,8 @@ from typing import Iterable
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa
-import nibabel as nib
 import numpy as np
 from scipy.stats import zscore
-import seaborn as sns
-
-from .datasets import fetch_conte69, fetch_fsaverage
-from .datasets.utils import _get_data_dir
-from .utils import check_fs_subjid
 
 
 def _grid_communities(communities):
@@ -114,6 +108,8 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     ax : matplotlib.axes.Axes
         Axis object containing plot
     """
+
+    import seaborn as sns
 
     # get indices for sorting consensus
     if inds is None:
@@ -225,6 +221,8 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Scene object containing plot
     """
 
+    import nibabel as nib
+    from .datasets import fetch_conte69
     try:
         from mayavi import mlab
     except ImportError:
@@ -340,6 +338,8 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
     """
 
     # hold off on imports until
+    import nibabel as nib
+    from .utils import check_fs_subjid
     try:
         from surfer import Brain
     except ImportError:
@@ -350,6 +350,8 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
     try:
         subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
     except FileNotFoundError:
+        from .datasets import fetch_fsaverage
+        from .datasets.utils import _get_data_dir
         fetch_fsaverage()
         subjects_dir = _get_data_dir()
         subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
@@ -395,9 +397,11 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
         # do, so we need to account for that
         # find the label ids that correspond to those and set them to NaN in
         # the `data vector`
-        inds = [n for n, f in enumerate(names) if f in drop]
-        fulldata = np.insert(hemidata, inds - np.arange(len(inds)), np.nan)
-        vtx_data = fulldata[labels]
+        inds = [names.index(n) for n in drop]
+        for i in inds:
+            hemidata = np.insert(hemidata, i, np.nan)
+        # fulldata = np.insert(hemidata, inds - np.arange(len(inds)), np.nan)
+        vtx_data = hemidata[labels]
         not_nan = ~np.isnan(vtx_data)
 
         # we don't want the NaN vertices (unknown / corpuscallosum) plotted

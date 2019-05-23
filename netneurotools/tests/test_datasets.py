@@ -88,7 +88,7 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
 
 
 @pytest.mark.parametrize('dset, expected', [
-    ('atl-cammoun2012', ['url', 'md5']),
+    ('atl-cammoun2012', ['volume', 'surface', 'gcs']),
     ('tpl-conte69', ['url', 'md5']),
     ('atl-pauli2018', ['url', 'md5', 'name']),
     ('tpl-fsaverage', ['url', 'md5'])

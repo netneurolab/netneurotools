@@ -8,8 +8,18 @@ import os
 OSF_API = "https://files.osf.io/v1/resources/{}/providers/osfstorage/{}"
 OSF_RESOURCES = {
     'atl-cammoun2012': {
-        'url': OSF_API.format('mb37e', '5c59c82576653c001b27d7e4'),
-        'md5': '68ea0c7e3de7fbd0fd92220efd02d73e'
+        'gcs': {
+            'url': OSF_API.format('mb37e', '5ce6bb4423fec40017e82c5e'),
+            'md5': 'c3435f2720da6a74c3d55db54ebdbfff'
+        },
+        'surface': {
+            'url': OSF_API.format('mb37e', '5ce6c30523fec40017e83439'),
+            'md5': '478599b362a88198396fdb15ad999f9e'
+        },
+        'volume': {
+            'url': OSF_API.format('mb37e', '5ce6bb438d6e05001860abca'),
+            'md5': 'b0b6ced54b7b86d150fc7461dec72639'
+        }
     },
     'atl-pauli2018': [
         {
