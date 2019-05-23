@@ -2,6 +2,7 @@
 """
 Functions for clustering and working with cluster solutions
 """
+
 import bct
 import numpy as np
 from scipy import optimize
@@ -47,9 +48,9 @@ def match_cluster_labels(source, target):
     """
     Aligns cluster labels in `source` to those in `target`
 
-    Uses Hungarian algorithm to try and match cluster solutions. If `source`
-    has fewer clusters than `target` the returned assignments may not be
-    continuous.
+    Uses :func:`scipy.optimize.linear_sum_assignment` to match solutions. If
+    `source` has fewer clusters than `target` the returned assignments may be
+    discontinuous (see Examples for more information).
 
     Parameters
     ----------
@@ -83,6 +84,12 @@ def match_cluster_labels(source, target):
     >>> b = np.array([1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
     >>> cluster.match_cluster_labels(a, b)
     array([1, 1, 1, 0, 0, 0, 0, 2, 2, 2])
+
+    If the source assignment has fewer clusters than the target the returned
+    values may be discontinuous:
+
+    >>> cluster.match_cluster_labels(b, a)
+    array([0, 0, 0, 2, 2, 2, 2, 2, 2, 2])
     """
 
     # try and match the source to target
@@ -107,13 +114,20 @@ def match_assignments(assignments, target=None, seed=None):
     """
     Re-labels clusters in columns of `assignments` to best match `target`
 
+    Uses :func:`~.cluster.match_cluster_labels` to align cluster assignments.
+
     Parameters
     ----------
     assignments : (N, M) array_like
         Array of `M` clustering assignments for `N` subjects
     target : (N,) array_like, optional
-        Target clustering assignments to which all columns. If not specified a
-        random column in `assignments` is chosen instead. Default: None
+        Target clustering assignments to which all columns should be matched.
+        If provided as an integer the relevant column in `assignments` will be
+        selected. If not specified a (semi-)random column in `assignments` is
+        chosen; because of the potential discontinuity introduced when matching
+        an N-cluster solution to an N+1-cluster solution, the "random" target
+        columns will be one `assignments` with the lowest cluster number. See
+        Examples for more information. Default: None
     seed : {int, np.random.RandomState instance, None}, optional
         Seed for random number generation; only used if `target` is not
         provided. Default: None
@@ -142,7 +156,9 @@ def match_assignments(assignments, target=None, seed=None):
     ...                         [2, 1, 2],
     ...                         [2, 1, 2]])
 
-    We would like to match the assignments so they're all the same:
+    We would like to match the assignments so they're all the same. Since one
+    of the columns will be randomly picked as the "target" solution, we provide
+    a `seed` to ensure reproducibility in the selection:
 
     >>> cluster.match_assignments(assignments, seed=1234)
     array([[1, 1, 1],
@@ -154,19 +170,27 @@ def match_assignments(assignments, target=None, seed=None):
            [2, 2, 2],
            [2, 2, 2]])
 
-    You can also provide a `target` clustering solution to which all the other
-    will be matched. If `target` is an integer, the specified column of the
-    provided matrix will be used:
+    Alternatively, if `assignments` has clustering solutions with different
+    numbers of clusters and no `target` is specified, the chosen `target` will
+    be one of the columns with the smallest number of clusters:
 
-    >>> cluster.match_assignments(assignments, target=0)
+    >>> assignments = np.array([[0, 0, 1],
+    ...                         [0, 0, 1],
+    ...                         [0, 0, 1],
+    ...                         [1, 2, 0],
+    ...                         [1, 2, 0],
+    ...                         [1, 2, 0],
+    ...                         [1, 1, 2],
+    ...                         [1, 1, 2]])
+    >>> cluster.match_assignments(assignments)
     array([[0, 0, 0],
            [0, 0, 0],
            [0, 0, 0],
            [1, 1, 1],
            [1, 1, 1],
            [1, 1, 1],
-           [2, 2, 2],
-           [2, 2, 2]])
+           [1, 2, 2],
+           [1, 2, 2]])
     """
 
     # pick a random assignment with the lowest # of clusters as "target"
@@ -196,9 +220,9 @@ def match_assignments(assignments, target=None, seed=None):
 def reorder_assignments(assignments, consensus=None, col_sort=True,
                         row_sort=True, return_index=True, seed=None):
     """
-    Reorders rows and columns of `assignments` to look better
+    Relabels and reorders rows / columns of `assignments` to "look better"
 
-    Remaps cluster solutions in `assignments` so that distinct clustering
+    Relabels cluster solutions in `assignments` so that distinct clustering
     solutions have similar cluster labels. Then, swaps columns of `assignments`
     so that similar clustering solutions are placed near each other. Finally,
     swaps rows of `assignments` so that subjects with similar clustering
@@ -229,10 +253,10 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
         Indices used to reorder `assignments` to generate `reordered` output
     """
 
-    def _reorder_rows(arr, method='average', metric='hamming'):
+    def _reorder_rows(arr):
         """ Returns indices of rows in `arr` after hierarchical clustering
         """
-        link = hierarchy.linkage(arr, method=method, metric=metric)
+        link = hierarchy.linkage(arr, method='average', metric='hamming')
         return hierarchy.dendrogram(link, no_plot=True)['leaves']
 
     # first, relabel the columns to try and match across assignments; this will
@@ -294,11 +318,13 @@ def find_consensus(assignments, null_func=np.mean, return_agreement=False,
     Parameters
     ----------
     assignments : (N, M) array_like
-        Array of `M` clustering solutions for `N` subjects
+        Array of `M` clustering solutions for `N` samples (e.g., subjects,
+        nodes, etc). Values of array should be integer-based cluster assignment
+        labels
     null_func : callable, optional
         Function used to generate null model when performing consensus-based
         clustering. Must accept a 2D array as input and return a single value.
-        Default: `np.mean`
+        Default: :func:`numpy.mean`
     return_agreement : bool, optional
         Whether to return the thresholded N x N agreement matrix used in
         generating the final consensus clustering solution. Default: False
