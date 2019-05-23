@@ -3,6 +3,8 @@
 Functions for performing statistical preprocessing and analyses
 """
 
+import warnings
+
 import numpy as np
 from scipy import optimize
 from scipy.spatial.distance import cdist
@@ -293,21 +295,19 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
     return permutations / (n_perm + 1)  # + 1 in denom accounts for true_diff
 
 
-def _yield_rotations(n_rotate, seed=None):
+def _gen_rotation(seed=None):
     """
     Generates random matrix for rotating spherical coordinates
 
     Parameters
     ----------
-    n_rotate : int
-        Number of rotations to generate
     seed : {int, np.random.RandomState instance, None}, optional
         Seed for random number generation
 
-    Yields
+    Returns
     -------
-    rotate_l, rotate_r : (3, 3) numpy.ndarray
-        Rotations for left and right hemispheres, respectively
+    rotate_{l,r} : (3, 3) numpy.ndarray
+        Rotations for left and right hemisphere coordinates, respectively
     """
 
     rs = check_random_state(seed)
@@ -315,17 +315,16 @@ def _yield_rotations(n_rotate, seed=None):
     # for reflecting across Y-Z plane
     reflect = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    for n in range(n_rotate):
-        # generate rotation for left
-        rotate_l, temp = np.linalg.qr(rs.normal(size=(3, 3)))
-        rotate_l = rotate_l @ np.diag(np.sign(np.diag(temp)))
-        if np.linalg.det(rotate_l) < 0:
-            rotate_l[:, 0] = -rotate_l[:, 0]
+    # generate rotation for left
+    rotate_l, temp = np.linalg.qr(rs.normal(size=(3, 3)))
+    rotate_l = rotate_l @ np.diag(np.sign(np.diag(temp)))
+    if np.linalg.det(rotate_l) < 0:
+        rotate_l[:, 0] = -rotate_l[:, 0]
 
-        # reflect the left rotation across Y-Z plane
-        rotate_r = reflect @ rotate_l @ reflect
+    # reflect the left rotation across Y-Z plane
+    rotate_r = reflect @ rotate_l @ reflect
 
-        yield rotate_l, rotate_r
+    return rotate_l, rotate_r
 
 
 def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
@@ -355,11 +354,11 @@ def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
 
     Returns
     -------
-    permsamples : (N, `n_rotate`) numpy.ndarray
+    spinsamples : (N, `n_rotate`) numpy.ndarray
         Resampling matrix to use in permuting data based on supplied `coords`
     cost : (`n_rotate`,) numpy.ndarray
         Cost (in distance between node assignments) of each rotation in
-        `permsamples`
+        `spinsamples`
 
     References
     ----------
@@ -399,37 +398,63 @@ def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
                          .format(np.unique(hemiid)))
 
     # empty array to store resampling indices
-    permsamples = np.zeros((len(coords), n_rotate), dtype=int)
+    spinsamples = np.zeros((len(coords), n_rotate), dtype=int)
     cost = np.zeros(n_rotate)
 
     # split coordinates into left / right hemispheres
     inds_l, inds_r = np.where(hemiid == 0)[0], np.where(hemiid == 1)[0]
     coords_l, coords_r = coords[inds_l], coords[inds_r]
 
-    # rotate coordinates and reassign indices!
-    for n, (left, right) in enumerate(_yield_rotations(n_rotate, seed=seed)):
-        # calculate Euclidean distance between original and rotated coords
-        dist_l = cdist(coords_l, coords_l @ left)
-        dist_r = cdist(coords_r, coords_r @ right)
+    # generate rotations and resampling array!
+    warned = False
+    for n in range(n_rotate):
+        # try and avoid duplicates, if at all possible...
+        count, duplicated = 0, True
+        while duplicated and count < 500:
+            count, duplicated = count + 1, False
+            resampled = np.zeros(len(coords), dtype=int)
 
-        # find mapping of rotated coords to original coords
-        # if we need an exact mapping (i.e., every node needs to have a unique
-        # assignment in the rotation) then we need to use an optimization
-        # procedure (i.e., the Hungarian algorithm) to minimize the distances.
-        if exact:
-            lrow, lcol = optimize.linear_sum_assignment(dist_l)
-            rrow, rcol = optimize.linear_sum_assignment(dist_r)
-        # otherwise, if nodes can be assigned multiple targets, we can just
-        # use the absolute minimum of the distances.
-        else:
-            lrow, lcol = range(len(dist_l)), dist_l.argmin(axis=1)
-            rrow, rcol = range(len(dist_r)), dist_r.argmin(axis=1)
+            # generate left + right hemisphere rotations
+            left, right = _gen_rotation(seed=seed)
 
-        # find cost of rotation in terms of distance between node assignments
+            # calculate Euclidean distance between original and rotated coords
+            dist_l = cdist(coords_l, coords_l @ left)
+            dist_r = cdist(coords_r, coords_r @ right)
+
+            # find mapping of rotated coords to original coords
+            # if we need an exact mapping (i.e., every node needs a unique
+            # assignment in the rotation) then we need to use an optimization
+            # procedure (i.e., the Hungarian algorithm)
+            if exact:
+                lrow, lcol = optimize.linear_sum_assignment(dist_l)
+                rrow, rcol = optimize.linear_sum_assignment(dist_r)
+            # otherwise, if nodes can be assigned multiple targets, we can just
+            # use the absolute minimum of the distances.
+            else:
+                lrow, lcol = range(len(dist_l)), dist_l.argmin(axis=1)
+                rrow, rcol = range(len(dist_r)), dist_r.argmin(axis=1)
+
+            # generate resampling vector
+            resampled[inds_l] = inds_l[lcol]
+            resampled[inds_r] = inds_r[rcol]
+
+            # check whether this is a duplicate resampling; if so, try again
+            dupe_seq = resampled[:, None] == spinsamples[:, :n]
+            if dupe_seq.all(axis=0).any():
+                duplicated = True
+
+        # if we broke out because we tried 500 rotations and couldn't generate
+        # a new one, just warn that we're using duplicate rotations and give up
+        if count == 500 and not warned:
+            warnings.warn('WANRING: Duplicate rotations used. Check '
+                          'resampling array to determine real number of '
+                          'unique permutations.')
+            warned = True
+
+        # caclulate cost of rotation in terms of distance b/w node assignments
         cost[n] = dist_l[lrow, lcol].sum() + dist_r[rrow, rcol].sum()
 
-        # assign new indices to permutation resample array
-        permsamples[inds_l, n] = inds_l[lcol]
-        permsamples[inds_r, n] = inds_r[rcol]
+        # store resampling vector
+        spinsamples[:, n] = resampled
 
-    return permsamples, cost
+    return spinsamples, cost
