@@ -11,3 +11,7 @@
       overflow: visible !important;
    }
 }
+
+.headerlink::after {
+    font-size: 0px;
+}

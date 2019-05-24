@@ -21,7 +21,7 @@ Python Reference API
 
 .. autosummary::
    :template: function.rst
-   :toctree: _generated/
+   :toctree: generated/
 
    func_consensus
    struct_consensus
@@ -41,13 +41,33 @@ Python Reference API
 
 .. autosummary::
    :template: function.rst
-   :toctree: _generated/
+   :toctree: generated/
 
    consensus_modularity
    zrand
    get_modularity
    get_modularity_z
    get_modularity_sig
+
+.. _ref_cluster:
+
+:mod:`netneurotools.cluster` - Working with clusters
+----------------------------------------------------
+
+.. automodule:: netneurotools.cluster
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.cluster
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   find_consensus
+   match_assignments
+   reorder_assignments
+   match_cluster_labels
 
 .. _ref_plotting:
 
@@ -62,7 +82,7 @@ Python Reference API
 
 .. autosummary::
    :template: function.rst
-   :toctree: _generated/
+   :toctree: generated/
 
    plot_mod_heatmap
    plot_conte69
@@ -82,7 +102,7 @@ Python Reference API
 
 .. autosummary::
    :template: function.rst
-   :toctree: _generated/
+   :toctree: generated/
 
    gen_spinsamples
    residualize
@@ -103,7 +123,7 @@ Python Reference API
 
 .. autosummary::
    :template: function.rst
-   :toctree: _generated/
+   :toctree: generated/
 
    communicability_bin
    communicability_wei
@@ -123,7 +143,7 @@ Functions to download datasets (atlases, templates, etc)
 
 .. autosummary::
    :template: function.rst
-   :toctree: _generated/
+   :toctree: generated/
 
     fetch_cammoun2012
     fetch_conte69
@@ -133,7 +153,7 @@ Functions to generate (pseudo-random) datasets
 
 .. autosummary::
    :template: function.rst
-   :toctree: _generated/
+   :toctree: generated/
 
     make_correlated_xy
 
@@ -150,7 +170,7 @@ Functions to generate (pseudo-random) datasets
 
 .. autosummary::
    :template: function.rst
-   :toctree: _generated/
+   :toctree: generated/
 
    run
    add_constant

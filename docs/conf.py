@@ -39,11 +39,12 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
+    'sphinx_gallery.gen_gallery'
 ]
 
 # Generate the API documentation when building
 autosummary_generate = True
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_options = {'members': True, 'inherited-members': True}
 numpydoc_show_class_members = False
 autoclass_content = "class"
 
@@ -84,16 +85,13 @@ html_show_sourcelink = False
 # documentation.
 html_theme_options = {}
 
-html_context = {
-    'css_files': [
-        '_static/theme_overrides.css'
-    ]
-}
-
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# CSS files to include
+html_css_files = ['theme_overrides.css']
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -102,12 +100,23 @@ htmlhelp_basename = 'netneurotoolsdoc'
 
 # -- Extension configuration -------------------------------------------------
 intersphinx_mapping = {
+    'matplotlib': ('https://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'sklearn': ('http://scikit-learn.org/stable', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'sklearn': ('https://scikit-learn.org/stable', None),
 }
 
 doctest_global_setup = """\
 import numpy as np
 np.random.seed(1234)\
 """
+
+sphinx_gallery_conf = {
+    'doc_module': 'netneurotools',
+    'backreferences_dir': os.path.join('generated', 'modules'),
+    'reference_url': {
+        'netneurotools': None
+    },
+    'thumbnail_size': (250, 250)
+}
