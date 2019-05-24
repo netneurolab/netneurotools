@@ -67,7 +67,7 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
     comms = np.column_stack(comms)
 
     # find consensus cluster assignments across all partitoning solutions
-    consensus = cluster.find_consensus(comms, thresh_func=null_func, seed=seed)
+    consensus = cluster.find_consensus(comms, null_func=null_func, seed=seed)
 
     # get z-rand statistics for partition similarity (n.b. can take a while)
     zrand_all = _zrand_partitions(comms)
