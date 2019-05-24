@@ -3,12 +3,10 @@
 Code for re-generating results from Mirchi et al., 2018 (SCAN)
 """
 
-from io import StringIO
 import os
+from urllib.request import HTTPError, urlopen
 
 import numpy as np
-import pandas as pd
-import requests
 
 from .utils import _get_data_dir
 
@@ -88,9 +86,11 @@ def _get_fc(data_dir=None, resume=True, verbose=1):
     # download time series data for all sessions
     ts = []
     for ses in SESSIONS:
-        out = requests.get(TIMESERIES.format(ses))
-        if out.status_code == 200:
-            ts.append(np.loadtxt(StringIO(out.text)))
+        if verbose > 0:
+            print('Fetching time series for session {}'.format(ses))
+        out = urlopen(TIMESERIES.format(ses))
+        if out.status == 200:
+            ts.append(np.loadtxt(out.readlines()))
 
     # get upper triangle of correlation matrix for each session
     fc = [np.corrcoef(ses.T)[np.tril_indices(len(ses.T), k=-1)] for ses in ts]
@@ -105,32 +105,34 @@ def _get_panas(data_dir=None, resume=True, verbose=1):
 
     Returns
     -------
-    panas : (73, 13) pandas.DataFrame
-        PANAS subscales
+    panas : dict
+        Where keys are PANAS subscales names and values are session-level
+        composite measures
     """
 
-    # download behavioral data
-    out = requests.get(BEHAVIOR)
-    if out.status_code == 200:
-        behavior = pd.read_csv(StringIO(out.text), sep='\t')
-        behavior = behavior.set_index('sescode')
-    else:
-        raise requests.ConnectionError('Cannot get behavioral data')
+    from numpy.lib.recfunctions import structured_to_unstructured as stu
 
-    # drop sessions with missing PANAS items / time series data
-    ses = ['ses-{}'.format(f) for f in SESSIONS]
-    cols = [f for f in behavior.columns if f.startswith('panas')]
-    behavior = behavior.dropna(how='any', axis=0, subset=cols)
-    behavior = behavior.loc[ses, cols]
+    # download behavioral data
+    out = urlopen(BEHAVIOR)
+    if out.status == 200:
+        data = out.readlines()
+    else:
+        raise HTTPError('Cannot fetch behavioral data')
+
+    # drop sessions with missing PANAS items
+    sessions = np.genfromtxt(data, delimiter='\t', usecols=0, dtype=object,
+                             names=True, converters={0: lambda s: s.decode()})
+    keeprows = np.isin(sessions, ['ses-{}'.format(f) for f in SESSIONS])
+    panas = np.genfromtxt(data, delimiter='\t', names=True, dtype=float,
+                          usecols=range(28, 91))[keeprows]
 
     # create subscales from individual item scores
-    panas = pd.DataFrame()
+    measures = {}
     for subscale, items in PANAS.items():
-        measure = behavior[['panas:{}'.format(f) for f in items]].sum(axis=1)
-        panas[subscale] = measure
+        measure = stu(panas[['panas{}'.format(f) for f in items]])
+        measures[subscale] = measure.sum(axis=-1)
 
-    # return z-scored data
-    return (panas - panas.mean(axis=0)) / panas.std(axis=0, ddof=1)
+    return measures
 
 
 def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
@@ -147,9 +149,9 @@ def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
 
     Returns
     -------
-    X : (73, 198135) pandas.DataFrame
+    X : (73, 198135) numpy.ndarray
         Functional connections from MyConnectome rsfMRI time series data
-    Y : (73, 13) pandas.DataFrame
+    Y : (73, 13) numpy.ndarray
         PANAS subscales from MyConnectome behavioral data
     """
 
@@ -161,14 +163,18 @@ def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
 
     if not os.path.exists(X_fname):
         X = _get_fc(data_dir=data_dir, resume=resume, verbose=verbose)
-        np.save(X_fname, X)
+        np.save(X_fname, X, allow_pickle=False)
     else:
-        X = np.load(X_fname)
+        X = np.load(X_fname, allow_pickle=False)
 
     if not os.path.exists(Y_fname):
         Y = _get_panas(data_dir=data_dir, resume=resume, verbose=verbose)
-        Y.to_csv(Y_fname)
+        np.savetxt(Y_fname, np.column_stack(list(Y.values())),
+                   header=','.join(Y.keys()), delimiter=',', fmt='%i')
+        # convert dictionary to structured array before returning
+        Y = np.array([tuple(row) for row in np.column_stack(list(Y.values()))],
+                     dtype=dict(names=list(Y.keys()), formats=['i8'] * len(Y)))
     else:
-        Y = pd.read_csv(Y_fname, index_col=0)
+        Y = np.genfromtxt(Y_fname, delimiter=',', names=True)
 
     return X, Y

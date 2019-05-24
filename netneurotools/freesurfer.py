@@ -6,6 +6,7 @@ Functions for working with FreeSurfer data and parcellations
 import os
 import os.path as op
 
+import nibabel as nib
 import numpy as np
 from scipy.spatial.distance import cdist
 
@@ -120,8 +121,6 @@ def find_fsaverage_centroids(lhannot, rhannot, surf='sphere'):
         Array denoting hemisphere designation of coordinates in `centroids`,
         where `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
     """
-
-    import nibabel as nib
 
     surfaces = fetch_fsaverage()[surf]
 

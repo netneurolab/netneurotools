@@ -15,8 +15,8 @@ and returns different results when run on the same dataset multiple times
 # of parcellated functional MRI data from the MyConnectome dataset (Laumann et
 # al., 2015). We'll pick session 73 (though any session would do):
 
-import numpy as np
 from urllib.request import urlopen
+import numpy as np
 
 url = 'https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.2/' \
       'uncompressed/derivatives/sub-01/ses-073/' \
@@ -60,7 +60,7 @@ print('{} clusters detected with a modularity of {:.2f}.'.format(num_ci, Q))
 ###############################################################################
 # We'll take a peek at how the correlation matrix looks when sorted by these
 # communities. We can use the :func:`~.plotting.plot_mod_heatmap` function,
-# which is a wrapper around :func:`seaborn.heatmap`, to do this easily:
+# which is a wrapper around :func:`plt.imshow()`, to do this easily:
 
 from netneurotools import plotting
 

@@ -4,25 +4,11 @@ channels:
 dependencies:
     - python=3.6
     - matplotlib
-    - mkl
     - nibabel
     - nilearn
-    - numba
-    - "numpy>1.14"
-    - pandas
+    - "numpy>=1.16"
     - pip
-    - pyface
-    - pygments
-    - "pyqt>=5.9"
-    - requests
     - scikit-learn
     - scipy
-    - seaborn
-    - traits
-    - traitsui
-    - "vtk>8"
     - pip:
-        - bctpy
-        - imageio
-        - mayavi
-        - pysurfer
+        - git+https://github.com/aestrivex/bctpy.git#egg=bctpy
