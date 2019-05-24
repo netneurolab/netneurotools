@@ -193,6 +193,8 @@ def match_assignments(assignments, target=None, seed=None):
            [1, 2, 2]])
     """
 
+    assignments = np.asarray(assignments).copy()
+
     # pick a random assignment with the lowest # of clusters as "target"
     if target is None:
         rs = check_random_state(seed)
@@ -208,13 +210,11 @@ def match_assignments(assignments, target=None, seed=None):
             raise ValueError('Length of target clustering solution must be '
                              'identical to length of provided array.')
 
-    # don't ovewrite the original input
-    matched = assignments.copy()
     # iterate through all assignments and try and match them to the target
     for n, source in enumerate(assignments.T):
-        matched[:, n] = match_cluster_labels(source, target)
+        assignments[:, n] = match_cluster_labels(source, target)
 
-    return matched
+    return assignments
 
 
 def reorder_assignments(assignments, consensus=None, col_sort=True,
@@ -266,13 +266,15 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
     if col_sort:
         # get max cluster number for each partition
         max_cl = assignments.max(axis=0)
+
         # if different assignments have different numbers of detected clusters
         if len(np.unique(max_cl)) > 1:
             # first sort based on the number of clusters in each assignment
             col_idx = max_cl.argsort()
             assignments, max_cl = assignments[:, col_idx], max_cl[col_idx]
-            # then, within assignments with the same number of clusters
-            # re-relabel and reorder assignments (cols)
+
+            # then, within assignments with the same number of clusters reorder
+            # assignments (columns)
             reordered, splits = [], np.where(np.diff(max_cl) != 0)[0] + 1
             col_idx = np.split(col_idx, splits)
             for n, cl in enumerate(np.split(assignments, splits, axis=1)):
@@ -281,6 +283,7 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
                 reordered += [cl[:, idx]]
             col_idx = list(np.hstack(col_idx))
             assignments = np.column_stack(reordered)
+
         # otherwise all assignments have same number of detected clusters so
         # just sort them all
         else:
@@ -290,8 +293,8 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
     if row_sort:
         # if a consensus was provided reorder rows based on cluster assignment
         if consensus is not None:
-            # sort subjects by their cluster assignment in the consensus
-            # for each cluster, reorder subjects (rows)
+            # sort subjects by their cluster assignment in the consensus for
+            # each cluster, then reorder subjects (rows)
             reordered, row_idx = [], []
             for cl in np.unique(consensus):
                 cl, = np.where(consensus == cl)
@@ -299,6 +302,7 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
                 reordered += [assignments[idx]]
                 row_idx += idx
             assignments = np.row_stack(reordered)
+
         # otherwise, just do a massive reordering of all the rows
         else:
             row_idx = list(_reorder_rows(assignments))
