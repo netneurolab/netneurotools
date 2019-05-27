@@ -9,6 +9,7 @@ from typing import Iterable
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa
+import nibabel as nib
 import numpy as np
 from scipy.stats import zscore
 
@@ -101,15 +102,13 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         Angle of the rotation of the labels. Available only if `{x,y}labels`
         provided. Default : xlabelrotation: 90, ylabelrotation: 0
     kwargs : key-value mapping
-        Keyword arguments for `sns.heatmap()`
+        Keyword arguments for `plt.imshow()`
 
     Returns
     -------
     ax : matplotlib.axes.Axes
         Axis object containing plot
     """
-
-    import seaborn as sns
 
     # get indices for sorting consensus
     if inds is None:
@@ -118,17 +117,9 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
 
-    opts = dict(
-        ax=ax,
-        mask=np.eye(len(data)),
-        square=True,
-        xticklabels=[],
-        yticklabels=[]
-    )
-    opts.update(**kwargs)
-
     # plot data re-ordered based on community and node strength
-    ax = sns.heatmap(data[np.ix_(inds, inds)], **opts)
+    coll = ax.imshow(data[np.ix_(inds, inds)], **kwargs)
+    ax.figure.colorbar(coll)
 
     # draw borders around communities
     bounds = _grid_communities(communities)
@@ -221,7 +212,6 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Scene object containing plot
     """
 
-    import nibabel as nib
     from .datasets import fetch_conte69
     try:
         from mayavi import mlab
@@ -338,7 +328,6 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
     """
 
     # hold off on imports until
-    import nibabel as nib
     from .utils import check_fs_subjid
     try:
         from surfer import Brain

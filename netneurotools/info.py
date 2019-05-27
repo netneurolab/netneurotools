@@ -21,11 +21,8 @@ INSTALL_REQUIRES = [
     'nibabel',
     'nilearn',
     'numpy>=1.14',
-    'pandas',
-    'requests',
     'scikit-learn',
     'scipy',
-    'seaborn'
 ]
 
 TESTS_REQUIRE = [
