@@ -102,7 +102,7 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         Angle of the rotation of the labels. Available only if `{x,y}labels`
         provided. Default : xlabelrotation: 90, ylabelrotation: 0
     kwargs : key-value mapping
-        Keyword arguments for `plt.imshow()`
+        Keyword arguments for `plt.pcolormesh()`
 
     Returns
     -------
@@ -118,12 +118,24 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # plot data re-ordered based on community and node strength
-    coll = ax.imshow(data[np.ix_(inds, inds)], **kwargs)
-    ax.figure.colorbar(coll)
+    plot_data = np.ma.masked_where(np.eye(len(data)), data[np.ix_(inds, inds)])
+    coll = ax.pcolormesh(plot_data, edgecolor='none', **kwargs)
+    ax.set(xlim=(0, plot_data.shape[1]), ylim=(0, plot_data.shape[0]))
+
+    for side in ['top', 'right', 'left', 'bottom']:
+        ax.spines[side].set_visible(False)
+
+    # invert the y-axis so it looks "as expected"
+    ax.invert_yaxis()
+
+    # plot the colorbar
+    cb = ax.figure.colorbar(coll)
+    if kwargs.get('rasterized', False):
+        cb.solids.set_rasterized(True)
 
     # draw borders around communities
     bounds = _grid_communities(communities)
-    bounds[0] += 0.1
+    bounds[0] += 0.2
     bounds[-1] -= 0.2
     for n, edge in enumerate(np.diff(bounds)):
         ax.add_patch(patches.Rectangle((bounds[n], bounds[n]),
