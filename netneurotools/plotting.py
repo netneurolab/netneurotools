@@ -609,6 +609,8 @@ def circleplot(data, vmin=None, vmax=None, xticklabels=None, yticklabels=None,
         ax.set(xticklabels=xticklabels)
     if yticklabels is not None:
         ax.set(yticklabels=yticklabels[::-1])
-    sns.despine(left=True, bottom=True)
+
+    for side in ['top', 'right', 'left', 'bottom']:
+        ax.spines[side].set_visible(False)
 
     return ax
