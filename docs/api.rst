@@ -88,6 +88,7 @@ Python Reference API
    plot_conte69
    plot_point_brain
    plot_fsaverage
+   circleplot
 
 .. _ref_stats:
 

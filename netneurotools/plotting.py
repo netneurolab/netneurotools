@@ -573,8 +573,38 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
 
 
 def circleplot(data, vmin=None, vmax=None, xticklabels=None, yticklabels=None,
-               cmap='rocket', cbar=True, ax=None, cbar_kws=None):
+               cmap='viridis', cbar=True, ax=None, cbar_kws=None):
     """
+    Plots `data` as a heatmap but with circles whose size scale with value
+
+    Parameters
+    ----------
+    data : (N, M) array_like
+        Data for an `N` node parcellation; determines color of points
+    vmin : float, optional
+        Minimum value for colorbar. If not provided, a robust estimation will
+        be used from values in `data`. Default: None
+    vmax : float, optional
+        Maximum value for colorbar. If not provided, a robust estimation will
+        be used from values in `data`. Default: None
+    {x,y}ticklabels : list, optional
+        Labels for {x,y} ticks. If not specified will use defaults of
+        :func:`maplotlib.pyplot.scatter`. Default: None
+    cmap : str, optional
+        Which colormap to use for plotting the data. Default: 'viridis'
+    cbar : bool, optional
+        Whether to display the colorbar. Default: True
+    ax : matplotlib.axes.Axes, optional
+        Axis on which to plot the heatmap. If none provided, the current axis
+        will be used. Default: None
+    cbar_kws : dict, optional
+        Passed to :func:`matplotlib.pyplot.colorbar` during creation of
+        colorbar. Only used if `cbar=True`. Default: None
+
+    Returns
+    -------
+    ax : matplotlib.axes.Axes
+        Axis object containing plot
     """
 
     data = np.asarray(data)
