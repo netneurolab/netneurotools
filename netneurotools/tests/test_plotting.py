@@ -3,15 +3,15 @@
 For testing netneurotools.plotting functionality
 """
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
 from netneurotools import plotting
 
-rs = np.random.RandomState(1234)
-
 
 def test_circleplot():
-    data = rs.random.rand(10, 10)
+    data = np.arange(100).reshape(10, 10) + 1
     fig, ax = plt.subplots(1, 1)
-    plotting.circleplot(data, ax=ax)
+    ax = plotting.circleplot(data, ax=ax)
+    assert isinstance(ax, mpl.axes.Axes)

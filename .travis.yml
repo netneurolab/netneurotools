@@ -4,9 +4,6 @@ dist: xenial
 notifications:
   email: change
 
-services:
-  - xvfb
-
 python:
   - 3.6
   - 3.7
@@ -51,6 +48,7 @@ before_install:
       pip install flake8;
     fi
   - if [ "${CHECK_TYPE}" == "test" ]; then
+      pip install pyqt5;
       pip install "pytest>=3.6" pytest-cov coverage codecov;
     fi
   - if [ ! -z "${INSTALL_NUMBA}"]; then
@@ -83,7 +81,7 @@ script:
       make html;
       make doctest;
     elif [ "${CHECK_TYPE}" == "test" ]; then
-      py.test --doctest-modules --cov-report term-missing --cov=netneurotools netneurotools;
+      pytest --doctest-modules --cov-report term-missing --cov=netneurotools netneurotools;
     else
       false;
     fi

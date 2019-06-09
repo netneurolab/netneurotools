@@ -610,9 +610,9 @@ def circleplot(data, vmin=None, vmax=None, xticklabels=None, yticklabels=None,
     data = np.asarray(data)
 
     if vmin is None:
-        vmin = np.percentile(data, 2)
+        vmin = data.dtype.type(np.percentile(data, 2))
     if vmax is None:
-        vmax = np.percentile(data, 98)
+        vmax = data.dtype.type(np.percentile(data, 98))
 
     # size must be bounded by vmin and vmax so it is comparable across graphs
     size = data.copy()
