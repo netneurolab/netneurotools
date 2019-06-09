@@ -572,8 +572,9 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
     return fig
 
 
-def circleplot(data, vmin=None, vmax=None, xticklabels=None, yticklabels=None,
-               cmap='viridis', cbar=True, ax=None, cbar_kws=None):
+def circleplot(data, vmin=None, vmax=None, robust=False, xticklabels=None,
+               yticklabels=None, cmap='viridis', cbar=True, ax=None,
+               cbar_kws=None):
     """
     Plots `data` as a heatmap but with circles whose size scale with value
 
@@ -582,11 +583,14 @@ def circleplot(data, vmin=None, vmax=None, xticklabels=None, yticklabels=None,
     data : (N, M) array_like
         Data for an `N` node parcellation; determines color of points
     vmin : float, optional
-        Minimum value for colorbar. If not provided, a robust estimation will
-        be used from values in `data`. Default: None
+        Minimum value for colorbar and circle size. If not provided lowest
+        value in `data` is used. Default: None
     vmax : float, optional
-        Maximum value for colorbar. If not provided, a robust estimation will
-        be used from values in `data`. Default: None
+        Maximum value for colorbar and circle size. If not provided highest
+        value in `data` is used. Default: None
+    robust : bool, optional
+        Whether to generate robust estimates of `vmin` and `vmax` if they are
+        not provided. Uses the 2nd/98th percentile of `data`. Default: False
     {x,y}ticklabels : list, optional
         Labels for {x,y} ticks. If not specified will use defaults of
         :func:`maplotlib.pyplot.scatter`. Default: None
@@ -608,16 +612,14 @@ def circleplot(data, vmin=None, vmax=None, xticklabels=None, yticklabels=None,
     """
 
     data = np.asarray(data)
-
+    dtype = data.dtype.type
     if vmin is None:
-        vmin = data.dtype.type(np.percentile(data, 2))
+        vmin = dtype(np.percentile(data, 2)) if robust else data.min()
     if vmax is None:
-        vmax = data.dtype.type(np.percentile(data, 98))
+        vmax = dtype(np.percentile(data, 98)) if robust else data.max()
 
     # size must be bounded by vmin and vmax so it is comparable across graphs
-    size = data.copy()
-    size[size < vmin] = vmin
-    size[size > vmax] = vmax
+    size = np.clip(data, vmin, vmax)
     rescaled = np.ravel((size - vmin) / (vmax - vmin)) + 1.0001
     if vmin < 0:  # cannot be negative
         rescaled += np.abs(vmin)
@@ -629,7 +631,8 @@ def circleplot(data, vmin=None, vmax=None, xticklabels=None, yticklabels=None,
     y = np.repeat(np.linspace(1, 0, len(data)), len(data))
     coll = ax.scatter(x, y, s=np.log(rescaled) * 1500, c=np.ravel(data),
                       cmap=cmap, vmin=vmin, vmax=vmax)
-    ax.set(xlim=(-0.1, 1.1), ylim=(-0.1, 1.1), xticks=x, yticks=x)
+    ax.set(xlim=(-0.1, 1.1), ylim=(-0.1, 1.1), xticks=x, yticks=x,
+           xticklabels=[], yticklabels=[])
     if cbar:
         if cbar_kws is None:
             cbar_kws = {}
