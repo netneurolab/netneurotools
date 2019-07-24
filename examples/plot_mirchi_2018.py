@@ -55,10 +55,10 @@ Xz, Yz = zscore(X, ddof=1), zscore(Y, ddof=1)
 # We can decompose that matrix using an SVD to generate left and right singular
 # vectors (``U`` and ``V``) and a diagonal array of singular values (``sval``).
 
-import numpy as np
+from scipy.linalg import svd
 
 cross_corr = (Yz.T @ Xz) / (len(Xz) - 1)
-U, sval, V = np.linalg.svd(cross_corr.T, full_matrices=False)
+U, sval, V = svd(cross_corr.T, full_matrices=False)
 V = V.T  # Transpose this so we have a feature x component array
 print('U shape: {}\nV shape: {}'.format(U.shape, V.shape))
 
@@ -120,6 +120,8 @@ fig.tight_layout()
 # each component. This is simply the squared singular value for each component
 # divided by the sum of all squared singular values. We'll plot this to get an
 # idea of how quickly it drops off.
+
+import numpy as np
 
 varexp = sval ** 2 / np.sum(sval ** 2)
 
@@ -204,10 +206,10 @@ for n, pval in enumerate(sprob):
 # functional connections in our ``X`` matrix.
 #
 # Estimating these bootstrapped distributions is much more computationally
-# intensive than estimating permutations, so we're only going to do 50 (though
+# intensive than estimating permutations, so we're only going to do 100 (though
 # using a higher number would be better!).
 
-n_boot = 50
+n_boot = 100
 
 # It's too memory-intensive to hold all the bootstrapped functional connection
 # weights at once, especially if we're using a lot of bootstraps. Since we just
