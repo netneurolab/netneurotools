@@ -74,7 +74,8 @@ def sort_communities(consensus, communities):
 
 def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
                      ax=None, figsize=(6.4, 4.8), xlabels=None, ylabels=None,
-                     xlabelrotation=90, ylabelrotation=0, **kwargs):
+                     xlabelrotation=90, ylabelrotation=0, cbar=True,
+                     **kwargs):
     """
     Plots `data` as heatmap with borders drawn around `communities`
 
@@ -101,6 +102,8 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     {x,y}labelrotation : float, optional
         Angle of the rotation of the labels. Available only if `{x,y}labels`
         provided. Default : xlabelrotation: 90, ylabelrotation: 0
+    cbar : bool, optional
+        Whether to plot colorbar. Default: True
     kwargs : key-value mapping
         Keyword arguments for `plt.pcolormesh()`
 
@@ -129,9 +132,10 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     ax.invert_yaxis()
 
     # plot the colorbar
-    cb = ax.figure.colorbar(coll)
-    if kwargs.get('rasterized', False):
-        cb.solids.set_rasterized(True)
+    if cbar:
+        cb = ax.figure.colorbar(coll)
+        if kwargs.get('rasterized', False):
+            cb.solids.set_rasterized(True)
 
     # draw borders around communities
     bounds = _grid_communities(communities)
