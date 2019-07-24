@@ -20,7 +20,7 @@ INSTALL_REQUIRES = [
     'matplotlib',
     'nibabel',
     'nilearn',
-    'numpy>=1.14',
+    'numpy>=1.16',
     'scikit-learn',
     'scipy',
 ]
