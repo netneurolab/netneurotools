@@ -204,14 +204,13 @@ for n, pval in enumerate(sprob):
 # functional connections in our ``X`` matrix.
 #
 # Estimating these bootstrapped distributions is much more computationally
-# intensive than estimating permutations, so we're only going to do 100 (though
+# intensive than estimating permutations, so we're only going to do 50 (though
 # using a higher number would be better!).
 
-n_boot = 100
-rs = np.random.RandomState(1234)
+n_boot = 50
 
 # It's too memory-intensive to hold all the bootstrapped functional connection
-# weights at once, especially if we're using >100 bootstraps. Since we just
+# weights at once, especially if we're using a lot of bootstraps. Since we just
 # want to calculate the standard error of this distribution we can keep
 # estimates of the sum and the squared sum of the bootstrapped weights and
 # generate the standard error from those.
@@ -230,7 +229,7 @@ for n in range(n_boot):
     bootsamp = rs.choice(len(X), size=len(X), replace=True)
     Xb, Yb = X[bootsamp], Y[bootsamp]
     # Suppress invalid value in true_divide warnings (we're converting NaNs so
-    # no point in getting annoying warnings about it.
+    # there's no point in getting annoying warnings about it).
     with np.errstate(invalid='ignore'):
         Xbz = np.nan_to_num(zscore(Xb, ddof=1))
         Ybz = np.nan_to_num(zscore(Yb, ddof=1))
