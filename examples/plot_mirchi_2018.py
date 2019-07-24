@@ -18,7 +18,9 @@ manuscript.
 from netneurotools.datasets import fetch_mirchi2018
 
 X, Y = fetch_mirchi2018(data_dir=None)
-print(X.shape, Y.shape)
+print('MyConnectome sessions: {}'.format(len(X)),
+      'Functional connectivity edges: {}'.format(X.shape[-1]),
+      'PANAS sub-scores: {}'.format(len(Y.dtype)), sep='\n')
 
 ###############################################################################
 # We see that we have 73 sessions of data from the MyConnectome project. The
@@ -81,7 +83,7 @@ x_scores, y_scores = Xz @ U, Yz @ V
 for comp in range(x_scores.shape[-1]):
     # Correlate the sample scores for each component
     corr = pearsonr(x_scores[:, comp], y_scores[:, comp])
-    print('Component {}: r = {:.2f}, p = {:.3f}'.format(comp, *corr))
+    print('Component {:>2}: r = {:.2f}, p = {:.3f}'.format(comp, *corr))
 
 ###############################################################################
 # Looks like the correlations are quite high for all the components! This isn't
@@ -100,8 +102,8 @@ import matplotlib.pyplot as plt
 
 y_corr = (Yz.T @ zscore(x_scores, ddof=1)) / (len(x_scores) - 1)
 for n, panas_correlation in enumerate(y_corr[:, 0]):
-    print('PANAS subscore {:<14} r = {:.2f}'.format(panas_measures[n] + ':',
-                                                    panas_correlation))
+    print('PANAS subscore {:<14} r = {:>5.2f}'.format(panas_measures[n] + ':',
+                                                      panas_correlation))
 
 fig, ax = plt.subplots(1, 1)
 ax.barh(range(len(y_corr))[::-1], width=y_corr[:, 0],)
