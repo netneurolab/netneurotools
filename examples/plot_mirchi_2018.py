@@ -17,7 +17,7 @@ manuscript.
 
 from netneurotools.datasets import fetch_mirchi2018
 
-X, Y = fetch_mirchi2018(data_dir=None)
+X, Y = fetch_mirchi2018(data_dir=None, verbose=0)
 print('MyConnectome sessions: {}'.format(len(X)),
       'Functional connectivity edges: {}'.format(X.shape[-1]),
       'PANAS sub-scores: {}'.format(len(Y.dtype)), sep='\n')
@@ -39,11 +39,13 @@ print('MyConnectome sessions: {}'.format(len(X)),
 # correlations (rather than covariances), making deriving inferences from the
 # data much easier.
 
+import numpy as np
 from scipy.stats import zscore
 
 panas_measures = list(Y.dtype.fields)
 Y = Y.view(float).reshape(len(Y), -1)
-Xz, Yz = zscore(X, ddof=1), zscore(Y, ddof=1)
+Xz = np.nan_to_num(zscore(X, ddof=1))
+Yz = np.nan_to_num(zscore(Y, ddof=1))
 
 ###############################################################################
 # Now that we've z-scored data we can run our PLS analyis.
@@ -60,7 +62,8 @@ from scipy.linalg import svd
 cross_corr = (Yz.T @ Xz) / (len(Xz) - 1)
 U, sval, V = svd(cross_corr.T, full_matrices=False)
 V = V.T  # Transpose this so we have a feature x component array
-print('U shape: {}\nV shape: {}'.format(U.shape, V.shape))
+print('U shape: {}'.format(U.shape),
+      'V shape: {}'.format(V.shape), sep='\n')
 
 ###############################################################################
 # The rows of ``U`` correspond to the functional connections from our ``X``
@@ -121,8 +124,6 @@ fig.tight_layout()
 # divided by the sum of all squared singular values. We'll plot this to get an
 # idea of how quickly it drops off.
 
-import numpy as np
-
 varexp = sval ** 2 / np.sum(sval ** 2)
 
 fig, ax = plt.subplots(1, 1)
@@ -156,14 +157,14 @@ for n in range(n_perm):
 
     # Regenerate the cross-correlation matrix and compute the decomposition
     cross_corr = (Ypz.T @ Xz) / (len(Xz) - 1)
-    Up, sp, Vp = np.linalg.svd(cross_corr.T, full_matrices=False)
+    Up, sp, Vp = svd(cross_corr.T, full_matrices=False)
     Vp = Vp.T
 
     # Align the new singular vectors to the original using Procrustes. We can
     # do this with EITHER the left or right singular vectors; we'll use the
     # left vectors since they're much smaller in size so this is more
     # computationally efficient.
-    N, _, P = np.linalg.svd(V.T @ Vp, full_matrices=False)
+    N, _, P = svd(V.T @ Vp, full_matrices=False)
     aligned = Vp @ np.diag(sp) @ (P.T @ N.T)
 
     # Calculate the singular values for the rotated, permuted component space
@@ -238,13 +239,13 @@ for n in range(n_boot):
 
     # Regenerate the cross-correlation matrix and compute the decomposition
     cross_corr = (Ybz.T @ Xbz) / (len(Xbz) - 1)
-    Ub, sb, Vb = np.linalg.svd(cross_corr.T, full_matrices=False)
+    Ub, sb, Vb = svd(cross_corr.T, full_matrices=False)
     Vb = Vb.T
 
     # Align the left singular vectors to the original decomposition using
     # a Procrustes and store the sum / sum of squares for bootstrap ratio
     # calculation later
-    N, _, P = np.linalg.svd(U.T @ Ub, full_matrices=False)
+    N, _, P = svd(U.T @ Ub, full_matrices=False)
     aligned = Ub @ np.diag(sb) @ (P.T @ N.T)
     U_sum += aligned
     U_square += np.square(aligned)
