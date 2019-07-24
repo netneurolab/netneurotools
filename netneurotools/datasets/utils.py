@@ -18,7 +18,7 @@ OSF_RESOURCES = {
         },
         'volume': {
             'url': OSF_API.format('mb37e', '5ce6bb438d6e05001860abca'),
-            'md5': 'b0b6ced54b7b86d150fc7461dec72639'
+            'md5': '088fb64b397557dfa01901f04f4cd9d2'
         }
     },
     'atl-pauli2018': [
