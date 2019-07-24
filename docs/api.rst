@@ -139,7 +139,7 @@ Python Reference API
 
 .. currentmodule:: netneurotools.datasets
 
-Functions to download datasets (atlases, templates, etc)
+Functions to download atlases and templates
 
 .. autosummary::
    :template: function.rst
@@ -147,7 +147,16 @@ Functions to download datasets (atlases, templates, etc)
 
     fetch_cammoun2012
     fetch_conte69
+    fetch_fsaverage
     fetch_pauli2018
+
+Functions to download real-world datasets
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   fetch_mirchi2018
 
 Functions to generate (pseudo-random) datasets
 
