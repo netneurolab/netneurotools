@@ -118,8 +118,7 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # plot data re-ordered based on community and node strength
-    coll = ax.imshow(data[np.ix_(inds, inds)], **kwargs)
-    ax.figure.colorbar(coll)
+    ax.imshow(data[np.ix_(inds, inds)], **kwargs)
 
     # draw borders around communities
     bounds = _grid_communities(communities)
