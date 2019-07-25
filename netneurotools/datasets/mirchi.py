@@ -178,6 +178,6 @@ def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
         Y = np.array([tuple(row) for row in np.column_stack(list(Y.values()))],
                      dtype=dict(names=list(Y.keys()), formats=['i8'] * len(Y)))
     else:
-        Y = np.genfromtxt(Y_fname, delimiter=',', names=True)
+        Y = np.genfromtxt(Y_fname, delimiter=',', names=True, dtype=int)
 
     return X, Y

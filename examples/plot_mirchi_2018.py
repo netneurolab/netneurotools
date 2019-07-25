@@ -39,13 +39,13 @@ print('MyConnectome sessions: {}'.format(len(X)),
 # correlations (rather than covariances), making deriving inferences from the
 # data much easier.
 
-import numpy as np
+from numpy.lib.recfunctions import structured_to_unstructured
 from scipy.stats import zscore
 
 panas_measures = list(Y.dtype.fields)
-Y = Y.view(float).reshape(len(Y), -1)
-Xz = np.nan_to_num(zscore(X, ddof=1))
-Yz = np.nan_to_num(zscore(Y, ddof=1))
+Y = structured_to_unstructured(Y)
+Xz = zscore(X, ddof=1)
+Yz = zscore(Y, ddof=1)
 
 ###############################################################################
 # Now that we've z-scored data we can run our PLS analyis.
@@ -124,7 +124,7 @@ fig.tight_layout()
 # divided by the sum of all squared singular values. We'll plot this to get an
 # idea of how quickly it drops off.
 
-varexp = sval ** 2 / np.sum(sval ** 2)
+varexp = sval ** 2 / sum(sval ** 2)
 
 fig, ax = plt.subplots(1, 1)
 ax.plot(varexp * 100, '.-')
@@ -144,8 +144,10 @@ ax.set(xlabel='Component #', ylabel='Variance explained (%)')
 # variances for each component and use that to examine the relative likelihood
 # of our original components explaining as much variance as they do.
 
+import numpy as np
+
 n_perm = 1000
-rs = np.random.RandomState(1234)
+rs = np.random.RandomState(1234)  # Set a random seed for reproducibility
 
 sval_perm = np.zeros((len(varexp), n_perm))
 
