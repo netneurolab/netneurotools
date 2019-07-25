@@ -91,6 +91,9 @@ def _get_fc(data_dir=None, resume=True, verbose=1):
         out = urlopen(TIMESERIES.format(ses))
         if out.status == 200:
             ts.append(np.loadtxt(out.readlines()))
+        else:
+            raise HTTPError('Failed to fetch time series data: session {}'
+                            .format(ses))
 
     # get upper triangle of correlation matrix for each session
     fc = [np.corrcoef(ses.T)[np.tril_indices(len(ses.T), k=-1)] for ses in ts]
@@ -175,6 +178,6 @@ def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
         Y = np.array([tuple(row) for row in np.column_stack(list(Y.values()))],
                      dtype=dict(names=list(Y.keys()), formats=['i8'] * len(Y)))
     else:
-        Y = np.genfromtxt(Y_fname, delimiter=',', names=True)
+        Y = np.genfromtxt(Y_fname, delimiter=',', names=True, dtype=int)
 
     return X, Y

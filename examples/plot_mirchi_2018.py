@@ -17,7 +17,7 @@ manuscript.
 
 from netneurotools.datasets import fetch_mirchi2018
 
-X, Y = fetch_mirchi2018(data_dir=None)
+X, Y = fetch_mirchi2018(data_dir=None, verbose=0)
 print('MyConnectome sessions: {}'.format(len(X)),
       'Functional connectivity edges: {}'.format(X.shape[-1]),
       'PANAS sub-scores: {}'.format(len(Y.dtype)), sep='\n')
@@ -39,11 +39,13 @@ print('MyConnectome sessions: {}'.format(len(X)),
 # correlations (rather than covariances), making deriving inferences from the
 # data much easier.
 
+from numpy.lib.recfunctions import structured_to_unstructured
 from scipy.stats import zscore
 
 panas_measures = list(Y.dtype.fields)
-Y = Y.view(float).reshape(len(Y), -1)
-Xz, Yz = zscore(X, ddof=1), zscore(Y, ddof=1)
+Y = structured_to_unstructured(Y)
+Xz = zscore(X, ddof=1)
+Yz = zscore(Y, ddof=1)
 
 ###############################################################################
 # Now that we've z-scored data we can run our PLS analyis.
@@ -55,12 +57,13 @@ Xz, Yz = zscore(X, ddof=1), zscore(Y, ddof=1)
 # We can decompose that matrix using an SVD to generate left and right singular
 # vectors (``U`` and ``V``) and a diagonal array of singular values (``sval``).
 
-import numpy as np
+from scipy.linalg import svd
 
 cross_corr = (Yz.T @ Xz) / (len(Xz) - 1)
-U, sval, V = np.linalg.svd(cross_corr.T, full_matrices=False)
+U, sval, V = svd(cross_corr.T, full_matrices=False)
 V = V.T  # Transpose this so we have a feature x component array
-print('U shape: {}\nV shape: {}'.format(U.shape, V.shape))
+print('U shape: {}'.format(U.shape),
+      'V shape: {}'.format(V.shape), sep='\n')
 
 ###############################################################################
 # The rows of ``U`` correspond to the functional connections from our ``X``
@@ -121,7 +124,7 @@ fig.tight_layout()
 # divided by the sum of all squared singular values. We'll plot this to get an
 # idea of how quickly it drops off.
 
-varexp = sval ** 2 / np.sum(sval ** 2)
+varexp = sval ** 2 / sum(sval ** 2)
 
 fig, ax = plt.subplots(1, 1)
 ax.plot(varexp * 100, '.-')
@@ -141,8 +144,10 @@ ax.set(xlabel='Component #', ylabel='Variance explained (%)')
 # variances for each component and use that to examine the relative likelihood
 # of our original components explaining as much variance as they do.
 
+import numpy as np
+
 n_perm = 1000
-rs = np.random.RandomState(1234)
+rs = np.random.RandomState(1234)  # Set a random seed for reproducibility
 
 sval_perm = np.zeros((len(varexp), n_perm))
 
@@ -154,14 +159,14 @@ for n in range(n_perm):
 
     # Regenerate the cross-correlation matrix and compute the decomposition
     cross_corr = (Ypz.T @ Xz) / (len(Xz) - 1)
-    Up, sp, Vp = np.linalg.svd(cross_corr.T, full_matrices=False)
+    Up, sp, Vp = svd(cross_corr.T, full_matrices=False)
     Vp = Vp.T
 
     # Align the new singular vectors to the original using Procrustes. We can
     # do this with EITHER the left or right singular vectors; we'll use the
     # left vectors since they're much smaller in size so this is more
     # computationally efficient.
-    N, _, P = np.linalg.svd(V.T @ Vp, full_matrices=False)
+    N, _, P = svd(V.T @ Vp, full_matrices=False)
     aligned = Vp @ np.diag(sp) @ (P.T @ N.T)
 
     # Calculate the singular values for the rotated, permuted component space
@@ -208,10 +213,9 @@ for n, pval in enumerate(sprob):
 # using a higher number would be better!).
 
 n_boot = 100
-rs = np.random.RandomState(1234)
 
 # It's too memory-intensive to hold all the bootstrapped functional connection
-# weights at once, especially if we're using >100 bootstraps. Since we just
+# weights at once, especially if we're using a lot of bootstraps. Since we just
 # want to calculate the standard error of this distribution we can keep
 # estimates of the sum and the squared sum of the bootstrapped weights and
 # generate the standard error from those.
@@ -230,20 +234,20 @@ for n in range(n_boot):
     bootsamp = rs.choice(len(X), size=len(X), replace=True)
     Xb, Yb = X[bootsamp], Y[bootsamp]
     # Suppress invalid value in true_divide warnings (we're converting NaNs so
-    # no point in getting annoying warnings about it.
+    # there's no point in getting annoying warnings about it).
     with np.errstate(invalid='ignore'):
         Xbz = np.nan_to_num(zscore(Xb, ddof=1))
         Ybz = np.nan_to_num(zscore(Yb, ddof=1))
 
     # Regenerate the cross-correlation matrix and compute the decomposition
     cross_corr = (Ybz.T @ Xbz) / (len(Xbz) - 1)
-    Ub, sb, Vb = np.linalg.svd(cross_corr.T, full_matrices=False)
+    Ub, sb, Vb = svd(cross_corr.T, full_matrices=False)
     Vb = Vb.T
 
     # Align the left singular vectors to the original decomposition using
     # a Procrustes and store the sum / sum of squares for bootstrap ratio
     # calculation later
-    N, _, P = np.linalg.svd(U.T @ Ub, full_matrices=False)
+    N, _, P = svd(U.T @ Ub, full_matrices=False)
     aligned = Ub @ np.diag(sb) @ (P.T @ N.T)
     U_sum += aligned
     U_square += np.square(aligned)
