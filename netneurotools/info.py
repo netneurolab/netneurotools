@@ -2,7 +2,11 @@
 
 __author__ = 'netneurolab'
 __copyright__ = 'Copyright 2018, netneurotools developers'
-__credits__ = ['Ross Markello', 'Bratislav Misic', 'Golia Shafiei']
+__credits__ = [
+    'Ross Markello',
+    'Bratislav Misic',
+    'Golia Shafiei',
+]
 __license__ = 'BSD-3'
 __maintainer__ = 'Network Neuroscience Lab'
 __email__ = 'rossmarkello@gmail.com'
