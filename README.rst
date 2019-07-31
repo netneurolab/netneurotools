@@ -21,7 +21,7 @@ Usage
 -----
 
 Check out our `documentation <https://netneurotools.readthedocs.io/en/latest>`_
-for information on how to install and use ``netneurotools``!
+for information on how to install and use ``netneurotools``.
 
 .. _development:
 
