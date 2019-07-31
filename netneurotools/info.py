@@ -4,6 +4,7 @@ __author__ = 'netneurolab'
 __copyright__ = 'Copyright 2018, netneurotools developers'
 __credits__ = [
     'Justine Hansen',
+    'Zhen-Qi Liu',
     'Ross Markello',
     'Bratislav Misic',
     'Golia Shafiei',
