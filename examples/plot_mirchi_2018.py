@@ -146,7 +146,7 @@ ax.set(xlabel='Component #', ylabel='Variance explained (%)')
 
 import numpy as np
 
-n_perm = 1000
+n_perm = 500
 rs = np.random.RandomState(1234)  # Set a random seed for reproducibility
 
 sval_perm = np.zeros((len(varexp), n_perm))
@@ -211,7 +211,7 @@ for n, pval in enumerate(sprob):
 # intensive than estimating permutations, so we're only going to do 100 (though
 # using a higher number would be better!).
 
-n_boot = 100
+n_boot = 50
 
 # It's too memory-intensive to hold all the bootstrapped functional connection
 # weights at once, especially if we're using a lot of bootstraps. Since we just
