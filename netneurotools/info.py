@@ -7,8 +7,10 @@ __credits__ = [
     'Justine Hansen',
     'Zhen-Qi Liu',
     'Ross Markello',
-    'Bratislav Misic',
+    'Bratislav Mišić',
     'Golia Shafiei',
+    'Estefany Suárez',
+    'Bertha Vázquez-Rodríguez'
 ]
 __license__ = 'BSD-3'
 __maintainer__ = 'Network Neuroscience Lab'

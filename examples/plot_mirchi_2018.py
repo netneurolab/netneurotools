@@ -159,15 +159,15 @@ for n in range(n_perm):
 
     # Regenerate the cross-correlation matrix and compute the decomposition
     cross_corr = (Ypz.T @ Xz) / (len(Xz) - 1)
-    Up, sp, Vp = svd(cross_corr.T, full_matrices=False)
-    Vp = Vp.T
+    U_new, sval_new, V_new = svd(cross_corr.T, full_matrices=False)
+    V_new = V_new.T
 
     # Align the new singular vectors to the original using Procrustes. We can
     # do this with EITHER the left or right singular vectors; we'll use the
     # left vectors since they're much smaller in size so this is more
     # computationally efficient.
-    N, _, P = svd(V.T @ Vp, full_matrices=False)
-    aligned = Vp @ np.diag(sp) @ (P.T @ N.T)
+    N, _, P = svd(V.T @ V_new, full_matrices=False)
+    aligned = V_new @ np.diag(sval_new) @ (P.T @ N.T)
 
     # Calculate the singular values for the rotated, permuted component space
     sval_perm[:, n] = np.sqrt(np.sum(aligned ** 2, axis=0))
@@ -175,8 +175,7 @@ for n in range(n_perm):
 # Calculate the number of permuted singular values larger than the original
 # and normalize by the number of permutations. We can treat this value as a
 # non-parametric p-value.
-sp = np.sum(sval_perm > sval[:, None], axis=1) + 1
-sprob = sp / (n_perm + 1)
+sprob = (np.sum(sval_perm > sval[:, None], axis=1) + 1) / (n_perm + 1)
 for n, pval in enumerate(sprob):
     print('Component {}: non-parametric p = {:.3f}'.format(n, pval))
 
@@ -241,16 +240,16 @@ for n in range(n_boot):
 
     # Regenerate the cross-correlation matrix and compute the decomposition
     cross_corr = (Ybz.T @ Xbz) / (len(Xbz) - 1)
-    Ub, sb, Vb = svd(cross_corr.T, full_matrices=False)
-    Vb = Vb.T
+    U_new, sval_new, V_new = svd(cross_corr.T, full_matrices=False)
 
     # Align the left singular vectors to the original decomposition using
     # a Procrustes and store the sum / sum of squares for bootstrap ratio
     # calculation later
-    N, _, P = svd(U.T @ Ub, full_matrices=False)
-    aligned = Ub @ np.diag(sb) @ (P.T @ N.T)
+    N, _, P = svd(U.T @ U_new, full_matrices=False)
+    aligned = U_new @ np.diag(sval_new) @ (P.T @ N.T)
     U_sum += aligned
     U_square += np.square(aligned)
+    del cross_corr, U_new, sval_new, V_new, aligned
 
     # For the right singular vectors we actually want to calculate the
     # bootstrapped distribution of the CORRELATIONS between the original PANAS
@@ -261,6 +260,7 @@ for n in range(n_boot):
     # scores with those projections
     Xbzs = zscore(Xb @ (U / np.linalg.norm(U, axis=0, keepdims=True)), ddof=1)
     y_corr_distrib[..., n] = (Ybz.T @ Xbzs) / (len(Xbzs) - 1)
+    del Xbz, Ybz, Xbzs
 
 # Calculate the standard error of the bootstrapped functional connection
 # weights and generate bootstrap ratios from these values.
