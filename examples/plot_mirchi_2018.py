@@ -140,7 +140,7 @@ ax.set(xlabel='Component #', ylabel='Variance explained (%)')
 # dimensions we estimate are the "same" as the original SVD, we'll use an
 # orthogonal Procrustes rotation to align them, and then calculate the variance
 # explained by each of the "permuted" dimensions derived from the permuted
-# data. If we do this >1,000 times we can generate a distribution of explained
+# data. If we do this enough times we can generate a distribution of explained
 # variances for each component and use that to examine the relative likelihood
 # of our original components explaining as much variance as they do.
 
@@ -208,7 +208,7 @@ for n, pval in enumerate(sprob):
 # functional connections in our ``X`` matrix.
 #
 # Estimating these bootstrapped distributions is much more computationally
-# intensive than estimating permutations, so we're only going to do 100 (though
+# intensive than estimating permutations, so we're only going to do 50 (though
 # using a higher number would be better!).
 
 n_boot = 50
@@ -249,6 +249,8 @@ for n in range(n_boot):
     aligned = U_new @ np.diag(sval_new) @ (P.T @ N.T)
     U_sum += aligned
     U_square += np.square(aligned)
+
+    # Delete intermediate variables to reduce memory usage
     del cross_corr, U_new, sval_new, V_new, aligned
 
     # For the right singular vectors we actually want to calculate the
@@ -260,6 +262,8 @@ for n in range(n_boot):
     # scores with those projections
     Xbzs = zscore(Xb @ (U / np.linalg.norm(U, axis=0, keepdims=True)), ddof=1)
     y_corr_distrib[..., n] = (Ybz.T @ Xbzs) / (len(Xbzs) - 1)
+
+    # Delete intermediate variables to reduce memory usage
     del Xbz, Ybz, Xbzs
 
 # Calculate the standard error of the bootstrapped functional connection
@@ -318,10 +322,11 @@ bsr_mat = np.zeros((630, 630))
 bsr_mat[np.tril_indices_from(bsr_mat, k=-1)] = bootstrap_ratios[:, 0]
 bsr_mat = bsr_mat + bsr_mat.T
 
-plot_mod_heatmap(bsr_mat, comm_ids, vmin=-4, vmax=4, cmap='RdBu_r', ax=ax1,
-                 edgecolor='red', cbar=False, xlabels=comm_labels,
-                 xlabelrotation=45)
-ax1.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False,
+plot_mod_heatmap(bsr_mat, comm_ids, vmin=-4, vmax=4, ax=ax1,
+                 cmap='RdBu_r', cbar=False, edgecolor='red',
+                 xlabels=comm_labels, xlabelrotation=45)
+ax1.tick_params(top=True, labeltop=True,
+                bottom=False, labelbottom=False,
                 length=0)
 ax1.set_xticklabels(ax1.get_xticklabels(), ha='left')
 ax1.set(yticks=[], yticklabels=[])
@@ -336,13 +341,11 @@ cbar.outline.set_linewidth(0)
 
 ax2.barh(range(len(y_corr))[::-1], y_corr[:, 0])
 x_error = [y_corr_ll[:, 0] - y_corr[:, 0], y_corr_ul[:, 0] - y_corr[:, 0]]
-ax2.errorbar(y=range(len(y_corr))[::-1], x=y_corr[:, 0],
-             xerr=np.abs(x_error),
-             fmt='none', ecolor='black', elinewidth=1)
+ax2.errorbar(x=y_corr[:, 0], y=range(len(y_corr))[::-1],
+             xerr=np.abs(x_error), fmt='none', ecolor='black', elinewidth=1)
 ax2.set(xlim=[-1, 1], ylim=(-0.75, 12.75),
-        xlabel='correlation with network score',
         xticks=[-1, -0.5, 0, 0.5, 1], yticks=range(len(y_corr))[::-1],
-        yticklabels=panas_measures)
+        xlabel='correlation with network score', yticklabels=panas_measures)
 ax2.vlines(0, *ax2.get_ylim(), linewidth=0.5)
 
 # Plot the projected scores for the left (i.e., "network" or functional
