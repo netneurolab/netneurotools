@@ -398,6 +398,9 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
 
     seed = check_random_state(seed)
 
+    coords = np.asanyarray(coords)
+    hemiid = np.asanyarray(hemiid).astype(int)
+
     # check supplied coordinate shape
     if coords.shape[-1] != 3 or coords.squeeze().ndim != 2:
         raise ValueError('Provided `coords` must be of shape (N, 3), not {}'
@@ -414,7 +417,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     if np.max(hemiid) != 1 or np.min(hemiid) != 0:
         raise ValueError('Hemiid must have values in {0, 1} denoting left and '
                          'right hemisphere coordinates, respectively. '
-                         'Provided array contains values: {}'
+                         + 'Provided array contains values: {}'
                          .format(np.unique(hemiid)))
 
     # empty array to store resampling indices
