@@ -378,7 +378,36 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
 
     Notes
     -----
-    The ``exact`` parameter controls
+    By default, this function uses the minimum Euclidean distance between the
+    original coordinates and the new, rotated coordinates to generate a
+    resampling array after each spin. Unfortunately, this can (with some
+    frequency) lead to multiple coordinates being re-assigned the same value:
+
+        >>> from netneurotools import stats as nnstats
+        >>> coords = [[0, 0, 1], [1, 0, 0], [0, 0, 1], [1, 0, 0]]
+        >>> hemi = [0, 0, 1, 1]
+        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1)[0]
+        array([[0],
+               [0],
+               [2],
+               [3]], dtype=int32)
+
+    While this is reasonable in most circumstances, if you feel incredibly
+    strongly about having a perfect "permutation" (i.e., all indices appear
+    once and exactly once in the resampling), you can set the ``exact``
+    parameter to True:
+
+        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, exact=True, seed=1)[0]
+        array([[1],
+               [0],
+               [2],
+               [3]], dtype=int32)
+
+    Note that setting this parameter will *dramatically* increase the runtime
+    of the function. Refer to [ST1]_ for information on why the default (i.e.,
+    ``exact`` set to False) suffices in most cases.
+
+    For the original MATLAB implementation of this function refer to [ST4]_.
 
     References
     ----------
@@ -394,6 +423,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
        Auzias, G., & Germanaud, D. (2018). SPANOL (SPectral ANalysis of Lobes):
        A Spectral Clustering Framework for Individual and Group Parcellation of
        Cortical Surfaces in Lobes. Frontiers in Neuroscience, 12, 354.
+
+    .. [ST4] https://github.com/spin-test/spin-test
     """
 
     seed = check_random_state(seed)
@@ -472,6 +503,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
 
             if check_duplicates:
                 if np.any(np.all(resampled[:, None] == spinsamples[:, :n], 0)):
+                    duplicated = True
+                elif np.all(resampled == inds):
                     duplicated = True
 
         # if we broke out because we tried 500 rotations and couldn't generate
