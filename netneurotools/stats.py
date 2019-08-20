@@ -9,7 +9,7 @@ import numpy as np
 from scipy import optimize
 from scipy.spatial.distance import cdist
 from scipy.spatial import cKDTree
-from scipy.stats import zmap
+from scipy.stats import zmap, zscore
 from scipy.stats.stats import _chk_asarray, _chk2_asarray
 from sklearn.utils.validation import check_random_state
 
@@ -175,6 +175,8 @@ def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
 
     Returns
     -------
+    stat : float or numpy.ndarray
+        Difference from `popmean`
     pvalue : float or numpy.ndarray
         Non-parametric p-value
 
@@ -182,6 +184,9 @@ def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
     -----
     Providing multiple values to `popmean` to run *independent* tests in
     parallel is not currently supported.
+
+    The lowest p-value that can be returned by this function is equal to 1 /
+    (`n_perm` + 1).
 
     Examples
     --------
@@ -194,16 +199,16 @@ def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
     first case.
 
     >>> stats.permtest_1samp(rvs, 5.0)
-    array([0.48551449, 0.95904096])
+    (array([-0.985602  , -0.05204969]), array([0.48551449, 0.95904096]))
     >>> stats.permtest_1samp(rvs, 0.0)
-    array([0.00699301, 0.000999  ])
+    (array([4.014398  , 4.94795031]), array([0.00699301, 0.000999  ]))
 
     Example using axis and non-scalar dimension for population mean
 
     >>> stats.permtest_1samp(rvs, [5.0, 0.0])
-    array([0.48551449, 0.000999  ])
+    (array([-0.985602  ,  4.94795031]), array([0.48551449, 0.000999  ]))
     >>> stats.permtest_1samp(rvs.T, [5.0, 0.0], axis=1)
-    array([0.51548452, 0.000999  ])
+    (array([-0.985602  ,  4.94795031]), array([0.51548452, 0.000999  ]))
     """
 
     a, axis = _chk_asarray(a, axis)
@@ -216,7 +221,7 @@ def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
 
     # center `a` around `popmean` and calculate original mean
     zeroed = a - popmean
-    true_mean = zeroed.mean(axis=axis)
+    true_mean = zeroed.mean(axis=axis) / 1
 
     # array to hold counts; use 1s instead of 0s to account for original value
     permutations = np.ones(np.delete(a.shape, axis)) if axis is not None else 1
@@ -227,7 +232,9 @@ def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
         flipped = zeroed * rs.choice([-1, 1], size=zeroed.shape)  # sign flip
         permutations += np.abs(flipped.mean(axis=axis)) >= np.abs(true_mean)
 
-    return permutations / (n_perm + 1)  # + 1 in denom accounts for true_mean
+    pvals = permutations / (n_perm + 1)  # + 1 in denom accounts for true_corr
+
+    return true_mean, pvals
 
 
 def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
@@ -254,8 +261,15 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
 
     Returns
     -------
+    stat : float or numpy.ndarray
+        Average difference between `a` and `b`
     pvalue : float or numpy.ndarray
         Non-parametric p-value
+
+    Notes
+    -----
+    The lowest p-value that can be returned by this function is equal to 1 /
+    (`n_perm` + 1).
 
     Examples
     --------
@@ -266,12 +280,12 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
     >>> rvs2 = (np.random.normal(loc=5, scale=10, size=500)
     ...         + np.random.normal(scale=0.2, size=500))
     >>> stats.permtest_rel(rvs1, rvs2)
-    0.8021978021978022
+    (-0.16506275161572695, 0.8021978021978022)
 
     >>> rvs3 = (np.random.normal(loc=8, scale=10, size=500)
     ...         + np.random.normal(scale=0.2, size=500))
     >>> stats.permtest_rel(rvs1, rvs3)
-    0.000999000999000999
+    (2.40533726097883, 0.000999000999000999)
     """
 
     a, b, axis = _chk2_asarray(a, b, axis)
@@ -279,7 +293,7 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
 
     # calculate original difference in means
     ab = np.stack([a, b], axis=0)
-    true_diff = np.diff(ab, axis=0).squeeze().mean(axis=axis)
+    true_diff = np.diff(ab, axis=0).squeeze().mean(axis=axis) / 1
 
     # array to hold counts; use 1s instead of 0s to account for original value
     permutations = np.ones(np.delete(a.shape, axis)) if axis is not None else 1
@@ -293,7 +307,156 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
         perm_diff = np.diff(ab[tuple(reidx)], axis=0).squeeze().mean(axis=axis)
         permutations += np.abs(perm_diff) >= np.abs(true_diff)
 
-    return permutations / (n_perm + 1)  # + 1 in denom accounts for true_diff
+    pvals = permutations / (n_perm + 1)  # + 1 in denom accounts for true_corr
+
+    return true_diff, pvals
+
+
+def permtest_corr(a, b, axis=0, n_perm=1000, seed=0, resamples=None):
+    """
+    Non-parametric equivalent of :py:func:`scipy.stats.pearsonr`
+
+    Generates two-tailed p-value for hypothesis of whether samples `a` and `b`
+    are correlated
+
+    Parameters
+    ----------
+    a,b : (N[, M]) array_like
+        Sample observations. These arrays must have the same length and either
+        an equivalent number of columns or be broadcastable
+    axis : int or None, optional
+        Axis along which to compute test. If None, compute over whole arrays
+        of `a` and `b`. Default: 0
+    n_perm : int, optional
+        Number of permutations to assess. Unless `a` and `b` are very small
+        along `axis` this will approximate a randomization test via Monte
+        Carlo simulations. Default: 1000
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation. Set to None for "randomness".
+        Default: 0
+    resamples : (N, P) array_like, optional
+        Resampling array used to shuffle `a` when generating null distribution
+        of correlations. This array must have the same length as `a` and `b`
+        and should have at least the same number of columns as `n_perm` (if it
+        has more then only `n_perm` columns will be used. When not specified a
+        standard permutation is used to shuffle `a`. Default: None
+
+    Returns
+    -------
+    corr : float or numpyndarray
+        Correlations
+    pvalue : float or numpy.ndarray
+        Non-parametric p-value
+
+    Notes
+    -----
+    The lowest p-value that can be returned by this function is equal to 1 /
+    (`n_perm` + 1).
+
+    Examples
+    --------
+    >>> from netneurotools import datasets, stats
+
+    >>> np.random.seed(12345678)  # set random seed for reproducible results
+    >>> x, y = datasets.make_correlated_xy(corr=0.1, size=100)
+    >>> stats.permtest_corr(x, y)
+    (0.10032564626876286, 0.3046953046953047)
+
+    >>> x, y = datasets.make_correlated_xy(corr=0.5, size=100)
+    >>> stats.permtest_corr(x, y)
+    (0.500040365781984, 0.000999000999000999)
+
+    Also works with multiple columns by either broadcasting the smaller array
+    to the larger:
+
+    >>> z = x + np.random.normal(loc=1, size=100)
+    >>> stats.permtest_corr(x, np.column_stack([y, z]))
+    (array([0.50004037, 0.25843187]), array([0.000999  , 0.01098901]))
+
+    or by using matching columns in the two arrays (e.g., `x` and `y` vs
+    `a` and `b`):
+
+    >>> a, b = datasets.make_correlated_xy(corr=0.9, size=100)
+    >>> stats.permtest_corr(np.column_stack([x, a]), np.column_stack([y, b]))
+    (array([0.50004037, 0.89927523]), array([0.000999, 0.000999]))
+    """
+
+    a, b, axis = _chk2_asarray(a, b, axis)
+    rs = check_random_state(seed)
+
+    # divide by one forces coercion to float if ndim = 0
+    true_corr = efficient_pearsonr(a, b) / 1
+
+    # array to hold counts; use 1s instead of 0s to account for original value
+    ash, bsh = np.delete(a.shape, axis), np.delete(b.shape, axis)
+    permutations = np.ones(ash if ash.ndim > bsh.ndim else bsh)
+
+    if resamples is not None:
+        if n_perm > resamples.shape[-1]:
+            raise ValueError('Number of permutations requested exceeds second '
+                             'dimension of resampling array provided. '
+                             'n_perm = {} > {}'
+                             .format(n_perm, resamples.shape[-1]))
+
+    for perm in range(n_perm):
+        # permute `a` and determine whether correlations exceed original
+        if resamples is None:
+            ap = a[rs.permutation(len(a))]
+        else:
+            ap = a[resamples[:, perm]]
+        permutations += np.abs(efficient_pearsonr(ap, b)) >= np.abs(true_corr)
+
+    pvals = permutations / (n_perm + 1)  # + 1 in denom accounts for true_corr
+
+    return true_corr / 1, pvals
+
+
+def efficient_pearsonr(a, b):
+    """
+    Computes correlation of matching columns in `a` and `b`
+
+    Parameters
+    ----------
+    a,b : array_like
+        Sample observations. These arrays must have the same length and either
+        an equivalent number of columns or be broadcastable
+
+    Returns
+    -------
+    corr : numpy.ndarray
+        Correlations between matching columns in `a` and `b`
+
+    Examples
+    --------
+    >>> from netneurotools import datasets, stats
+
+    Generate some not-very-correlated and some highly-correlated data:
+
+    >>> np.random.seed(12345678)  # set random seed for reproducible results
+    >>> x1, y1 = datasets.make_correlated_xy(corr=0.1, size=100)
+    >>> x2, y2 = datasets.make_correlated_xy(corr=0.8, size=100)
+
+    Stack the columns and calculate both correlations simultaneously:
+
+    >>> x = np.column_stack((x1, x2))
+    >>> y = np.column_stack((y1, y2))
+    >>> stats.efficient_pearsonr(x, y)
+    array([0.10032565, 0.79961189])
+    """
+
+    a, b, axis = _chk2_asarray(a, b, 0)
+    a, b = a.reshape(len(a), -1), b.reshape(len(b), -1)
+
+    if len(a) != len(b):
+        raise ValueError('Provided arrays do not have same length')
+
+    if (a.shape[1] != b.shape[1]):
+        a, b = np.broadcast_arrays(a, b)
+
+    corr = np.sum(zscore(a, ddof=1) * zscore(b, ddof=1), axis=0) / (len(a) - 1)
+    corr = np.clip(corr, -1, 1)  # fix rounding errors
+
+    return np.squeeze(corr)
 
 
 def _gen_rotation(seed=None):
