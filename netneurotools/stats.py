@@ -408,7 +408,7 @@ def permtest_corr(a, b, axis=0, n_perm=1000, seed=0, resamples=None):
 
     pvals = permutations / (n_perm + 1)  # + 1 in denom accounts for true_corr
 
-    return true_corr / 1, pvals
+    return true_corr, pvals
 
 
 def efficient_pearsonr(a, b):

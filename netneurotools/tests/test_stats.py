@@ -10,6 +10,26 @@ import pytest
 from netneurotools import stats
 
 
+@pytest.mark.xfail
+def test_permtest_1samp():
+    assert False
+
+
+@pytest.mark.xfail
+def test_permtest_rel():
+    assert False
+
+
+@pytest.mark.xfail
+def test_permtest_corr():
+    assert False
+
+
+@pytest.mark.xfail
+def test_efficient_pearsonr():
+    assert False
+
+
 def test_gen_rotation():
     # make a few rotations (some same / different)
     rout1, lout1 = stats._gen_rotation(seed=1234)
