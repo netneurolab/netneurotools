@@ -397,7 +397,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     once and exactly once in the resampling), you can set the ``exact``
     parameter to True:
 
-        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, exact=True, seed=1)[0]
+        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1,
+        ...                         exact=True)[0]
         array([[1],
                [0],
                [2],
