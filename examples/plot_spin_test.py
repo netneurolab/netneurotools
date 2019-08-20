@@ -3,9 +3,12 @@
 Spin-tests for significance testing
 ===================================
 
-This example shows how to perform "spin-tests" (Alexander-Bloch et al., 2018)
-to assess whether two brain patterns are correlated above and beyond what would
-be expected from spatially-autocorrelated null models.
+This example shows how to perform "spin-tests" (a la Alexander-Bloch et al.,
+2018, NeuroImage) to assess whether two brain patterns are correlated above and
+beyond what would be expected from a spatially-autocorrelated null model.
+
+For the original MATLAB toolbox published alongside the paper by
+Alexander-Bloch and colleagues refer to https://github.com/spin-test/spin-test.
 """
 
 ###############################################################################

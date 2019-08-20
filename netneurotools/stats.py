@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 from scipy import optimize
 from scipy.spatial.distance import cdist
+from scipy.spatial import cKDTree
 from scipy.stats import zmap
 from scipy.stats.stats import _chk_asarray, _chk2_asarray
 from sklearn.utils.validation import check_random_state
@@ -327,13 +328,22 @@ def _gen_rotation(seed=None):
     return rotate_l, rotate_r
 
 
-def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
+def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
+                    exact=False, seed=None):
     """
-    Generates resampling array for `coords` via rotational spins
+    Returns a resampling array for `coords` obtained from rotations / spins
 
-    Using the method initially proposed in [ST1]_ (and later modified / updated
-    based on findings in [ST2]_ and [ST3]_), this function can be used to
-    generate a resampling array for conducting spatial permutation tests.
+    Using the method initially proposed in [ST1]_ (and later modified + updated
+    based on findings in [ST2]_ and [ST3]_), this function applies random
+    rotations to the user-supplied `coords` in order to generate a resampling
+    array that preserves its spatial embedding. Rotations are generated for one
+    hemisphere and mirrored for the other (see `hemiid` for more information).
+
+    Due to irregular sampling of `coords` and the randomness of the rotations
+    it is possible that some "rotations" may resample with replacement (i.e.,
+    will not be a true permutation). The likelihood of this can be reduced by
+    either increasing the sampling density of `coords` or setting the ``exact``
+    parameter to True (though see Notes for more information on the latter).
 
     Parameters
     ----------
@@ -342,13 +352,19 @@ def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
         sphere
     hemiid : (N,) array_like
         Array denoting hemisphere designation of coordinates in `coords`, where
-        `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
-    exact : bool, optional
-        Whether each node/parcel/region must be uniquely re-assigned in every
-        rotation. Setting to True will drastically increase the runtime of this
-        function! Default: False
+        values should be {0, 1} denoting the different hemispheres. Rotations
+        are generated for one hemisphere and mirrored across the y-axis for the
+        other hemisphere.
     n_rotate : int, optional
-        Number of random rotations to generate. Default: 1000
+        Number of rotations to generate. Default: 1000
+    check_duplicates : bool, optional
+        Whether to check for and attempt to avoid duplicate resamplings. A
+        warnings will be raised if duplicates cannot be avoided. Setting to
+        True may increase the runtime of this function! Default: True
+    exact : bool, optional
+        Whether each node/parcel/region should be uniquely re-assigned in every
+        rotation. Setting to True will drastically increase the memory demands
+        and runtime of this function! Default: False
     seed : {int, np.random.RandomState instance, None}, optional
         Seed for random number generation. Default: None
 
@@ -359,6 +375,40 @@ def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
     cost : (`n_rotate`,) numpy.ndarray
         Cost (in distance between node assignments) of each rotation in
         `spinsamples`
+
+    Notes
+    -----
+    By default, this function uses the minimum Euclidean distance between the
+    original coordinates and the new, rotated coordinates to generate a
+    resampling array after each spin. Unfortunately, this can (with some
+    frequency) lead to multiple coordinates being re-assigned the same value:
+
+        >>> from netneurotools import stats as nnstats
+        >>> coords = [[0, 0, 1], [1, 0, 0], [0, 0, 1], [1, 0, 0]]
+        >>> hemi = [0, 0, 1, 1]
+        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1)[0]
+        array([[0],
+               [0],
+               [2],
+               [3]], dtype=int32)
+
+    While this is reasonable in most circumstances, if you feel incredibly
+    strongly about having a perfect "permutation" (i.e., all indices appear
+    once and exactly once in the resampling), you can set the ``exact``
+    parameter to True:
+
+        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1,
+        ...                         exact=True)[0]
+        array([[1],
+               [0],
+               [2],
+               [3]], dtype=int32)
+
+    Note that setting this parameter will *dramatically* increase the runtime
+    of the function. Refer to [ST1]_ for information on why the default (i.e.,
+    ``exact`` set to False) suffices in most cases.
+
+    For the original MATLAB implementation of this function refer to [ST4]_.
 
     References
     ----------
@@ -374,9 +424,14 @@ def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
        Auzias, G., & Germanaud, D. (2018). SPANOL (SPectral ANalysis of Lobes):
        A Spectral Clustering Framework for Individual and Group Parcellation of
        Cortical Surfaces in Lobes. Frontiers in Neuroscience, 12, 354.
+
+    .. [ST4] https://github.com/spin-test/spin-test
     """
 
     seed = check_random_state(seed)
+
+    coords = np.asanyarray(coords)
+    hemiid = np.asanyarray(hemiid).astype(int)
 
     # check supplied coordinate shape
     if coords.shape[-1] != 3 or coords.squeeze().ndim != 2:
@@ -391,18 +446,21 @@ def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
         raise ValueError('Provided `coords` and `hemiid` must have the same '
                          'length. Provided lengths: coords = {}, hemiid = {}'
                          .format(len(coords), len(hemiid)))
-    if not np.allclose(np.unique(hemiid), [0, 1]):
-        raise ValueError('Hemiid must have values of [0, 1] denoting left '
-                         'and right hemisphere coordinates, respectively. '
-                         'Provided array contains values: {}'
+    if np.max(hemiid) != 1 or np.min(hemiid) != 0:
+        raise ValueError('Hemiid must have values in {0, 1} denoting left and '
+                         'right hemisphere coordinates, respectively. '
+                         + 'Provided array contains values: {}'
                          .format(np.unique(hemiid)))
 
     # empty array to store resampling indices
-    spinsamples = np.zeros((len(coords), n_rotate), dtype=int)
+    # int32 should be enough; if you're ever providing `coords` with more than
+    # 2147483647 rows please reconsider your life choices
+    spinsamples = np.zeros((len(coords), n_rotate), dtype='int32')
     cost = np.zeros(n_rotate)
 
     # split coordinates into left / right hemispheres
-    inds_l, inds_r = np.where(hemiid == 0)[0], np.where(hemiid == 1)[0]
+    inds = np.arange(len(coords))
+    inds_l, inds_r = hemiid == 0, hemiid == 1
     coords_l, coords_r = coords[inds_l], coords[inds_r]
 
     # generate rotations and resampling array!
@@ -412,49 +470,53 @@ def gen_spinsamples(coords, hemiid, exact=False, n_rotate=1000, seed=None):
         count, duplicated = 0, True
         while duplicated and count < 500:
             count, duplicated = count + 1, False
-            resampled = np.zeros(len(coords), dtype=int)
+            resampled = np.zeros(len(coords), dtype='int32')
 
             # generate left + right hemisphere rotations
             left, right = _gen_rotation(seed=seed)
 
-            # calculate Euclidean distance between original and rotated coords
-            dist_l = cdist(coords_l, coords_l @ left)
-            dist_r = cdist(coords_r, coords_r @ right)
-
             # find mapping of rotated coords to original coords
-            # if we need an exact mapping (i.e., every node needs a unique
-            # assignment in the rotation) then we need to use an optimization
-            # procedure (i.e., the Hungarian algorithm)
             if exact:
+                # if we need an exact mapping (i.e., every node needs a unique
+                # assignment in the rotation) then we need to use an
+                # optimization procedure
+                #
+                # this requires calculating the FULL distance matrix, which is
+                # a nightmare with respect to memory (and frequently fails due
+                # to insufficient memory)
+                dist_l = cdist(coords_l, coords_l @ left)
+                dist_r = cdist(coords_r, coords_r @ right)
                 lrow, lcol = optimize.linear_sum_assignment(dist_l)
                 rrow, rcol = optimize.linear_sum_assignment(dist_r)
-            # otherwise, if nodes can be assigned multiple targets, we can just
-            # use the absolute minimum of the distances.
+                ccost = dist_l[lrow, lcol].sum() + dist_r[rrow, rcol].sum()
             else:
-                lrow, lcol = range(len(dist_l)), dist_l.argmin(axis=1)
-                rrow, rcol = range(len(dist_r)), dist_r.argmin(axis=1)
+                # if nodes can be assigned multiple targets, we can simply use
+                # the absolute minimum of the distances (no optimization
+                # required) which is _much_ lighter on memory
+                # huge thanks to: https://stackoverflow.com/a/47779290
+                dist_l, lcol = cKDTree(coords_l @ left).query(coords_l, 1)
+                dist_r, rcol = cKDTree(coords_r @ right).query(coords_r, 1)
+                ccost = dist_l.sum() + dist_r.sum()
 
             # generate resampling vector
-            resampled[inds_l] = inds_l[lcol]
-            resampled[inds_r] = inds_r[rcol]
+            resampled[inds_l] = inds[inds_l][lcol]
+            resampled[inds_r] = inds[inds_r][rcol]
 
-            # check whether this is a duplicate resampling; if so, try again
-            dupe_seq = resampled[:, None] == spinsamples[:, :n]
-            if dupe_seq.all(axis=0).any():
-                duplicated = True
+            if check_duplicates:
+                if np.any(np.all(resampled[:, None] == spinsamples[:, :n], 0)):
+                    duplicated = True
+                elif np.all(resampled == inds):
+                    duplicated = True
 
         # if we broke out because we tried 500 rotations and couldn't generate
         # a new one, just warn that we're using duplicate rotations and give up
+        # this should only be triggered if check_duplicates is set to True
         if count == 500 and not warned:
-            warnings.warn('WANRING: Duplicate rotations used. Check '
-                          'resampling array to determine real number of '
-                          'unique permutations.')
+            warnings.warn('Duplicate rotations used. Check resampling array '
+                          'to determine real number of unique permutations.')
             warned = True
 
-        # caclulate cost of rotation in terms of distance b/w node assignments
-        cost[n] = dist_l[lrow, lcol].sum() + dist_r[rrow, rcol].sum()
-
-        # store resampling vector
         spinsamples[:, n] = resampled
+        cost[n] = ccost
 
     return spinsamples, cost
