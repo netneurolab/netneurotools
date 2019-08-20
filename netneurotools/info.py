@@ -42,6 +42,7 @@ TESTS_REQUIRE = [
 EXTRAS_REQUIRE = {
     'doc': [
         'sphinx>=1.2',
+        'sphinx_gallery',
         'sphinx_rtd_theme',
     ],
     'numba': [
