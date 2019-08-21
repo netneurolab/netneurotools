@@ -15,19 +15,56 @@ def test_permtest_1samp():
     assert False
 
 
-@pytest.mark.xfail
 def test_permtest_rel():
-    assert False
+    dr, pr = -0.0005, 0.4175824175824176
+    dpr = ([dr, -dr], [pr, pr])
+
+    rvs1 = np.linspace(1, 100, 100)
+    rvs2 = np.linspace(1.01, 99.989, 100)
+    rvs1_2D = np.array([rvs1, rvs2])
+    rvs2_2D = np.array([rvs2, rvs1])
+
+    # the p-values in these two cases should be consistent
+    d, p = stats.permtest_rel(rvs1, rvs2, axis=0, seed=1234)
+    assert np.allclose([d, p], (dr, pr))
+    d, p = stats.permtest_rel(rvs1_2D.T, rvs2_2D.T, axis=0, seed=1234)
+    assert np.allclose([d, p], dpr)
+
+    # but the p-value will differ here because of _how_ we're drawing the
+    # random permutations... it would be nice if this was consistent, but as
+    # yet i don't have a great idea on how to make that happen without assuming
+    # a whole lot about the data
+    pr = 0.51248751
+    tpr = ([dr, -dr], [pr, pr])
+    d, p = stats.permtest_rel(rvs1_2D, rvs2_2D, axis=1, seed=1234)
+    assert np.allclose([d, p], tpr)
 
 
 @pytest.mark.xfail
-def test_permtest_corr():
+def test_permtest_pearsonr():
     assert False
 
 
-@pytest.mark.xfail
-def test_efficient_pearsonr():
-    assert False
+@pytest.mark.parametrize('x, y, expected', [
+    # basic input
+    (range(5), range(5), (1.0, 0.0)),
+    # broadcasting happens regardless of input order
+    (np.stack([range(5), range(5, 0, -1)], 1), range(5),
+     ([1.0, -1.0], [0.0, 0.0])),
+    (range(5), np.stack([range(5), range(5, 0, -1)], 1),
+     ([1.0, -1.0], [0.0, 0.0])),
+    # correlation between matching columns
+    (np.stack([range(5), range(5, 0, -1)], 1),
+     np.stack([range(5), range(5, 0, -1)], 1),
+     ([1.0, 1.0], [0.0, 0.0]))
+])
+def test_efficient_pearsonr(x, y, expected):
+    assert np.allclose(stats.efficient_pearsonr(x, y), expected)
+
+
+def test_efficient_pearsonr_errors():
+    with pytest.raises(ValueError):
+        stats.efficient_pearsonr(range(4), range(5))
 
 
 def test_gen_rotation():
