@@ -307,10 +307,10 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
 
     permutations = np.ones(true_diff.shape)
     for perm in range(n_perm):
-        # swap matched samples between `a` and `b` randomly and recompute diff
         # use this to re-index (i.e., swap along) the first axis of `ab`
         swap = rs.random_sample(ab.shape[:-1]).argsort(axis=axis)
         reidx[0] = np.repeat(swap[..., np.newaxis], ab.shape[-1], axis=-1)
+        # recompute difference between `a` and `b` (i.e., first axis of `ab`)
         pdiff = np.squeeze(np.diff(ab[tuple(reidx)], axis=0)).mean(axis=axis)
         permutations += np.abs(pdiff) >= abs_true
 
@@ -466,8 +466,9 @@ def efficient_pearsonr(a, b):
     if (a.shape[1] != b.shape[1]):
         a, b = np.broadcast_arrays(a, b)
 
-    corr = np.sum(sstats.zscore(a, ddof=1) * sstats.zscore(b, ddof=1), axis=0)
-    corr /= (len(a) - 1)
+    with np.errstate(invalid='ignore'):
+        corr = sstats.zscore(a, ddof=1) * sstats.zscore(b, ddof=1)
+    corr = np.sum(corr, axis=0) / (len(a) - 1)
     corr = np.squeeze(np.clip(corr, -1, 1)) / 1
 
     # taken from scipy.stats

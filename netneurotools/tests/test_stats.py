@@ -12,7 +12,11 @@ from netneurotools import stats
 
 @pytest.mark.xfail
 def test_permtest_1samp():
-    assert False
+    n1, n2, n3 = 10, 15, 20
+    rs = np.random.RandomState(1234)
+    rvn1 = rs.normal(loc=8, scale=10, size=(n1, n2, n3))
+
+    t1, p1 = stats.permtest_1samp(rvn1, 1, axis=0)
 
 
 def test_permtest_rel():
@@ -46,9 +50,9 @@ def test_permtest_pearsonr():
 
 
 @pytest.mark.parametrize('x, y, expected', [
-    # basic input
+    # basic one-dimensional input
     (range(5), range(5), (1.0, 0.0)),
-    # broadcasting happens regardless of input order
+    # broadcasting occurs regardless of input order
     (np.stack([range(5), range(5, 0, -1)], 1), range(5),
      ([1.0, -1.0], [0.0, 0.0])),
     (range(5), np.stack([range(5), range(5, 0, -1)], 1),
@@ -65,6 +69,8 @@ def test_efficient_pearsonr(x, y, expected):
 def test_efficient_pearsonr_errors():
     with pytest.raises(ValueError):
         stats.efficient_pearsonr(range(4), range(5))
+
+    assert all(np.isnan(a) for a in stats.efficient_pearsonr([], []))
 
 
 def test_gen_rotation():
