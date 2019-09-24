@@ -131,13 +131,9 @@ def combine_cammoun_500(lhannot, rhannot, subject_id, annot=None,
     return created
 
 
-def strip(x):
-    """ Removes everything after last underscore from `x` """
-    return '_'.join(x.split('_')[:-1])
-
-
-annot = 'atl-Cammoun2012_space-fsaverage_res-{}_hemi-{}_deterministic.annot'
-
+FSUBJ = 'fsaverage'
+ANNOT = 'atl-Cammoun2012_space-{}_res-{}_hemi-{}_deterministic.annot'
+ANNOT = ANNOT.format(FSUBJ, '{}', '{}')
 
 if __name__ == '__main__':
     #####
@@ -147,18 +143,18 @@ if __name__ == '__main__':
         for fn in gcsfiles:
             hemi = re.search('hemi-([RL])', fn).group(1)
             scale = re.search('res-(.*)_hemi-', fn).group(1)
-            out = op.join(op.dirname(fn), annot.format(scale, hemi))
-            freesurfer.apply_prob_atlas('fsaverage', fn, hemi.lower() + 'h',
+            out = op.join(op.dirname(fn), ANNOT.format(scale, hemi))
+            freesurfer.apply_prob_atlas(FSUBJ, fn, hemi.lower() + 'h',
                                         ctab=fn.replace('.gcs', '.ctab'),
                                         annot=out)
 
     #####
     # get scale 500 parcellation files and combine
     dirname = op.dirname(fn)
-    lh = sorted(glob.glob(op.join(dirname, '*res-500*_hemi-L*annot')))
-    rh = sorted(glob.glob(op.join(dirname, '*res-500*_hemi-R*annot')))
-    annot = op.join(dirname, annot.format('500', '{}'))
-    parc500 = combine_cammoun_500(lh, rh, 'fsaverage', annot=annot)
+    lh = sorted(glob.glob(op.join(dirname, ANNOT.format('500*', 'L'))))
+    rh = sorted(glob.glob(op.join(dirname, ANNOT.format('500*', 'R'))))
+    annot500 = op.join(dirname, ANNOT.format('500', '{}'))
+    parc500 = combine_cammoun_500(lh, rh, FSUBJ, annot=annot500)
     for fn in lh + rh:
         os.remove(fn)
 
@@ -166,7 +162,7 @@ if __name__ == '__main__':
     # map all the WRONG .annot files to the correct ordering
     info = pd.read_csv(datasets.fetch_cammoun2012('volume')['info'])
     for scale in ['033', '060', '125', '250', '500']:
-        annots = sorted(glob.glob(op.join(dirname, f'*res-{scale}*annot')))
+        annots = sorted(glob.glob(op.join(dirname, ANNOT.format(scale, '*'))))
         scinfo = info.query(f'scale == "scale{scale}" & structure == "cortex"')
         scinfo = scinfo.groupby('hemisphere')
         scinfo = [scinfo.get_group(m) for m in scinfo.groups]
@@ -176,7 +172,7 @@ if __name__ == '__main__':
             idx = [names.index(n) for n in [b'unknown', b'corpuscallosum']]
             names = [n.decode() for n in names]
             ids = list(hemi['id'])
-            targets = list(hemi['label'].apply(strip))
+            targets = list(hemi['label'])
             inds = [names.index(x) for x in targets]
             for i in idx:
                 inds = np.insert(inds, i, i)
