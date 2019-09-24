@@ -18,7 +18,7 @@ dependencies:
     - scikit-learn
     - scipy
     - "sphinx>=1.2"
-    - sphinx_gallery
+    - sphinx-gallery
     - sphinx_rtd_theme
     - versioneer
     - pip:
