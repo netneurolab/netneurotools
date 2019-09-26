@@ -366,27 +366,27 @@ def permtest_pearsonr(a, b, axis=0, n_perm=1000, resamples=None, seed=0):
 
     >>> np.random.seed(12345678)  # set random seed for reproducible results
     >>> x, y = datasets.make_correlated_xy(corr=0.1, size=100)
-    >>> stats.permtest_corr(x, y)
+    >>> stats.permtest_pearsonr(x, y)
     (0.10032564626876286, 0.3046953046953047)
 
     >>> x, y = datasets.make_correlated_xy(corr=0.5, size=100)
-    >>> stats.permtest_corr(x, y)
+    >>> stats.permtest_pearsonr(x, y)
     (0.500040365781984, 0.000999000999000999)
 
     Also works with multiple columns by either broadcasting the smaller array
     to the larger:
 
     >>> z = x + np.random.normal(loc=1, size=100)
-    >>> stats.permtest_corr(x, np.column_stack([y, z]))
+    >>> stats.permtest_pearsonr(x, np.column_stack([y, z]))
     (array([0.50004037, 0.25843187]), array([0.000999  , 0.01098901]))
 
     or by using matching columns in the two arrays (e.g., `x` and `y` vs
     `a` and `b`):
 
     >>> a, b = datasets.make_correlated_xy(corr=0.9, size=100)
-    >>> stats.permtest_corr(np.column_stack([x, a]), np.column_stack([y, b]))
+    >>> stats.permtest_pearsonr(np.column_stack([x, a]), np.column_stack([y, b]))
     (array([0.50004037, 0.89927523]), array([0.000999, 0.000999]))
-    """
+    """  # noqa
 
     a, b, axis = _chk2_asarray(a, b, axis)
     rs = check_random_state(seed)

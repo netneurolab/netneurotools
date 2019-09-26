@@ -110,7 +110,7 @@ Python Reference API
    efficient_pearsonr
    permtest_1samp
    permtest_rel
-   permtest_corr
+   permtest_pearsonr
 
 .. _ref_metrics:
 
