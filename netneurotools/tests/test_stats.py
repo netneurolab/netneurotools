@@ -7,7 +7,7 @@ import itertools
 import numpy as np
 import pytest
 
-from netneurotools import stats
+from netneurotools import datasets, stats
 
 
 @pytest.mark.xfail
@@ -44,9 +44,26 @@ def test_permtest_rel():
     assert np.allclose([d, p], tpr)
 
 
-@pytest.mark.xfail
 def test_permtest_pearsonr():
-    assert False
+    np.random.seed(12345678)
+    x, y = datasets.make_correlated_xy(corr=0.1, size=100)
+    r, p = stats.permtest_pearsonr(x, y)
+    assert np.allclose([r, p], [0.10032564626876286, 0.3046953046953047])
+
+    x, y = datasets.make_correlated_xy(corr=0.5, size=100)
+    r, p = stats.permtest_pearsonr(x, y)
+    assert np.allclose([r, p], [0.500040365781984, 0.000999000999000999])
+
+    z = x + np.random.normal(loc=1, size=100)
+    r, p = stats.permtest_pearsonr(x, np.column_stack([y, z]))
+    assert np.allclose(r, np.array([0.50004037, 0.25843187]))
+    assert np.allclose(p, np.array([0.000999, 0.01098901]))
+
+    a, b = datasets.make_correlated_xy(corr=0.9, size=100)
+    r, p = stats.permtest_pearsonr(np.column_stack([x, a]),
+                                   np.column_stack([y, b]))
+    assert np.allclose(r, np.array([0.50004037, 0.89927523]))
+    assert np.allclose(p, np.array([0.000999, 0.000999]))
 
 
 @pytest.mark.parametrize('x, y, expected', [
