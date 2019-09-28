@@ -131,8 +131,8 @@ def find_fsaverage_centroids(lhannot, rhannot, surf='sphere'):
         vertices, faces = read_geometry(surf)
         labels, ctab, names = read_annot(annot)
 
-        for lab in range(1, len(names)):
-            if names[lab] == b'corpuscallosum':
+        for lab in np.unique(labels):
+            if b'corpuscallosum' in names[lab] or b'unknown' in names[lab]:
                 continue
             coords = np.atleast_2d(vertices[labels == lab].mean(axis=0))
             roi = vertices[np.argmin(cdist(vertices, coords), axis=0)[0]]
