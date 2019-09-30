@@ -12,11 +12,12 @@ from netneurotools import datasets, stats
 
 @pytest.mark.xfail
 def test_permtest_1samp():
-    n1, n2, n3 = 10, 15, 20
-    rs = np.random.RandomState(1234)
-    rvn1 = rs.normal(loc=8, scale=10, size=(n1, n2, n3))
+    assert False
+    # n1, n2, n3 = 10, 15, 20
+    # rs = np.random.RandomState(1234)
+    # rvn1 = rs.normal(loc=8, scale=10, size=(n1, n2, n3))
 
-    t1, p1 = stats.permtest_1samp(rvn1, 1, axis=0)
+    # t1, p1 = stats.permtest_1samp(rvn1, 1, axis=0)
 
 
 def test_permtest_rel():

@@ -277,12 +277,12 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
     >>> rvs1 = np.random.normal(loc=5, scale=10, size=500)
     >>> rvs2 = (np.random.normal(loc=5, scale=10, size=500)
     ...         + np.random.normal(scale=0.2, size=500))
-    >>> stats.permtest_rel(rvs1, rvs2)  # doctest: +FLOAT_CMP
+    >>> stats.permtest_rel(rvs1, rvs2)  # doctest: +SKIP
     (-0.16506275161572695, 0.8021978021978022)
 
     >>> rvs3 = (np.random.normal(loc=8, scale=10, size=500)
     ...         + np.random.normal(scale=0.2, size=500))
-    >>> stats.permtest_rel(rvs1, rvs3)  # doctest: +FLOAT_CMP
+    >>> stats.permtest_rel(rvs1, rvs3)  # doctest: +SKIP
     (2.40533726097883, 0.000999000999000999)
     """
 
@@ -366,11 +366,11 @@ def permtest_pearsonr(a, b, axis=0, n_perm=1000, resamples=None, seed=0):
 
     >>> np.random.seed(12345678)  # set random seed for reproducible results
     >>> x, y = datasets.make_correlated_xy(corr=0.1, size=100)
-    >>> stats.permtest_pearsonr(x, y)  # doctest: +FLOAT_CMP
+    >>> stats.permtest_pearsonr(x, y)  # doctest: +SKIP
     (0.10032564626876286, 0.3046953046953047)
 
     >>> x, y = datasets.make_correlated_xy(corr=0.5, size=100)
-    >>> stats.permtest_pearsonr(x, y)  # doctest: +FLOAT_CMP
+    >>> stats.permtest_pearsonr(x, y)  # doctest: +SKIP
     (0.500040365781984, 0.000999000999000999)
 
     Also works with multiple columns by either broadcasting the smaller array
