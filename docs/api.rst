@@ -107,8 +107,10 @@ Python Reference API
    gen_spinsamples
    residualize
    get_mad_outliers
+   efficient_pearsonr
    permtest_1samp
    permtest_rel
+   permtest_pearsonr
 
 .. _ref_metrics:
 

@@ -3,3 +3,4 @@ sphinx>=1.2
 sphinx_rtd_theme
 sphinx-gallery
 pillow
+pytest-doctestplus
