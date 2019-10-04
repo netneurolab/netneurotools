@@ -290,7 +290,8 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
                    vmin=None, vmax=None, center=None, mask=None,
                    colormap='viridis', colorbar=True, alpha=0.8,
                    label_fmt='%.2f', num_labels=3,
-                   size_per_view=500, subjects_dir=None):
+                   size_per_view=500, subjects_dir=None, subject='fsaverage',
+                   noplot=None):
     """
     Plots `data` to fsaverage brain using `annot` as parcellation
 
@@ -301,11 +302,11 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
     lhannot : str
         Filepath to .annot file containing labels to parcels on the left
         hemisphere. If a full path is not provided the file is assumed to
-        exist inside the `subjects_dir`/fsaverage/label directory.
+        exist inside the `subjects_dir`/`subject`/label directory.
     rhannot : str
         Filepath to .annot file containing labels to parcels on the right
         hemisphere. If a full path is not provided the file is assumed to
-        exist inside the `subjects_dir`/fsaverage/label directory.
+        exist inside the `subjects_dir`/`subject`/label directory.
     surf : str, optional
         Surface on which to plot data. Default: 'pial'
     views : str or list, optional
@@ -336,6 +337,14 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
     subjects_dir : str, optional
         Path to FreeSurfer subject directory. If not set, will inherit from
         the environmental variable $SUBJECTS_DIR. Default: None
+    subject : str, optional
+        Subject ID to use; must be present in `subjects_dir`. Default:
+        'fsaverage'
+    noplot : list, optional
+        List of names in `lhannot` and `rhannot` to not plot. It is assumed
+        these are NOT present in `data`. If not specified, by default 'unknown'
+        and 'corpuscallosum' will not be plotted if they are present in the
+        provided annotation files. Default: None
 
     Returns
     -------
@@ -353,13 +362,17 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
 
     # check for FreeSurfer install w/fsaverage; otherwise, fetch required
     try:
-        subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
+        subject_id, subjects_dir = check_fs_subjid(subject, subjects_dir)
     except FileNotFoundError:
+        if subject != 'fsaverage':
+            raise ValueError('Provided subject {} does not exist in provided '
+                             'subjects_dir {}'
+                             .format(subject, subjects_dir))
         from .datasets import fetch_fsaverage
         from .datasets.utils import _get_data_dir
         fetch_fsaverage()
         subjects_dir = _get_data_dir()
-        subject_id, subjects_dir = check_fs_subjid('fsaverage', subjects_dir)
+        subject_id, subjects_dir = check_fs_subjid(subject, subjects_dir)
 
     # cast data to float (required for NaNs)
     data = np.asarray(data, dtype='float')
@@ -374,6 +387,10 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
 
     # parcels that should not be included in parcellation
     drop = [b'unknown', b'corpuscallosum']
+    if noplot is not None:
+        if isinstance(noplot, str):
+            noplot = [noplot]
+        drop += list(noplot)
 
     # set up brain views
     if not isinstance(views, (np.ndarray, list)):
@@ -381,28 +398,29 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
 
     # size of window will depend on # of views provided
     size = (size_per_view * 2, size_per_view * len(views))
-    brain = Brain(subject_id='fsaverage', hemi='split', surf=surf,
+    brain = Brain(subject_id=subject, hemi='split', surf=surf,
                   subjects_dir=subjects_dir, background='white',
                   views=views, size=size)
 
     for annot, hemi in zip([lhannot, rhannot], ['lh', 'rh']):
         # loads annotation data for hemisphere, including vertex `labels`!
         if not annot.startswith(os.path.abspath(os.sep)):
-            annot = os.path.join(subjects_dir, 'fsaverage', 'label', annot)
+            annot = os.path.join(subjects_dir, subject, 'label', annot)
         labels, ctab, names = nib.freesurfer.read_annot(annot)
 
         # get appropriate data, accounting for hemispheric asymmetry
+        currdrop = np.intersect1d(drop, names)
         if hemi == 'lh':
-            ldata, rdata = np.split(data, [len(names) - len(drop)])
+            ldata, rdata = np.split(data, [len(names) - len(currdrop)])
             if mask is not None:
-                lmask, rmask = np.split(mask, [len(names) - len(drop)])
+                lmask, rmask = np.split(mask, [len(names) - len(currdrop)])
         hemidata = ldata if hemi == 'lh' else rdata
 
         # our `data` don't include unknown / corpuscallosum, but our `labels`
         # do, so we need to account for that
         # find the label ids that correspond to those and set them to NaN in
         # the `data vector`
-        inds = [names.index(n) for n in drop]
+        inds = [names.index(n) for n in currdrop]
         for i in inds:
             hemidata = np.insert(hemidata, i, np.nan)
         # fulldata = np.insert(hemidata, inds - np.arange(len(inds)), np.nan)
