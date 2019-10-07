@@ -286,7 +286,7 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     return lhplot, rhplot
 
 
-def plot_fsaverage(data, lhannot, rhannot, *, order='LR', surf='pial', 
+def plot_fsaverage(data, lhannot, rhannot, *, order='LR', surf='pial',
                    views='lat', vmin=None, vmax=None, center=None, mask=None,
                    colormap='viridis', colorbar=True, alpha=0.8,
                    label_fmt='%.2f', num_labels=3,
