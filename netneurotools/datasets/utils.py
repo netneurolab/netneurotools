@@ -9,14 +9,33 @@ from pkg_resources import resource_filename
 
 
 def _osfify_urls(data):
+    """
+    Formats `data` object with OSF API URL
+
+    Parameters
+    ----------
+    data : object
+        If dict with a `url` key, will format OSF_API with relevant values
+
+    Returns
+    -------
+    data : object
+        Input data with all `url` dict keys formatted
+    """
+
     OSF_API = "https://files.osf.io/v1/resources/{}/providers/osfstorage/{}"
 
-    for key, value in data.items():
-        if isinstance(value, dict):
-            try:
-                data[key]['url'] = OSF_API.format(*value['url'])
-            except KeyError:
-                data[key] = _osfify_urls(value)
+    if isinstance(data, str):
+        return data
+    elif 'url' in data:
+        data['url'] = OSF_API.format(*data['url'])
+
+    try:
+        for key, value in data.items():
+            data[key] = _osfify_urls(value)
+    except AttributeError:
+        for n, value in enumerate(data):
+            data[n] = _osfify_urls(value)
 
     return data
 
