@@ -7,23 +7,34 @@ This example shows how to perform "spin-tests" (a la Alexander-Bloch et al.,
 2018, NeuroImage) to assess whether two brain patterns are correlated above and
 beyond what would be expected from a spatially-autocorrelated null model.
 
+While the original spin-tests were designed for comparing surface maps, we
+generally work with parcellated data in our lab. Using parcellations presents
+some novel difficulties in effectively implementing the spin-test, so this
+example demonstrates three spin-test methods with suggestions on when one might
+be preferable to another.
+
 For the original MATLAB toolbox published alongside the paper by
 Alexander-Bloch and colleagues refer to https://github.com/spin-test/spin-test.
 """
 
 ###############################################################################
-# First let's generate some randomly correlated data. We'll set a random seed
-# to make sure that things are reproducible:
+# The spin-test assumes that we have two sets of correlated data and that we
+# are interested in assessing the degree to which this correlation exceeds a
+# spatially-autocorrelated null model. We generate this null by permuting the
+# original data by assuming it can be represented on the surface of the sphere
+# and "spinning" the sphere.
+#
+# First, let's get some parcellated spatial maps that we can compare:
 
-from netneurotools import datasets
-x, y = datasets.make_correlated_xy(size=68, seed=1234)
+from netneurotools import datasets as nndata
+rsq, grad = nndata.fetch_vazquezrodriguez2019()
 
 ###############################################################################
-# We can correlate the resulting vectors to see how related they are:
+# The above function returns the
 
 from scipy.stats import pearsonr
-r, p = pearsonr(x, y)
-print(r, p)
+r, p = pearsonr(rsq, grad)
+print('r = {:.2f}, p = {:.4f}'.format(r, p))
 
 ###############################################################################
 # The p-value suggests that our data are, indeed, highly correlated.
@@ -40,14 +51,13 @@ print(r, p)
 # we can generate a null distribution that is more appropriate to our spatially
 # auto-correlated data.
 #
-# To do this we need the spatial coordinates of our brain regions, as well as
-# an array indicating to which hemisphere each region belongs. In this example
-# we'll use one of the parcellations commonly employed in the lab (Cammoun et
-# al., 2012). First, we'll fetch the left and right hemisphere FreeSurfer-style
-# annotation files for this parcellation (using the lowest resolution of the
-# parcellation):
+# To do this we need the spatial coordinates of our brain regions. In this
+# example we'll use one of the parcellations commonly employed in the lab
+# (Cammoun et al., 2012). First, we'll fetch the left and right hemisphere
+# FreeSurfer-style annotation files for this parcellation (using one of the
+# middle resolutions of the parcellation):
 
-lhannot, rhannot = datasets.fetch_cammoun2012('surface')['scale033']
+lhannot, rhannot = nndata.fetch_cammoun2012('surface')['scale500']
 
 ###############################################################################
 # Then we'll find the centroids of this parcellation defined on the spherical
@@ -56,8 +66,8 @@ lhannot, rhannot = datasets.fetch_cammoun2012('surface')['scale033']
 # well as a vector identifying to which hemisphere each parcel belongs
 # (`hemi`):
 
-from netneurotools import freesurfer
-coords, hemi = freesurfer.find_fsaverage_centroids(lhannot, rhannot)
+from netneurotools import freesurfer as nnsurf
+coords, hemi = nnsurf.find_fsaverage_centroids(lhannot, rhannot)
 print(coords.shape, hemi.shape)
 
 ###############################################################################
@@ -67,8 +77,8 @@ print(coords.shape, hemi.shape)
 # the `n_rotate` parameter. Since these rotations are random we can set a
 # `seed` to ensure reproducibility:
 
-from netneurotools import stats
-spin, cost = stats.gen_spinsamples(coords, hemi, n_rotate=1000, seed=1234)
+from netneurotools import stats as nnstats
+spin, cost = nnstats.gen_spinsamples(coords, hemi, n_rotate=1000, seed=1234)
 print(spin.shape)
 
 ###############################################################################
@@ -82,10 +92,10 @@ print(spin.shape)
 import numpy as np
 r_spinperm = np.zeros((spin.shape[-1],))
 for perm in range(spin.shape[-1]):
-    r_spinperm[perm] = pearsonr(x[spin[:, perm]], y)[0]
+    r_spinperm[perm] = np.abs(pearsonr(rsq, grad[spin[:, perm]])[0])
 
 ###############################################################################
 # Finally, we'll generate a non-parametric p-value from these correlations:
 
-p_spinperm = (np.sum(r_spinperm > r) + 1) / (len(r_spinperm) + 1)
+p_spinperm = (np.sum(r_spinperm >= np.abs(r)) + 1) / (len(r_spinperm) + 1)
 print(p_spinperm)
