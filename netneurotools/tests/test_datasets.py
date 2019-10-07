@@ -87,6 +87,32 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
             assert isinstance(out, str) and out.endswith('.nii.gz')
 
 
+@pytest.mark.parametrize('dataset, expected', [
+    ('celegans', ['conn', 'dist', 'labels', 'ref']),
+    ('drosophila', ['conn', 'coords', 'labels', 'networks', 'ref']),
+    ('human_func_scale033', ['conn', 'coords', 'labels', 'ref']),
+    ('human_func_scale060', ['conn', 'coords', 'labels', 'ref']),
+    ('human_func_scale125', ['conn', 'coords', 'labels', 'ref']),
+    ('human_func_scale250', ['conn', 'coords', 'labels', 'ref']),
+    ('human_func_scale500', ['conn', 'coords', 'labels', 'ref']),
+    ('human_struct_scale033', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('human_struct_scale060', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('human_struct_scale125', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('human_struct_scale250', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('human_struct_scale500', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('macaque_markov', ['conn', 'dist', 'labels', 'ref']),
+    ('macaque_modha', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('mouse', ['acronyms', 'conn', 'coords', 'dist', 'labels', 'ref']),
+    ('rat', ['conn', 'labels', 'ref']),
+])
+def test_fetch_connectome(tmpdir, dataset, expected):
+    connectome = datasets.fetch_connectome(dataset, data_dir=tmpdir, verbose=0)
+
+    for key in expected:
+        assert (key in connectome)
+        assert isinstance(connectome[key], str if key == 'ref' else np.ndarray)
+
+
 @pytest.mark.parametrize('dset, expected', [
     ('atl-cammoun2012', ['volume', 'surface', 'gcs']),
     ('tpl-conte69', ['url', 'md5']),
