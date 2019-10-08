@@ -74,8 +74,7 @@ def sort_communities(consensus, communities):
 
 def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
                      ax=None, figsize=(6.4, 4.8), xlabels=None, ylabels=None,
-                     xlabelrotation=90, ylabelrotation=0, cbar=True,
-                     **kwargs):
+                     xlabelrotation=90, ylabelrotation=0, cbar=True, blank_diagonal=True, **kwargs):
     """
     Plots `data` as heatmap with borders drawn around `communities`
 
@@ -104,6 +103,8 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         provided. Default : xlabelrotation: 90, ylabelrotation: 0
     cbar : bool, optional
         Whether to plot colorbar. Default: True
+    blank_diagonal : bool, optional
+        Whether to blank out the diagnonal. Default: True
     kwargs : key-value mapping
         Keyword arguments for `plt.pcolormesh()`
 
@@ -121,7 +122,11 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # plot data re-ordered based on community and node strength
-    plot_data = np.ma.masked_where(np.eye(len(data)), data[np.ix_(inds, inds)])
+    if blank_diagonal:
+        plot_data = np.ma.masked_where(np.eye(len(data)), data[np.ix_(inds, inds)])
+    else:
+        plot_data = data[np.ix_(inds, inds)]
+
     coll = ax.pcolormesh(plot_data, edgecolor='none', **kwargs)
     ax.set(xlim=(0, plot_data.shape[1]), ylim=(0, plot_data.shape[0]))
 
