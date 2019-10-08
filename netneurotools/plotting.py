@@ -380,6 +380,9 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
     # cast data to float (required for NaNs)
     data = np.asarray(data, dtype='float')
 
+    if order not in ['LR', 'RL']:
+        raise ValueError('order must be either \'LR\' or \'RL\'')
+
     if mask is not None and len(mask) != len(data):
         raise ValueError('Provided mask must be the same length as data.')
 
@@ -424,8 +427,6 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
                 rdata, ldata = np.split(data, [splitID])
                 if mask is not None:
                     rmask, lmask = np.split(mask, [splitID])
-            else:
-                raise ValueError('Order must be either \'LR\' or \'RL\'')
         hemidata = ldata if hemi == 'lh' else rdata
 
         # our `data` don't include unknown / corpuscallosum, but our `labels`
