@@ -158,6 +158,7 @@ Functions to download real-world datasets
    :template: function.rst
    :toctree: generated/
 
+   fetch_connectome
    fetch_mirchi2018
 
 Functions to generate (pseudo-random) datasets
