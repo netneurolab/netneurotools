@@ -124,7 +124,8 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
 
     # plot data re-ordered based on community and node strength
     if blank_diagonal:
-        plot_data = np.ma.masked_where(np.eye(len(data)), data[np.ix_(inds, inds)])
+        plot_data = np.ma.masked_where(np.eye(len(data)), 
+                                       data[np.ix_(inds, inds)])
     else:
         plot_data = data[np.ix_(inds, inds)]
 
