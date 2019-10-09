@@ -105,7 +105,7 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     cbar : bool, optional
         Whether to plot colorbar. Default: True
     blank_diagonal : bool, optional
-        Whether to blank out the diagnonal. Default: True
+        Whether to mask the diagonal in the plotted heatmap. Default: True
     kwargs : key-value mapping
         Keyword arguments for `plt.pcolormesh()`
 
