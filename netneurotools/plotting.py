@@ -293,8 +293,8 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     return lhplot, rhplot
 
 
-def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
-                   vmin=None, vmax=None, center=None, mask=None,
+def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
+                   views='lat', vmin=None, vmax=None, center=None, mask=None,
                    colormap='viridis', colorbar=True, alpha=0.8,
                    label_fmt='%.2f', num_labels=3,
                    size_per_view=500, subjects_dir=None, subject='fsaverage',
@@ -314,6 +314,9 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
         Filepath to .annot file containing labels to parcels on the right
         hemisphere. If a full path is not provided the file is assumed to
         exist inside the `subjects_dir`/`subject`/label directory.
+    order : str, optional
+        Order of the hemispheres in the data vector (either 'LR' or 'RL').
+        Default: 'LR'
     surf : str, optional
         Surface on which to plot data. Default: 'pial'
     views : str or list, optional
@@ -384,6 +387,9 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
     # cast data to float (required for NaNs)
     data = np.asarray(data, dtype='float')
 
+    if order not in ['LR', 'RL']:
+        raise ValueError('order must be either \'LR\' or \'RL\'')
+
     if mask is not None and len(mask) != len(data):
         raise ValueError('Provided mask must be the same length as data.')
 
@@ -418,9 +424,16 @@ def plot_fsaverage(data, lhannot, rhannot, *, surf='pial', views='lat',
         # get appropriate data, accounting for hemispheric asymmetry
         currdrop = np.intersect1d(drop, names)
         if hemi == 'lh':
-            ldata, rdata = np.split(data, [len(names) - len(currdrop)])
-            if mask is not None:
-                lmask, rmask = np.split(mask, [len(names) - len(currdrop)])
+            if order == 'LR':
+                splitID = len(names) - len(currdrop)
+                ldata, rdata = np.split(data, [splitID])
+                if mask is not None:
+                    lmask, rmask = np.split(mask, [splitID])
+            elif order == 'RL':
+                splitID = len(data) - len(names) + len(currdrop)
+                rdata, ldata = np.split(data, [splitID])
+                if mask is not None:
+                    rmask, lmask = np.split(mask, [splitID])
         hemidata = ldata if hemi == 'lh' else rdata
 
         # our `data` don't include unknown / corpuscallosum, but our `labels`
