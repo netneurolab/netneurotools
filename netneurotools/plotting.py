@@ -74,7 +74,8 @@ def sort_communities(consensus, communities):
 
 def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
                      ax=None, figsize=(6.4, 4.8), xlabels=None, ylabels=None,
-                     xlabelrotation=90, ylabelrotation=0, cbar=True, blank_diagonal=True, **kwargs):
+                     xlabelrotation=90, ylabelrotation=0, cbar=True, 
+                     blank_diagonal=True, **kwargs):
     """
     Plots `data` as heatmap with borders drawn around `communities`
 
