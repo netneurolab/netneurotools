@@ -440,7 +440,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
         # do, so we need to account for that
         # find the label ids that correspond to those and set them to NaN in
         # the `data vector`
-        inds = [names.index(n) for n in currdrop]
+        inds = sorted([names.index(n) for n in currdrop])
         for i in inds:
             hemidata = np.insert(hemidata, i, np.nan)
         # fulldata = np.insert(hemidata, inds - np.arange(len(inds)), np.nan)
