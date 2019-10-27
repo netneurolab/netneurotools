@@ -58,8 +58,12 @@ def test_fetch_pauli2018(tmpdir):
                ['probabilistic', 'deterministic', 'info'])
 
 
-def test_fetch_fsaverage(tmpdir):
-    fsaverage = datasets.fetch_fsaverage(data_dir=tmpdir, verbose=0)
+@pytest.mark.parametrize('version', [
+    'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'
+])
+def test_fetch_fsaverage(tmpdir, version):
+    fsaverage = datasets.fetch_fsaverage(version=version, data_dir=tmpdir,
+                                         verbose=0)
     assert all(hasattr(fsaverage, k)
                and len(fsaverage[k]) == 2
                and all(os.path.isfile(hemi)
@@ -117,7 +121,7 @@ def test_fetch_connectome(tmpdir, dataset, expected):
     ('atl-cammoun2012', ['volume', 'surface', 'gcs']),
     ('tpl-conte69', ['url', 'md5']),
     ('atl-pauli2018', ['url', 'md5', 'name']),
-    ('tpl-fsaverage', ['url', 'md5'])
+    ('tpl-fsaverage', ['fsaverage' + f for f in ['', '3', '4', '5', '6']])
 ])
 def test_get_dataset_info(dset, expected):
     info = utils._get_dataset_info(dset)

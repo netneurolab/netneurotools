@@ -197,7 +197,10 @@ def check_fs_subjid(subject_id, subjects_dir=None):
 
     # check inputs for subjects_dir and subject_id
     if subjects_dir is None or not os.path.isdir(subjects_dir):
-        subjects_dir = os.environ['SUBJECTS_DIR']
+        try:
+            subjects_dir = os.environ['SUBJECTS_DIR']
+        except KeyError:
+            subjects_dir = os.getcwd()
     else:
         subjects_dir = os.path.abspath(subjects_dir)
 
