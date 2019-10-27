@@ -13,6 +13,7 @@ import numpy as np
 from sklearn.utils import Bunch
 
 from .utils import _get_data_dir, _get_dataset_info
+from ..utils import check_fs_subjid
 
 
 def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
@@ -74,7 +75,11 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     if url is None:
         url = info['url']
 
-    opts = {'uncompress': True, 'md5sum': info['md5'], 'move': 'tmp.tar.gz'}
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
 
     # filenames differ based on selected version of dataset
     if version == 'volume':
@@ -235,12 +240,16 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**dict(zip(keys, data)))
 
 
-def fetch_fsaverage(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
+                    verbose=1):
     """
     Downloads files for fsaverage FreeSurfer template
 
     Parameters
     ----------
+    version : str, optional
+        One of {'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5',
+        'fsaverage6'}. Default: 'fsaverage'
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
@@ -266,11 +275,18 @@ def fetch_fsaverage(data_dir=None, url=None, resume=True, verbose=1):
 
     """
 
+    versions = [
+        'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'
+    ]
+    if version not in versions:
+        raise ValueError('The version of fsaverage requested "{}" does not '
+                         'exist. Must be one of {}'.format(version, versions))
+
     dataset_name = 'tpl-fsaverage'
     keys = ['orig', 'white', 'smoothwm', 'pial', 'inflated', 'sphere']
 
     data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
+    info = _get_dataset_info(dataset_name)[version]
     if url is None:
         url = info['url']
 
@@ -281,12 +297,18 @@ def fetch_fsaverage(data_dir=None, url=None, resume=True, verbose=1):
     }
 
     filenames = [
-        'fsaverage/surf/{}.{}'
-        .format(hemi, surf) for surf in keys for hemi in ['lh', 'rh']
+        op.join(version, 'surf', '{}.{}'.format(hemi, surf))
+        for surf in keys for hemi in ['lh', 'rh']
     ]
 
-    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
-                        resume=resume, verbose=verbose)
+    try:
+        data_dir = check_fs_subjid(version)[1]
+        data = [os.path.join(data_dir, f) for f in filenames]
+    except FileNotFoundError:
+        data = _fetch_files(data_dir, resume=resume, verbose=verbose,
+                            files=[(op.join(dataset_name, f), url, opts)
+                                   for f in filenames])
+
     data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
@@ -308,7 +330,7 @@ def available_connectomes():
 def fetch_connectome(dataset, data_dir=None, url=None, resume=True,
                      verbose=1):
     """
-    Downloads files for Cammoun et al., 2012 multiscale parcellation
+    Downloads files from multi-species connectomes
 
     Parameters
     ----------
@@ -376,3 +398,58 @@ def fetch_connectome(dataset, data_dir=None, url=None, resume=True,
         data[-1] = src.read().strip()
 
     return Bunch(**dict(zip(info['keys'] + ['ref'], data)))
+
+
+def fetch_vazquez_rodriguez2019(data_dir=None, url=None, resume=True,
+                                verbose=1):
+    """
+    Downloads files from Vazquez-Rodriguez et al., 2019, PNAS
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Returns
+    -------
+    data : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys ['rsquared', 'gradient'] containing
+        1000 values from
+
+    References
+    ----------
+    See `ref` key of returned dictionary object for relevant dataset reference
+    """
+
+    dataset_name = 'ds-vazquez_rodriguez2019'
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)
+    if url is None:
+        url = info['url']
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+
+    filenames = [
+        os.path.join(dataset_name, 'rsquared_gradient.csv')
+    ]
+    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+                        resume=resume, verbose=verbose)
+
+    # load data
+    rsq, grad = np.loadtxt(data[0], delimiter=',', skiprows=1).T
+
+    return Bunch(rsquared=rsq, gradient=grad)

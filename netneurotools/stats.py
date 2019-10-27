@@ -511,7 +511,7 @@ def _gen_rotation(seed=None):
 
 
 def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
-                    exact=False, seed=None):
+                    exact=False, seed=None, verbose=False):
     """
     Returns a resampling array for `coords` obtained from rotations / spins
 
@@ -549,6 +549,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         and runtime of this function! Default: False
     seed : {int, np.random.RandomState instance, None}, optional
         Seed for random number generation. Default: None
+    verbose : bool, optional
+        Whether to print occasional status messages. Default: False
 
     Returns
     -------
@@ -638,7 +640,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     # int32 should be enough; if you're ever providing `coords` with more than
     # 2147483647 rows please reconsider your life choices
     spinsamples = np.zeros((len(coords), n_rotate), dtype='int32')
-    cost = np.zeros(n_rotate)
+    cost = np.zeros((len(coords), n_rotate))
 
     # split coordinates into left / right hemispheres
     inds = np.arange(len(coords))
@@ -650,6 +652,10 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     for n in range(n_rotate):
         # try and avoid duplicates, if at all possible...
         count, duplicated = 0, True
+        if verbose and n % 10 == 0:
+            msg = 'Generating spin {:>5} of {:>5}'.format(n, n_rotate)
+            print('\b' * len(msg), end='', flush=True)
+            print(msg, end='' if n + 10 < n_rotate else '\n', flush=True)
         while duplicated and count < 500:
             count, duplicated = count + 1, False
             resampled = np.zeros(len(coords), dtype='int32')
@@ -670,7 +676,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                 dist_r = spatial.distance_matrix(coords_r, coords_r @ right)
                 lrow, lcol = optimize.linear_sum_assignment(dist_l)
                 rrow, rcol = optimize.linear_sum_assignment(dist_r)
-                ccost = dist_l[lrow, lcol].sum() + dist_r[rrow, rcol].sum()
+                cost[inds_l, n] = dist_l[lrow, lcol]
+                cost[inds_r, n] = dist_r[rrow, rcol]
             else:
                 # if nodes can be assigned multiple targets, we can simply use
                 # the absolute minimum of the distances (no optimization
@@ -680,7 +687,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                                       .query(coords_l, 1)
                 dist_r, rcol = spatial.cKDTree(coords_r @ right) \
                                       .query(coords_r, 1)
-                ccost = dist_l.sum() + dist_r.sum()
+                cost[inds_l, n] = dist_l
+                cost[inds_r, n] = dist_r
 
             # generate resampling vector
             resampled[inds_l] = inds[inds_l][lcol]
@@ -701,6 +709,5 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
             warned = True
 
         spinsamples[:, n] = resampled
-        cost[n] = ccost
 
     return spinsamples, cost

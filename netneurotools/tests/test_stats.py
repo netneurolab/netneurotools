@@ -137,13 +137,13 @@ def test_gen_spinsamples():
     # generate "normal" test spins
     spins, cost = stats.gen_spinsamples(coords, hemi, n_rotate=10, seed=1234)
     assert spins.shape == (len(coords), 10)
-    assert len(cost) == 10
+    assert cost.shape == (len(coords), 10)
 
     # confirm that `exact` parameter functions as desired
     spin_exact, cost_exact = stats.gen_spinsamples(coords, hemi, n_rotate=10,
                                                    exact=True, seed=1234)
-    assert len(spin_exact) == len(coords)
-    assert len(spin_exact.T) == len(cost_exact) == 10
+    assert spin_exact.shape == (len(coords), 10)
+    assert cost.shape == (len(coords), 10)
     for s in spin_exact.T:
         assert len(np.unique(s)) == len(s)
 

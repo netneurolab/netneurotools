@@ -146,7 +146,7 @@ ax.set(xlabel='Component #', ylabel='Variance explained (%)')
 
 import numpy as np
 
-n_perm = 500
+n_perm = 100
 rs = np.random.RandomState(1234)  # Set a random seed for reproducibility
 
 sval_perm = np.zeros((len(varexp), n_perm))
