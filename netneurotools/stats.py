@@ -655,7 +655,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         if verbose and n % 10 == 0:
             msg = 'Generating spin {:>5} of {:>5}'.format(n, n_rotate)
             print('\b' * len(msg), end='', flush=True)
-            print(msg, end='' if n + 10 < n_rotate else '\n', flush=True)
+            print(msg, end='', flush=True)
         while duplicated and count < 500:
             count, duplicated = count + 1, False
             resampled = np.zeros(len(coords), dtype='int32')
@@ -666,12 +666,10 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
             # find mapping of rotated coords to original coords
             if exact:
                 # if we need an exact mapping (i.e., every node needs a unique
-                # assignment in the rotation) then we need to use an
-                # optimization procedure
-                #
+                # assignment) then we can use the Hungarian algorithm.
                 # this requires calculating the FULL distance matrix, which is
-                # a nightmare with respect to memory (and frequently fails due
-                # to insufficient memory)
+                # a nightmare with respect to memory for anything that isn't
+                # parcellated data (i.e., don't give this vertex coords)
                 dist_l = spatial.distance_matrix(coords_l, coords_l @ left)
                 dist_r = spatial.distance_matrix(coords_r, coords_r @ right)
                 lrow, lcol = optimize.linear_sum_assignment(dist_l)
@@ -709,5 +707,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
             warned = True
 
         spinsamples[:, n] = resampled
+
+    if verbose:
+        print('\b' * len(msg), end='', flush=True)
 
     return spinsamples, cost
