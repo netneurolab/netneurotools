@@ -228,7 +228,6 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Scene object containing plot
     """
 
-
     from .datasets import fetch_conte69
     try:
         from mayavi import mlab
