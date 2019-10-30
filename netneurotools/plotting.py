@@ -262,8 +262,8 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     data = np.append(np.nan, data)
 
     # get lh and rh data
-    lhdata = data[lhlabels.astype(int)]
-    rhdata = data[rhlabels.astype(int)]
+    lhdata = np.squeeze(data[lhlabels.astype(int)])
+    rhdata = np.squeeze(data[rhlabels.astype(int)])
 
     # plot
     lhplot = mlab.figure()
