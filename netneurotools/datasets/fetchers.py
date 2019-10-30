@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Dataset fetcher / creation / whathaveyou
+Functions for fetching datasets from the internet
 """
 
 import itertools
 import json
 import os
+import os.path as op
 
 from nilearn.datasets.utils import _fetch_files
 import numpy as np
 from sklearn.utils import Bunch
-from sklearn.utils.validation import check_random_state
 
 from .utils import _get_data_dir, _get_dataset_info
+from ..utils import check_fs_subjid
 
 
 def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
@@ -38,11 +39,12 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
         Whether to attempt to resume partial download, if possible. Default:
         True
     verbose : int, optional
-        Does nothing. Default: 1
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
 
     Returns
     -------
-    filenames : :class:`sklearn.utils.Busnch`
+    filenames : :class:`sklearn.utils.Bunch`
         Dictionary-like object with keys ['scale033', 'scale060', 'scale125',
         'scale250', 'scale500'], where corresponding values are lists of
         filepaths to downloaded parcellation files.
@@ -73,7 +75,11 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     if url is None:
         url = info['url']
 
-    opts = {'uncompress': True, 'md5sum': info['md5'], 'move': 'tmp.tar.gz'}
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
 
     # filenames differ based on selected version of dataset
     if version == 'volume':
@@ -126,11 +132,12 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
         Whether to attempt to resume partial download, if possible. Default:
         True
     verbose : int, optional
-        Does nothing. Default: 1
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
 
     Returns
     -------
-    filenames : :class:`sklearn.utils.Busnch`
+    filenames : :class:`sklearn.utils.Bunch`
         Dictionary-like object with keys ['midthickness', 'inflated',
         'vinflated'], where corresponding values are lists of filepaths to
         downloaded template files.
@@ -196,7 +203,8 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
         Whether to attempt to resume partial download, if possible. Default:
         True
     verbose : int, optional
-        Does nothing. Default: 1
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
 
     Returns
     -------
@@ -232,12 +240,16 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**dict(zip(keys, data)))
 
 
-def fetch_fsaverage(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
+                    verbose=1):
     """
     Downloads files for fsaverage FreeSurfer template
 
     Parameters
     ----------
+    version : str, optional
+        One of {'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5',
+        'fsaverage6'}. Default: 'fsaverage'
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
@@ -248,7 +260,8 @@ def fetch_fsaverage(data_dir=None, url=None, resume=True, verbose=1):
         Whether to attempt to resume partial download, if possible. Default:
         True
     verbose : int, optional
-        Does nothing. Default: 1
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
 
     Returns
     -------
@@ -262,11 +275,18 @@ def fetch_fsaverage(data_dir=None, url=None, resume=True, verbose=1):
 
     """
 
+    versions = [
+        'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'
+    ]
+    if version not in versions:
+        raise ValueError('The version of fsaverage requested "{}" does not '
+                         'exist. Must be one of {}'.format(version, versions))
+
     dataset_name = 'tpl-fsaverage'
     keys = ['orig', 'white', 'smoothwm', 'pial', 'inflated', 'sphere']
 
     data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
+    info = _get_dataset_info(dataset_name)[version]
     if url is None:
         url = info['url']
 
@@ -277,100 +297,159 @@ def fetch_fsaverage(data_dir=None, url=None, resume=True, verbose=1):
     }
 
     filenames = [
-        'fsaverage/surf/{}.{}'
-        .format(hemi, surf) for surf in keys for hemi in ['lh', 'rh']
+        op.join(version, 'surf', '{}.{}'.format(hemi, surf))
+        for surf in keys for hemi in ['lh', 'rh']
     ]
 
-    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
-                        resume=resume, verbose=verbose)
+    try:
+        data_dir = check_fs_subjid(version)[1]
+        data = [os.path.join(data_dir, f) for f in filenames]
+    except FileNotFoundError:
+        data = _fetch_files(data_dir, resume=resume, verbose=verbose,
+                            files=[(op.join(dataset_name, f), url, opts)
+                                   for f in filenames])
+
     data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
 
 
-def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
+def available_connectomes():
     """
-    Generates random vectors that are correlated to approximately `corr`
-
-    Parameters
-    ----------
-    corr : [-1, 1] float or (N, N) numpy.ndarray, optional
-        The approximate correlation desired. If a float is provided, two
-        vectors with the specified level of correlation will be generated. If
-        an array is provided, it is assumed to be a symmetrical correlation
-        matrix and ``len(corr)`` vectors with the specified levels of
-        correlation will be generated. Default: 0.85
-    size : int or tuple, optional
-        Desired size of the generated vectors. Default: 1000
-    seed : {int, np.random.RandomState instance, None}, optional
-        Seed for random number generation. Default: None
-    tol : [0, 1] float, optional
-        Tolerance of correlation between generated `vectors` and specified
-        `corr`. Default: 0.05
+    Lists datasets available via :func:`~.fetch_connectome`
 
     Returns
     -------
-    vectors : numpy.ndarray
-        Random vectors of size `size` with correlation specified by `corr`
-
-    Examples
-    --------
-    >>> from netneurotools import datasets
-
-    By default two vectors are generated with specified correlation
-
-    >>> x, y = datasets.make_correlated_xy()
-    >>> np.corrcoef(x, y)  # doctest: +SKIP
-    array([[1.        , 0.85083661],
-           [0.85083661, 1.        ]])
-    >>> x, y = datasets.make_correlated_xy(corr=0.2)
-    >>> np.corrcoef(x, y)  # doctest: +SKIP
-    array([[1.        , 0.20069953],
-           [0.20069953, 1.        ]])
-
-    You can also provide correlation matrices to generate more than two vectors
-    if desired. Note that this makes it more difficult to ensure the actual
-    correlations are close to the desired values:
-
-    >>> corr = [[1, 0.5, 0.3], [0.5, 1, 0], [0.3, 0, 1]]
-    >>> out = datasets.make_correlated_xy(corr=corr)
-    >>> out.shape
-    (3, 10000)
-    >>> np.corrcoef(out)  # doctest: +SKIP
-    array([[1.        , 0.50965273, 0.30235686],
-           [0.50965273, 1.        , 0.01089107],
-           [0.30235686, 0.01089107, 1.        ]])
+    datasets : list of str
+        List of available datasets
     """
 
-    rs = check_random_state(seed)
+    return sorted(_get_dataset_info('ds-connectomes').keys())
 
-    # no correlations outside [-1, 1] bounds
-    if np.any(np.abs(corr) > 1):
-        raise ValueError('Provided `corr` must (all) be in range [-1, 1].')
 
-    # if we're given a single number, assume two vectors are desired
-    if isinstance(corr, (int, float)):
-        covs = np.ones((2, 2)) * 0.111
-        covs[(0, 1), (1, 0)] *= corr
-    # if we're given a correlation matrix, assume `N` vectors are desired
-    elif isinstance(corr, (list, np.ndarray)):
-        corr = np.asarray(corr)
-        if corr.ndim != 2 or len(corr) != len(corr.T):
-            raise ValueError('If `corr` is a list or array, must be a 2D '
-                             'square array, not {}'.format(corr.shape))
-        if np.any(np.diag(corr) != 1):
-            raise ValueError('Diagonal of `corr` must be 1.')
-        covs = corr * 0.111
-    means = [0] * len(covs)
+def fetch_connectome(dataset, data_dir=None, url=None, resume=True,
+                     verbose=1):
+    """
+    Downloads files from multi-species connectomes
 
-    # generate the variables
-    count = 0
-    while count < 500:
-        vectors = rs.multivariate_normal(mean=means, cov=covs, size=size).T
-        flat = vectors.reshape(len(vectors), -1)
-        # if diff between actual and desired correlations less than tol, break
-        if np.all(np.abs(np.corrcoef(flat) - (covs / 0.111)) < tol):
-            break
-        count += 1
+    Parameters
+    ----------
+    dataset : str
+        Specifies which dataset to download; must be one of the datasets listed
+        in :func:`netneurotools.datasets.available_connectomes()`.
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
 
-    return vectors
+    Returns
+    -------
+    data : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with, at a minimum, keys ['conn', 'labels',
+        'ref'] providing connectivity / correlation matrix, region labels, and
+        relevant reference. Other possible keys include 'dist' (an array of
+        Euclidean distances between regions of 'conn'), 'coords' (an array of
+        xyz coordinates for regions of 'conn'), 'acronyms' (an array of
+        acronyms for regions of 'conn'), and 'networks' (an array of network
+        affiliations for regions of 'conn')
+
+    References
+    ----------
+    See `ref` key of returned dictionary object for relevant dataset reference
+    """
+
+    if dataset not in available_connectomes():
+        raise ValueError('Provided dataset {} not available; must be one of {}'
+                         .format(dataset, available_connectomes()))
+
+    dataset_name = 'ds-connectomes'
+
+    data_dir = op.join(_get_data_dir(data_dir=data_dir), dataset_name)
+    info = _get_dataset_info(dataset_name)[dataset]
+    if url is None:
+        url = info['url']
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset)
+    }
+
+    filenames = [
+        os.path.join(dataset, '{}.csv'.format(fn)) for fn in info['keys']
+    ] + [op.join(dataset, 'ref.txt')]
+    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+                        resume=resume, verbose=verbose)
+
+    # load data
+    for n, arr in enumerate(data[:-1]):
+        try:
+            data[n] = np.loadtxt(arr, delimiter=',')
+        except ValueError:
+            data[n] = np.loadtxt(arr, delimiter=',', dtype=str)
+    with open(data[-1]) as src:
+        data[-1] = src.read().strip()
+
+    return Bunch(**dict(zip(info['keys'] + ['ref'], data)))
+
+
+def fetch_vazquez_rodriguez2019(data_dir=None, url=None, resume=True,
+                                verbose=1):
+    """
+    Downloads files from Vazquez-Rodriguez et al., 2019, PNAS
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Returns
+    -------
+    data : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys ['rsquared', 'gradient'] containing
+        1000 values from
+
+    References
+    ----------
+    See `ref` key of returned dictionary object for relevant dataset reference
+    """
+
+    dataset_name = 'ds-vazquez_rodriguez2019'
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)
+    if url is None:
+        url = info['url']
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+
+    filenames = [
+        os.path.join(dataset_name, 'rsquared_gradient.csv')
+    ]
+    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+                        resume=resume, verbose=verbose)
+
+    # load data
+    rsq, grad = np.loadtxt(data[0], delimiter=',', skiprows=1).T
+
+    return Bunch(rsquared=rsq, gradient=grad)

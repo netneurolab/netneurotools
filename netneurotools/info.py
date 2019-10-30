@@ -2,7 +2,16 @@
 
 __author__ = 'netneurolab'
 __copyright__ = 'Copyright 2018, netneurotools developers'
-__credits__ = ['Ross Markello', 'Bratislav Misic', 'Golia Shafiei']
+__credits__ = [
+    'Vincent Bazinet',
+    'Justine Hansen',
+    'Zhen-Qi Liu',
+    'Ross Markello',
+    'Bratislav Mišić',
+    'Golia Shafiei',
+    'Estefany Suárez',
+    'Bertha Vázquez-Rodríguez'
+]
 __license__ = 'BSD-3'
 __maintainer__ = 'Network Neuroscience Lab'
 __email__ = 'rossmarkello@gmail.com'
@@ -33,6 +42,7 @@ TESTS_REQUIRE = [
 EXTRAS_REQUIRE = {
     'doc': [
         'sphinx>=1.2',
+        'sphinx_gallery',
         'sphinx_rtd_theme',
     ],
     'numba': [

@@ -140,13 +140,13 @@ ax.set(xlabel='Component #', ylabel='Variance explained (%)')
 # dimensions we estimate are the "same" as the original SVD, we'll use an
 # orthogonal Procrustes rotation to align them, and then calculate the variance
 # explained by each of the "permuted" dimensions derived from the permuted
-# data. If we do this >1,000 times we can generate a distribution of explained
+# data. If we do this enough times we can generate a distribution of explained
 # variances for each component and use that to examine the relative likelihood
 # of our original components explaining as much variance as they do.
 
 import numpy as np
 
-n_perm = 1000
+n_perm = 100
 rs = np.random.RandomState(1234)  # Set a random seed for reproducibility
 
 sval_perm = np.zeros((len(varexp), n_perm))
@@ -159,15 +159,15 @@ for n in range(n_perm):
 
     # Regenerate the cross-correlation matrix and compute the decomposition
     cross_corr = (Ypz.T @ Xz) / (len(Xz) - 1)
-    Up, sp, Vp = svd(cross_corr.T, full_matrices=False)
-    Vp = Vp.T
+    U_new, sval_new, V_new = svd(cross_corr.T, full_matrices=False)
+    V_new = V_new.T
 
     # Align the new singular vectors to the original using Procrustes. We can
     # do this with EITHER the left or right singular vectors; we'll use the
     # left vectors since they're much smaller in size so this is more
     # computationally efficient.
-    N, _, P = svd(V.T @ Vp, full_matrices=False)
-    aligned = Vp @ np.diag(sp) @ (P.T @ N.T)
+    N, _, P = svd(V.T @ V_new, full_matrices=False)
+    aligned = V_new @ np.diag(sval_new) @ (P.T @ N.T)
 
     # Calculate the singular values for the rotated, permuted component space
     sval_perm[:, n] = np.sqrt(np.sum(aligned ** 2, axis=0))
@@ -175,8 +175,7 @@ for n in range(n_perm):
 # Calculate the number of permuted singular values larger than the original
 # and normalize by the number of permutations. We can treat this value as a
 # non-parametric p-value.
-sp = np.sum(sval_perm > sval[:, None], axis=1) + 1
-sprob = sp / (n_perm + 1)
+sprob = (np.sum(sval_perm > sval[:, None], axis=1) + 1) / (n_perm + 1)
 for n, pval in enumerate(sprob):
     print('Component {}: non-parametric p = {:.3f}'.format(n, pval))
 
@@ -209,10 +208,10 @@ for n, pval in enumerate(sprob):
 # functional connections in our ``X`` matrix.
 #
 # Estimating these bootstrapped distributions is much more computationally
-# intensive than estimating permutations, so we're only going to do 100 (though
+# intensive than estimating permutations, so we're only going to do 50 (though
 # using a higher number would be better!).
 
-n_boot = 100
+n_boot = 50
 
 # It's too memory-intensive to hold all the bootstrapped functional connection
 # weights at once, especially if we're using a lot of bootstraps. Since we just
@@ -241,16 +240,18 @@ for n in range(n_boot):
 
     # Regenerate the cross-correlation matrix and compute the decomposition
     cross_corr = (Ybz.T @ Xbz) / (len(Xbz) - 1)
-    Ub, sb, Vb = svd(cross_corr.T, full_matrices=False)
-    Vb = Vb.T
+    U_new, sval_new, V_new = svd(cross_corr.T, full_matrices=False)
 
     # Align the left singular vectors to the original decomposition using
     # a Procrustes and store the sum / sum of squares for bootstrap ratio
     # calculation later
-    N, _, P = svd(U.T @ Ub, full_matrices=False)
-    aligned = Ub @ np.diag(sb) @ (P.T @ N.T)
+    N, _, P = svd(U.T @ U_new, full_matrices=False)
+    aligned = U_new @ np.diag(sval_new) @ (P.T @ N.T)
     U_sum += aligned
     U_square += np.square(aligned)
+
+    # Delete intermediate variables to reduce memory usage
+    del cross_corr, U_new, sval_new, V_new, aligned
 
     # For the right singular vectors we actually want to calculate the
     # bootstrapped distribution of the CORRELATIONS between the original PANAS
@@ -261,6 +262,9 @@ for n in range(n_boot):
     # scores with those projections
     Xbzs = zscore(Xb @ (U / np.linalg.norm(U, axis=0, keepdims=True)), ddof=1)
     y_corr_distrib[..., n] = (Ybz.T @ Xbzs) / (len(Xbzs) - 1)
+
+    # Delete intermediate variables to reduce memory usage
+    del Xbz, Ybz, Xbzs
 
 # Calculate the standard error of the bootstrapped functional connection
 # weights and generate bootstrap ratios from these values.
@@ -318,10 +322,11 @@ bsr_mat = np.zeros((630, 630))
 bsr_mat[np.tril_indices_from(bsr_mat, k=-1)] = bootstrap_ratios[:, 0]
 bsr_mat = bsr_mat + bsr_mat.T
 
-plot_mod_heatmap(bsr_mat, comm_ids, vmin=-4, vmax=4, cmap='RdBu_r', ax=ax1,
-                 edgecolor='red', cbar=False, xlabels=comm_labels,
-                 xlabelrotation=45)
-ax1.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False,
+plot_mod_heatmap(bsr_mat, comm_ids, vmin=-4, vmax=4, ax=ax1,
+                 cmap='RdBu_r', cbar=False, edgecolor='red',
+                 xlabels=comm_labels, xlabelrotation=45)
+ax1.tick_params(top=True, labeltop=True,
+                bottom=False, labelbottom=False,
                 length=0)
 ax1.set_xticklabels(ax1.get_xticklabels(), ha='left')
 ax1.set(yticks=[], yticklabels=[])
@@ -336,13 +341,11 @@ cbar.outline.set_linewidth(0)
 
 ax2.barh(range(len(y_corr))[::-1], y_corr[:, 0])
 x_error = [y_corr_ll[:, 0] - y_corr[:, 0], y_corr_ul[:, 0] - y_corr[:, 0]]
-ax2.errorbar(y=range(len(y_corr))[::-1], x=y_corr[:, 0],
-             xerr=np.abs(x_error),
-             fmt='none', ecolor='black', elinewidth=1)
+ax2.errorbar(x=y_corr[:, 0], y=range(len(y_corr))[::-1],
+             xerr=np.abs(x_error), fmt='none', ecolor='black', elinewidth=1)
 ax2.set(xlim=[-1, 1], ylim=(-0.75, 12.75),
-        xlabel='correlation with network score',
         xticks=[-1, -0.5, 0, 0.5, 1], yticks=range(len(y_corr))[::-1],
-        yticklabels=panas_measures)
+        xlabel='correlation with network score', yticklabels=panas_measures)
 ax2.vlines(0, *ax2.get_ylim(), linewidth=0.5)
 
 # Plot the projected scores for the left (i.e., "network" or functional

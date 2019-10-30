@@ -107,8 +107,10 @@ Python Reference API
    gen_spinsamples
    residualize
    get_mad_outliers
+   efficient_pearsonr
    permtest_1samp
    permtest_rel
+   permtest_pearsonr
 
 .. _ref_metrics:
 
@@ -156,6 +158,7 @@ Functions to download real-world datasets
    :template: function.rst
    :toctree: generated/
 
+   fetch_connectome
    fetch_mirchi2018
 
 Functions to generate (pseudo-random) datasets

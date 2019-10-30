@@ -1,0 +1,304 @@
+{
+    "atl-cammoun2012": {
+        "gcs": {
+            "url": [
+                "mb37e",
+                "5ce6bb4423fec40017e82c5e"
+            ],
+            "md5": "c3435f2720da6a74c3d55db54ebdbfff"
+        },
+        "surface": {
+            "url": [
+                "mb37e",
+                "5ce6c30523fec40017e83439"
+            ],
+            "md5": "478599b362a88198396fdb15ad999f9e"
+        },
+        "volume": {
+            "url": [
+                "mb37e",
+                "5ce6bb438d6e05001860abca"
+            ],
+            "md5": "088fb64b397557dfa01901f04f4cd9d2"
+        }
+    },
+    "atl-pauli2018": [
+        {
+            "url": [
+                "jkzwp",
+                "5b11fa3364f25a001973dce0"
+            ],
+            "md5": "62dd6ff405d3a8b89ee188cafa3a7f6a",
+            "name": "atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_probabilistic.nii.gz"
+        },
+        {
+            "url": [
+                "jkzwp",
+                "5b11fa2ff1f288000e625a7f"
+            ],
+            "md5": "5a5b6246921be08456304875447c68ed",
+            "name": "atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_deterministic.nii.gz"
+        },
+        {
+            "url": [
+                "mb37e",
+                "5c93b4f034062c001b1ef50d"
+            ],
+            "md5": "390a693abeb1a583151f30aa8798bab5",
+            "name": "atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_info.csv"
+        }
+    ],
+    "tpl-conte69": {
+        "url": [
+            "fvuh8",
+            "5b198ec5ec24e20011b48548"
+        ],
+        "md5": "bd944e3f9f343e0e51e562b440960529"
+    },
+    "tpl-fsaverage": {
+        "fsaverage": {
+            "url": [
+                "mb37e",
+                "5c82830a1d73810018bdacea"
+            ],
+            "md5": "1e82c52ed21d06d4e6e7341c725c5262"
+        },
+        "fsaverage3": {
+            "url": [
+                "mb37e",
+                "5d9f83b6f6b03e000e1ba285"
+            ],
+            "md5": "b4182495d341364e3f7c5b86284d8d20"
+        },
+        "fsaverage4": {
+            "url": [
+                "mb37e",
+                "5d9f83b7fcf91f00111c7473"
+            ],
+            "md5": "5a481421dc1286c7bd9b8a47db5fad0b"
+        },
+        "fsaverage5": {
+            "url": [
+                "mb37e",
+                "5d9f83b6f6b03e00101c932f"
+            ],
+            "md5": "cc75f7290c03970a8b8a06dfc215e925"
+        },
+        "fsaverage6": {
+            "url": [
+                "mb37e",
+                "5d9f83b7a7bc73000cea05f1"
+            ],
+            "md5": "8f75b95c0e47ae935d10745baefa2c49"
+        }
+    },
+    "ds-connectomes": {
+        "celegans": {
+            "url": [
+                "mb37e",
+                "5d9b8e4aa7bc73000be65508"
+            ],
+            "md5": "f35cd893bc1aff4e8184a528fcda14b9",
+            "keys": [
+                "conn",
+                "dist",
+                "labels"
+            ]
+        },
+        "drosophila": {
+            "url": [
+                "mb37e",
+                "5d9b8e4aa7bc73000ce65d00"
+            ],
+            "md5": "6a67a4fc1b4f35b72c42cca4d0827249",
+            "keys": [
+                "conn",
+                "coords",
+                "labels",
+                "networks"
+            ]
+        },
+        "human_func_scale033": {
+            "url": [
+                "mb37e",
+                "5d9b8e4afcf91f000f18f57b"
+            ],
+            "md5": "1988ab427d9bc0de075bbe600ce0a27f",
+            "keys": [
+                "conn",
+                "coords",
+                "labels"
+            ]
+        },
+        "human_func_scale060": {
+            "url": [
+                "mb37e",
+                "5d9b8e4aa7bc73000de67117"
+            ],
+            "md5": "4191f5a2b0c5063dcba9935ea0ef0bfe",
+            "keys": [
+                "conn",
+                "coords",
+                "labels"
+            ]
+        },
+        "human_func_scale125": {
+            "url": [
+                "mb37e",
+                "5d9b8e4b26eb50000e78c987"
+            ],
+            "md5": "533e11cf9fea67d536648c9ef939a5f5",
+            "keys": [
+                "conn",
+                "coords",
+                "labels"
+            ]
+        },
+        "human_func_scale250": {
+            "url": [
+                "mb37e",
+                "5d9b8e4efcf91f0012190ba1"
+            ],
+            "md5": "4abc7324c2a9ae04ef6cf5555149b3f4",
+            "keys": [
+                "conn",
+                "coords",
+                "labels"
+            ]
+        },
+        "human_func_scale500": {
+            "url": [
+                "mb37e",
+                "5d9b8e4ff6b03e000d18b5a1"
+            ],
+            "md5": "637c6057476b2508f15f244d528e156d",
+            "keys": [
+                "conn",
+                "coords",
+                "labels"
+            ]
+        },
+        "human_struct_scale033": {
+            "url": [
+                "mb37e",
+                "5d9b8e4f26eb50000e78c993"
+            ],
+            "md5": "27a2101f2f04e0fc8de09a8248793235",
+            "keys": [
+                "conn",
+                "coords",
+                "dist",
+                "labels"
+            ]
+        },
+        "human_struct_scale060": {
+            "url": [
+                "mb37e",
+                "5d9b8e4da7bc73000be6550e"
+            ],
+            "md5": "9289265ab1bd0fa18611eeaf1afce745",
+            "keys": [
+                "conn",
+                "coords",
+                "dist",
+                "labels"
+            ]
+        },
+        "human_struct_scale125": {
+            "url": [
+                "mb37e",
+                "5d9b8e50f6b03e000e18aa37"
+            ],
+            "md5": "07e60b141809babe8c2645d93cd24984",
+            "keys": [
+                "conn",
+                "coords",
+                "dist",
+                "labels"
+            ]
+        },
+        "human_struct_scale250": {
+            "url": [
+                "mb37e",
+                "5d9b8e51fcf91f001118fdc2"
+            ],
+            "md5": "56f9ca8b4ecc63ef9aaf64a606755c09",
+            "keys": [
+                "conn",
+                "coords",
+                "dist",
+                "labels"
+            ]
+        },
+        "human_struct_scale500": {
+            "url": [
+                "mb37e",
+                "5d9b8e51a7bc73000ee65769"
+            ],
+            "md5": "94724e0446f8cb06207a4521ba1df20f",
+            "keys": [
+                "conn",
+                "coords",
+                "dist",
+                "labels"
+            ]
+        },
+        "macaque_markov": {
+            "url": [
+                "mb37e",
+                "5d9b8e56a7bc73000ce65d11"
+            ],
+            "md5": "5ce43182afc9c4f779db2c0306afb202",
+            "keys": [
+                "conn",
+                "dist",
+                "labels"
+            ]
+        },
+        "macaque_modha": {
+            "url": [
+                "mb37e",
+                "5d9b8e5626eb50000d78abd0"
+            ],
+            "md5": "f467c62b2670feaf75c93d90d5ed5de6",
+            "keys": [
+                "conn",
+                "coords",
+                "dist",
+                "labels"
+            ]
+        },
+        "mouse": {
+            "url": [
+                "mb37e",
+                "5d9b8e5626eb50000e78c9a0"
+            ],
+            "md5": "dba5cbbb9e72c1cacda945086d77a125",
+            "keys": [
+                "conn",
+                "coords",
+                "dist",
+                "labels",
+                "acronyms"
+            ]
+        },
+        "rat": {
+            "url": [
+                "mb37e",
+                "5d9b8e56f6b03e000f18d06f"
+            ],
+            "md5": "9e1f12ce4fa42082a76d62f89670f5d0",
+            "keys": [
+                "conn",
+                "labels"
+            ]
+        }
+    },
+    "ds-vazquez_rodriguez2019": {
+        "url": [
+            "mb37e",
+            "5d9f5aa4f6b03e000e1b819e"
+        ],
+        "md5": "c710365a2cc5cddb8a2fbb5f6ae421a3"
+    }
+}

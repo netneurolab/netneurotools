@@ -58,8 +58,12 @@ def test_fetch_pauli2018(tmpdir):
                ['probabilistic', 'deterministic', 'info'])
 
 
-def test_fetch_fsaverage(tmpdir):
-    fsaverage = datasets.fetch_fsaverage(data_dir=tmpdir, verbose=0)
+@pytest.mark.parametrize('version', [
+    'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'
+])
+def test_fetch_fsaverage(tmpdir, version):
+    fsaverage = datasets.fetch_fsaverage(version=version, data_dir=tmpdir,
+                                         verbose=0)
     assert all(hasattr(fsaverage, k)
                and len(fsaverage[k]) == 2
                and all(os.path.isfile(hemi)
@@ -87,11 +91,37 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
             assert isinstance(out, str) and out.endswith('.nii.gz')
 
 
+@pytest.mark.parametrize('dataset, expected', [
+    ('celegans', ['conn', 'dist', 'labels', 'ref']),
+    ('drosophila', ['conn', 'coords', 'labels', 'networks', 'ref']),
+    ('human_func_scale033', ['conn', 'coords', 'labels', 'ref']),
+    ('human_func_scale060', ['conn', 'coords', 'labels', 'ref']),
+    ('human_func_scale125', ['conn', 'coords', 'labels', 'ref']),
+    ('human_func_scale250', ['conn', 'coords', 'labels', 'ref']),
+    ('human_func_scale500', ['conn', 'coords', 'labels', 'ref']),
+    ('human_struct_scale033', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('human_struct_scale060', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('human_struct_scale125', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('human_struct_scale250', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('human_struct_scale500', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('macaque_markov', ['conn', 'dist', 'labels', 'ref']),
+    ('macaque_modha', ['conn', 'coords', 'dist', 'labels', 'ref']),
+    ('mouse', ['acronyms', 'conn', 'coords', 'dist', 'labels', 'ref']),
+    ('rat', ['conn', 'labels', 'ref']),
+])
+def test_fetch_connectome(tmpdir, dataset, expected):
+    connectome = datasets.fetch_connectome(dataset, data_dir=tmpdir, verbose=0)
+
+    for key in expected:
+        assert (key in connectome)
+        assert isinstance(connectome[key], str if key == 'ref' else np.ndarray)
+
+
 @pytest.mark.parametrize('dset, expected', [
     ('atl-cammoun2012', ['volume', 'surface', 'gcs']),
     ('tpl-conte69', ['url', 'md5']),
     ('atl-pauli2018', ['url', 'md5', 'name']),
-    ('tpl-fsaverage', ['url', 'md5'])
+    ('tpl-fsaverage', ['fsaverage' + f for f in ['', '3', '4', '5', '6']])
 ])
 def test_get_dataset_info(dset, expected):
     info = utils._get_dataset_info(dset)

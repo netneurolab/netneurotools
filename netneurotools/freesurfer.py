@@ -6,8 +6,9 @@ Functions for working with FreeSurfer data and parcellations
 import os
 import os.path as op
 
-import nibabel as nib
+from nibabel.freesurfer import read_annot, read_geometry
 import numpy as np
+from scipy.ndimage.measurements import _stats
 from scipy.spatial.distance import cdist
 
 from .datasets import fetch_fsaverage
@@ -108,7 +109,8 @@ def find_fsaverage_centroids(lhannot, rhannot, surf='sphere'):
     ----------
     {lh,rh}annot : str
         Path to .annot file containing labels to parcels on the {left,right}
-        hemisphere
+        hemisphere. Switching the order of inputs (i.e., providing right before
+        left) is perfectly reasonable, if desired.
     surf : str, optional
         Surface on which to find parcel centroids. Default: 'sphere'
 
@@ -126,11 +128,11 @@ def find_fsaverage_centroids(lhannot, rhannot, surf='sphere'):
 
     centroids, hemiid = [], []
     for n, (annot, surf) in enumerate(zip([lhannot, rhannot], surfaces)):
-        vertices, faces = nib.freesurfer.read_geometry(surf)
-        labels, ctab, names = nib.freesurfer.read_annot(annot)
+        vertices, faces = read_geometry(surf)
+        labels, ctab, names = read_annot(annot)
 
-        for lab in range(1, len(names)):
-            if names[lab] == b'corpuscallosum':
+        for lab in np.unique(labels):
+            if b'corpuscallosum' in names[lab] or b'unknown' in names[lab]:
                 continue
             coords = np.atleast_2d(vertices[labels == lab].mean(axis=0))
             roi = vertices[np.argmin(cdist(vertices, coords), axis=0)[0]]
@@ -138,3 +140,123 @@ def find_fsaverage_centroids(lhannot, rhannot, surf='sphere'):
             hemiid.append(n)
 
     return np.row_stack(centroids), np.asarray(hemiid)
+
+
+def project_to_vertices(data, rhannot, lhannot):
+    """
+    Projects parcellated `data` to vertices defined in annotation files
+
+    Assigns np.nan to 'unknown' and 'corpuscallosum' vertices in annotation
+    files.
+
+    Parameters
+    ----------
+    data : (N,) numpy.ndarray
+        Parcellated data to be projected to vertices
+    {rh,lh}annot : str
+        Path to .annot file containing labels to parcels on the {right,left}
+        hemisphere
+
+    Reurns
+    ------
+    projected : numpy.ndarray
+        Vertex-level data
+    """
+
+    drop = [b'unknown', b'corpuscallosum']
+    start = end = 0
+    projected = []
+
+    # check this so we're not unduly surprised by anything...
+    expected = sum([len(read_annot(a)[-1]) - 2 for a in [rhannot, lhannot]])
+    if expected != len(data):
+        raise ValueError('Number of parcels in provided annotation files '
+                         'differs from size of parcellated data array.\n'
+                         '    EXPECTED: {} parcels\n'
+                         '    RECEIVED: {} parcels'
+                         .format(expected, len(data)))
+
+    for annot in [rhannot, lhannot]:
+        # read files and update end index for `data`
+        labels, ctab, names = read_annot(annot)
+        end += len(names) - 2  # unknown and corpuscallosum
+
+        # get indices of unknown and corpuscallosum and insert NaN values
+        inds = [names.index(f) - n for n, f in enumerate(drop)]
+        currdata = np.insert(data[start:end], inds, np.nan)
+
+        # project to vertices and store
+        projected.append(currdata[labels])
+        start = end
+
+    return np.hstack(projected)
+
+
+def reduce_from_vertices(data, rhannot, lhannot):
+    """
+    Reduces vertex-level `data` to parcels defined in annotation files
+
+    Takes average of vertices within each parcel, excluding np.nan values
+    (i.e., np.nanmean). Assigns np.nan to parcels for which all vertices are
+    np.nan.
+
+    Parameters
+    ----------
+    data : (N,) numpy.ndarray
+        Vertex-level data to be reduced to parcels
+    {rh,lh}annot : str
+        Path to .annot file containing labels to parcels on the {right,left}
+        hemisphere
+
+    Reurns
+    ------
+    reduced : numpy.ndarray
+        Parcellated data
+    """
+
+    drop = [b'unknown', b'corpuscallosum']
+    start = end = 0
+    reduced = []
+
+    # check this so we're not unduly surprised by anything...
+    expected = sum([len(read_annot(a)[0]) for a in [rhannot, lhannot]])
+    if expected != len(data):
+        raise ValueError('Number of vertices in provided annotation files '
+                         'differs from size of vertex-level data array.\n'
+                         '    EXPECTED: {} vertices\n'
+                         '    RECEIVED: {} vertices'
+                         .format(expected, len(data)))
+
+    for annot in [rhannot, lhannot]:
+        # read files and update end index for `data`
+        labels, ctab, names = read_annot(annot)
+        end += len(labels)
+
+        # get average of vertex-level data within parcels
+        # set all NaN values to 0 before calling `_stats` because we are
+        # returning sums, so the 0 values won't impact the sums (if we left
+        # the NaNs then all parcels with a single NaN value would be NaN)
+        currdata = data[start:end].copy()
+        isna = np.isnan(currdata)
+        currdata[isna] = 0
+        counts, sums = _stats(currdata, labels, np.unique(labels))
+
+        # however, we do need to account for the NaN values in the counts
+        # so that our means are similar to what we'd get from e.g., np.nanmean
+        # here, our "sums" are the counts of NaN values in our parcels
+        _, nacounts = _stats(isna, labels, np.unique(labels))
+        counts = (np.asanyarray(counts).astype(float)
+                  - np.asanyarray(nacounts).astype(float))
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            currdata = sums / counts
+
+        # get indices of unkown and corpuscallosum and delete from parcels
+        inds = [names.index(f) for f in drop]
+        currdata = np.delete(currdata, inds)
+
+        # store parcellated data
+        reduced.append(currdata)
+        start = end
+
+    return np.hstack(reduced)
