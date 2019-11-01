@@ -511,7 +511,7 @@ def _gen_rotation(seed=None):
 
 
 def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
-                    exact=False, seed=None, verbose=False):
+                    exact=False, seed=None, verbose=False, return_cost=True):
     """
     Returns a resampling array for `coords` obtained from rotations / spins
 
@@ -551,14 +551,18 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         Seed for random number generation. Default: None
     verbose : bool, optional
         Whether to print occasional status messages. Default: False
+    return_cost : bool, optional
+        Whether to return cost array (specified as Euclidean distance) for each
+        coordinate for each rotation Default: True
 
     Returns
     -------
     spinsamples : (N, `n_rotate`) numpy.ndarray
-        Resampling matrix to use in permuting data based on supplied `coords`
-    cost : (`n_rotate`,) numpy.ndarray
-        Cost (in distance between node assignments) of each rotation in
-        `spinsamples`
+        Resampling matrix to use in permuting data based on supplied `coords`.
+    cost : (N, `n_rotate`,) numpy.ndarray
+        Cost (specified as Euclidean distance) of re-assigning each coordinate
+        for every rotation in `spinsamples`. Only provided if `return_cost` is
+        True.
 
     Notes
     -----
@@ -615,7 +619,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     seed = check_random_state(seed)
 
     coords = np.asanyarray(coords)
-    hemiid = np.asanyarray(hemiid).astype(int)
+    hemiid = np.squeeze(np.asanyarray(hemiid, dtype='int8'))
 
     # check supplied coordinate shape
     if coords.shape[-1] != 3 or coords.squeeze().ndim != 2:
@@ -623,7 +627,6 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                          .format(coords.shape))
 
     # ensure hemisphere designation array is correct
-    hemiid = hemiid.squeeze()
     if hemiid.ndim != 1:
         raise ValueError('Provided `hemiid` array must be one-dimensional.')
     if len(coords) != len(hemiid):
@@ -641,57 +644,65 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     # 2147483647 rows please reconsider your life choices
     spinsamples = np.zeros((len(coords), n_rotate), dtype='int32')
     cost = np.zeros((len(coords), n_rotate))
-
-    # split coordinates into left / right hemispheres
-    inds = np.arange(len(coords))
-    inds_l, inds_r = hemiid == 0, hemiid == 1
-    coords_l, coords_r = coords[inds_l], coords[inds_r]
+    inds = np.arange(len(coords), dtype='int32')
 
     # generate rotations and resampling array!
-    warned = False
+    msg, warned = '', False
     for n in range(n_rotate):
-        # try and avoid duplicates, if at all possible...
         count, duplicated = 0, True
+
         if verbose and n % 10 == 0:
             msg = 'Generating spin {:>5} of {:>5}'.format(n, n_rotate)
-            print('\b' * len(msg), end='', flush=True)
-            print(msg, end='', flush=True)
+            print(msg, end='\r', flush=True)
+
         while duplicated and count < 500:
             count, duplicated = count + 1, False
             resampled = np.zeros(len(coords), dtype='int32')
 
-            # generate left + right hemisphere rotations
-            left, right = _gen_rotation(seed=seed)
+            # rotate each hemisphere separately
+            for h, rot in enumerate(_gen_rotation(seed=seed)):
+                hinds = (hemiid == h)
+                coor = coords[hinds]
 
-            # find mapping of rotated coords to original coords
-            if exact:
-                # if we need an exact mapping (i.e., every node needs a unique
-                # assignment) then we can use the Hungarian algorithm.
-                # this requires calculating the FULL distance matrix, which is
-                # a nightmare with respect to memory for anything that isn't
-                # parcellated data (i.e., don't give this vertex coords)
-                dist_l = spatial.distance_matrix(coords_l, coords_l @ left)
-                dist_r = spatial.distance_matrix(coords_r, coords_r @ right)
-                lrow, lcol = optimize.linear_sum_assignment(dist_l)
-                rrow, rcol = optimize.linear_sum_assignment(dist_r)
-                cost[inds_l, n] = dist_l[lrow, lcol]
-                cost[inds_r, n] = dist_r[rrow, rcol]
-            else:
+                # if we need an "exact" mapping (i.e., each node needs to be
+                # assigned EXACTLY once) then we have to calculate the full
+                # distance matrix which is a nightmare with respect to memory
+                # for anything that isn't parcellated data. that is, don't do
+                # this with vertex coordinates!
+                if exact:
+                    dist = spatial.distance_matrix(coor, coor @ rot)
+                    # min of max a la Vasa et al., 2017
+                    if exact == 'vasa':
+                        col = np.zeros(len(coor), dtype='int32')
+                        for r in range(len(dist)):
+                            # find parcel whose closest neighbor is farthest
+                            # away overall; assign to that
+                            row = dist.min(axis=1).argmax()
+                            col[row] = dist[row].argmin()
+                            cost[inds[hinds][row], n] = dist[row, col[row]]
+                            # set these to -inf and inf so they can't be
+                            # assigned again
+                            dist[row] = -np.inf
+                            dist[:, col[row]] = np.inf
+                    # optimization of total cost using Hungarian algorithm.
+                    # this may result in certain parcels having higher cost
+                    # than with `exact='vasa'` but should always result in the
+                    # total cost being lower #tradeoffs
+                    else:
+                        row, col = optimize.linear_sum_assignment(dist)
+                        cost[hinds, n] = dist[row, col]
                 # if nodes can be assigned multiple targets, we can simply use
                 # the absolute minimum of the distances (no optimization
                 # required) which is _much_ lighter on memory
-                # huge thanks to: https://stackoverflow.com/a/47779290
-                dist_l, lcol = spatial.cKDTree(coords_l @ left) \
-                                      .query(coords_l, 1)
-                dist_r, rcol = spatial.cKDTree(coords_r @ right) \
-                                      .query(coords_r, 1)
-                cost[inds_l, n] = dist_l
-                cost[inds_r, n] = dist_r
+                # huge thanks to https://stackoverflow.com/a/47779290 for this
+                # memory-efficient method
+                else:
+                    dist, col = spatial.cKDTree(coor @ rot).query(coor, 1)
+                    cost[hinds, n] = dist
 
-            # generate resampling vector
-            resampled[inds_l] = inds[inds_l][lcol]
-            resampled[inds_r] = inds[inds_r][rcol]
+                resampled[hinds] = inds[hinds][col]
 
+            # if we want to check for duplicates ensure that we don't have any
             if check_duplicates:
                 if np.any(np.all(resampled[:, None] == spinsamples[:, :n], 0)):
                     duplicated = True
@@ -699,7 +710,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                     duplicated = True
 
         # if we broke out because we tried 500 rotations and couldn't generate
-        # a new one, just warn that we're using duplicate rotations and give up
+        # a new one, warn that we're using duplicate rotations and give up.
         # this should only be triggered if check_duplicates is set to True
         if count == 500 and not warned:
             warnings.warn('Duplicate rotations used. Check resampling array '
@@ -709,6 +720,6 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         spinsamples[:, n] = resampled
 
     if verbose:
-        print('\b' * len(msg), end='', flush=True)
+        print(' ' * len(msg) + '\b' * len(msg), end='', flush=True)
 
     return spinsamples, cost
