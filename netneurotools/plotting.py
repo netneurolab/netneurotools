@@ -268,17 +268,23 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     # plot
     lhplot = mlab.figure()
     rhplot = mlab.figure()
-    mlab.triangular_mesh(lhvert[:, 0], lhvert[:, 1], lhvert[:, 2], lhface,
-                         figure=lhplot, colormap=colormap,
-                         mask=np.isnan(lhdata),
-                         scalars=lhdata, vmin=vmin, vmax=vmax, **opts)
+    lhmesh = mlab.triangular_mesh(lhvert[:, 0], lhvert[:, 1], lhvert[:, 2],
+                                  lhface, figure=lhplot, colormap=colormap,
+                                  mask=np.isnan(lhdata), scalars=lhdata,
+                                  vmin=vmin, vmax=vmax, **opts)
+    lhmesh.module_manager.scalar_lut_manager.lut.nan_color = [0.863, 0.863,
+                                                              0.863, 1]
+    lhmesh.update_pipeline()
     if colorbar is True:
         mlab.colorbar(title=colorbartitle, nb_labels=num_labels,
                       orientation=orientation)
-    mlab.triangular_mesh(rhvert[:, 0], rhvert[:, 1], rhvert[:, 2], rhface,
-                         figure=rhplot, colormap=colormap,
-                         mask=np.isnan(rhdata),
-                         scalars=rhdata, vmin=vmin, vmax=vmax, **opts)
+    rhmesh = mlab.triangular_mesh(rhvert[:, 0], rhvert[:, 1], rhvert[:, 2],
+                                  rhface, figure=rhplot, colormap=colormap,
+                                  mask=np.isnan(rhdata), scalars=rhdata,
+                                  vmin=vmin, vmax=vmax, **opts)
+    rhmesh.module_manager.scalar_lut_manager.lut.nan_color = [0.863, 0.863,
+                                                              0.863, 1]
+    rhmesh.update_pipeline()
     if colorbar is True:
         mlab.colorbar(title=colorbartitle, nb_labels=num_labels,
                       orientation=orientation)
