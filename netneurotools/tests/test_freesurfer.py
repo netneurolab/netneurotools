@@ -23,7 +23,7 @@ def cammoun_surf(tmp_path_factory):
     ('scale500', 1000),
 ])
 def test_project_reduce_vertices(cammoun_surf, scale, parcels):
-    # these functions are partners and should be tested in concert
+    # these functions are partners and should be tested in concert.
     # we can test all the normal functionality and also ensure that "round
     # trips" work as expected
 
@@ -32,17 +32,19 @@ def test_project_reduce_vertices(cammoun_surf, scale, parcels):
     lh, rh = cammoun_surf[scale]
 
     # do we get the expected number of vertices in our projection?
-    projected = freesurfer.project_to_vertices(data, rh, lh)
+    projected = freesurfer.parcels_to_vertices(data, rhannot=rh, lhannot=lh)
     assert len(projected) == 327684
 
     # does reduction return our input data, as expected?
-    reduced = freesurfer.reduce_from_vertices(projected, rh, lh)
+    reduced = freesurfer.vertices_to_parcels(projected, rhannot=rh, lhannot=lh)
     assert np.allclose(data, reduced)
 
     # number of parcels != annotation spec
     with pytest.raises(ValueError):
-        freesurfer.project_to_vertices(np.random.rand(parcels + 1), rh, lh)
+        freesurfer.parcels_to_vertices(np.random.rand(parcels + 1),
+                                       rhannot=rh, lhannot=lh)
 
     # number of vertices != annotation spec
     with pytest.raises(ValueError):
-        freesurfer.reduce_from_vertices(np.random.rand(327685), rh, lh)
+        freesurfer.vertices_to_parcels(np.random.rand(327685),
+                                       rhannot=rh, lhannot=lh)
