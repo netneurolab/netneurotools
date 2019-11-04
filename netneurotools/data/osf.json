@@ -300,5 +300,28 @@
             "5d9f5aa4f6b03e000e1b819e"
         ],
         "md5": "c710365a2cc5cddb8a2fbb5f6ae421a3"
+    },
+    "atl-schaefer2018": {
+        "fsaverage": {
+            "url": [
+                "mb37e",
+                "5dbc8d7dcfc96c000dc3581c"
+            ],
+            "md5": "74dfe4237efaccabf057897c49e8af94"
+        },
+        "fsaverage5": {
+            "url": [
+                "mb37e",
+                "5dbc8d7daf84c3000eebffb2"
+            ],
+            "md5": "45a8c784f1979eb33a119bdab912a51f"
+        },
+        "fsaverage6": {
+            "url": [
+                "mb37e",
+                "5dbc8d7bcfc96c000ec6dca2"
+            ],
+            "md5": "8738daccab4648c3e891a1c8d3a9ec1f"
+        }
     }
 }
