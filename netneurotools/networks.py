@@ -59,8 +59,8 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
     # group-average functional connectivity matrix desired instead of bootstrap
     if n_boot == 0 or n_boot is None:
-        if type(data) is list:
-            corrs = [np.corrcoef(data[sub]) for sub in range(len(data))]
+        if isinstance(data, list):
+            corrs = [np.corrcoef(sub) for sub in data]
         else:
             corrs = [np.corrcoef(data[..., sub]) for sub in
                      range(data.shape[-1])]
