@@ -27,10 +27,10 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
     Parameters
     ----------
-    data : (N, T, S) array_like
+    data : (N, T, S) array_like (or a list of S arrays, each shaped as (N, T))
         Pre-processed functional time series, where `N` is the number of nodes,
         `T` is the number of volumes in the time series, and `S` is the number
-        of subjects
+        of subjects.
     n_boot : int, optional
         Number of bootstraps for which to generate correlation. Default: 1000
     ci : (0, 100) float, optional
@@ -59,10 +59,18 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
     # group-average functional connectivity matrix desired instead of bootstrap
     if n_boot == 0 or n_boot is None:
-        corrs = [np.corrcoef(data[..., sub]) for sub in range(data.shape[-1])]
+        if isinstance(data, list):
+            corrs = [np.corrcoef(sub) for sub in data]
+        else:
+            corrs = [np.corrcoef(data[..., sub]) for sub in
+                     range(data.shape[-1])]
         return np.mean(corrs, axis=0)
 
-    collapsed_data = data.reshape((len(data), -1), order='F')
+    if isinstance(data, list):
+        collapsed_data = np.hstack(data)
+    else:
+        collapsed_data = data.reshape((len(data), -1), order='F')
+
     consensus = np.corrcoef(collapsed_data)
 
     # only keep the upper triangle for the bootstraps to save on memory usage
@@ -71,8 +79,13 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
     # generate `n_boot` bootstrap correlation matrices by sampling `t` time
     # points from the concatenated time series
+    if isinstance(data, list):
+        nsample = int(collapsed_data.shape[-1] / len(data))
+    else:
+        nsample = data.shape[1]
+
     for boot in range(n_boot):
-        inds = rs.randint(collapsed_data.shape[-1], size=data.shape[1])
+        inds = rs.randint(collapsed_data.shape[-1], size=nsample)
         bootstrapped_corrmat[..., boot] = \
             np.corrcoef(collapsed_data[:, inds])[triu_inds]
 
