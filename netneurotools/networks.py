@@ -67,7 +67,7 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
         return np.mean(corrs, axis=0)
 
     if isinstance(data, list):
-    	collapsed_data = np.hstack(data)
+        collapsed_data = np.hstack(data)
     else:
         collapsed_data = data.reshape((len(data), -1), order='F')
 
