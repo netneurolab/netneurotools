@@ -68,8 +68,10 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
     if isinstance(data, list):
         collapsed_data = np.hstack(data)
+        nsample = int(collapsed_data.shape[-1] / len(data))
     else:
         collapsed_data = data.reshape((len(data), -1), order='F')
+        nsample = data.shape[1]
 
     consensus = np.corrcoef(collapsed_data)
 
@@ -79,11 +81,6 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
     # generate `n_boot` bootstrap correlation matrices by sampling `t` time
     # points from the concatenated time series
-    if isinstance(data, list):
-        nsample = int(collapsed_data.shape[-1] / len(data))
-    else:
-        nsample = data.shape[1]
-
     for boot in range(n_boot):
         inds = rs.randint(collapsed_data.shape[-1], size=nsample)
         bootstrapped_corrmat[..., boot] = \
