@@ -66,12 +66,8 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
                      range(data.shape[-1])]
         return np.mean(corrs, axis=0)
 
-    if type(data) is list:
-        for n, ts in enumerate(data):
-            if n == 0:
-                collapsed_data = ts
-            else:
-                collapsed_data = np.hstack((collapsed_data, ts))
+    if isinstance(data, list):
+    	collapsed_data = np.hstack(data)
     else:
         collapsed_data = data.reshape((len(data), -1), order='F')
 
@@ -83,8 +79,8 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
     # generate `n_boot` bootstrap correlation matrices by sampling `t` time
     # points from the concatenated time series
-    if type(data) is list:
-        nsample = np.mean([f.shape[1] for f in data]).astype(int)
+    if isinstance(data, list):
+        nsample = int(collapsed_data.shape[-1] / len(data))
     else:
         nsample = data.shape[1]
 
