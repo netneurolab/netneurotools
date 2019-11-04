@@ -453,3 +453,81 @@ def fetch_vazquez_rodriguez2019(data_dir=None, url=None, resume=True,
     rsq, grad = np.loadtxt(data[0], delimiter=',', skiprows=1).T
 
     return Bunch(rsquared=rsq, gradient=grad)
+
+
+def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
+                       resume=True, verbose=1):
+    """
+    Downloads FreeSurfer .annot files for Schaefer et al., 2018 parcellation
+
+    Parameters
+    ----------
+    version : {'fsaverage', 'fsaverage5', 'fsaverage6'}
+        Specifies which surface annotation files should be matched to. Default:
+        'fsaverage'
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys of format '{}Parcels{}Networks' where
+        corresponding values are the left/right hemisphere annotation files
+
+    References
+    ----------
+    Schaefer, A., Kong, R., Gordon, E. M., Laumann, T. O., Zuo, X. N., Holmes,
+    A. J., ... & Yeo, B. T. (2017). Local-global parcellation of the human
+    cerebral cortex from intrinsic functional connectivity MRI. Cerebral
+    Cortex, 28(9), 3095-3114.
+
+    Notes
+    -----
+    License: https://github.com/ThomasYeoLab/CBIG/blob/master/LICENSE.md
+    """
+
+    versions = ['fsaverage', 'fsaverage5', 'fsaverage6']
+    if version not in versions:
+        raise ValueError('The version of Schaefer et al., 2018 parcellation '
+                         'requested "{}" does not exist. Must be one of {}'
+                         .format(version, versions))
+
+    dataset_name = 'atl-schaefer2018'
+    keys = [
+        '{}Parcels{}Networks'.format(p, n)
+        for p in range(100, 1001, 100) for n in [7, 17]
+    ]
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)[version]
+    if url is None:
+        url = info['url']
+
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+
+    filenames = [
+        'atl-Schaefer2018_space-{}_hemi-{}_desc-{}_deterministic.annot'
+        .format(version, hemi, desc) for desc in keys for hemi in ['L', 'R']
+    ]
+
+    files = [(os.path.join(dataset_name, version, f), url, opts)
+             for f in filenames]
+    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+
+    data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
+
+    return Bunch(**dict(zip(keys, data)))

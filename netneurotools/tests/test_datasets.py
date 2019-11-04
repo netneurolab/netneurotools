@@ -117,11 +117,28 @@ def test_fetch_connectome(tmpdir, dataset, expected):
         assert isinstance(connectome[key], str if key == 'ref' else np.ndarray)
 
 
+@pytest.mark.parametrize('version', [
+    'fsaverage', 'fsaverage5', 'fsaverage6'
+])
+def test_fetch_schaefer2018(tmpdir, version):
+    keys = [
+        '{}Parcels{}Networks'.format(p, n)
+        for p in range(100, 1001, 100) for n in [7, 17]
+    ]
+    schaefer = datasets.fetch_schaefer2018(version, data_dir=tmpdir, verbose=0)
+
+    assert all(k in schaefer
+               and len(schaefer[k]) == 2
+               and all(os.path.isfile(hemi) for hemi in schaefer[k])
+               for k in keys)
+
+
 @pytest.mark.parametrize('dset, expected', [
     ('atl-cammoun2012', ['volume', 'surface', 'gcs']),
     ('tpl-conte69', ['url', 'md5']),
     ('atl-pauli2018', ['url', 'md5', 'name']),
-    ('tpl-fsaverage', ['fsaverage' + f for f in ['', '3', '4', '5', '6']])
+    ('tpl-fsaverage', ['fsaverage' + f for f in ['', '3', '4', '5', '6']]),
+    ('atl-schaefer2018', ['fsaverage', 'fsaverage6', 'fsaverage6'])
 ])
 def test_get_dataset_info(dset, expected):
     info = utils._get_dataset_info(dset)
