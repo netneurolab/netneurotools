@@ -93,7 +93,7 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
             assert isinstance(out, str) and out.endswith('.nii.gz')
 
     if 'fsaverage' in version:
-        with pytests.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning):
             cammoun.datasets.fetch_cammoun2012('surface', data_dir=tmpdir,
                                                verbose=0)
 

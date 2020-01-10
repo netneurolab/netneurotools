@@ -77,7 +77,7 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
         warnings.warn('Providing `version="surface"` is deprecated and will '
                       'be removed in a future release. For consistent '
                       'behavior please use `version="fsaverage"` instead. ',
-                       DeprecationWarning, stacklevel=2)
+                      DeprecationWarning, stacklevel=2)
         version = 'fsaverage'
 
     data_dir = _get_data_dir(data_dir=data_dir)

@@ -209,4 +209,3 @@ if __name__ == '__main__':
                     quiet=True)
 
     print(' ' * len(msg) + '\b' * len(msg), end='', flush=True)
-
