@@ -73,7 +73,9 @@ def test_fetch_fsaverage(tmpdir, version):
 
 @pytest.mark.parametrize('version, expected', [
     ('volume', [1, 1, 1, 1, 1]),
-    ('surface', [2, 2, 2, 2, 2]),
+    ('fsaverage', [2, 2, 2, 2, 2]),
+    ('fsaverage5', [2, 2, 2, 2, 2]),
+    ('fsaverage6', [2, 2, 2, 2, 2]),
     ('gcs', [2, 2, 2, 2, 6])
 ])
 def test_fetch_cammoun2012(tmpdir, version, expected):
@@ -89,6 +91,10 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
             assert len(out) == e
         else:
             assert isinstance(out, str) and out.endswith('.nii.gz')
+
+    if 'fsaverage' in version:
+        with pytest.warns(DeprecationWarning):
+            datasets.fetch_cammoun2012('surface', data_dir=tmpdir, verbose=0)
 
 
 @pytest.mark.parametrize('dataset, expected', [
@@ -134,7 +140,8 @@ def test_fetch_schaefer2018(tmpdir, version):
 
 
 @pytest.mark.parametrize('dset, expected', [
-    ('atl-cammoun2012', ['volume', 'surface', 'gcs']),
+    ('atl-cammoun2012', ['volume', 'fsaverage', 'fsaverage5', 'fsaverage6',
+                         'gcs']),
     ('tpl-conte69', ['url', 'md5']),
     ('atl-pauli2018', ['url', 'md5', 'name']),
     ('tpl-fsaverage', ['fsaverage' + f for f in ['', '3', '4', '5', '6']]),
