@@ -143,7 +143,10 @@ def find_parcel_centroids(*, lhannot, rhannot, version='fsaverage',
     """
 
     if drop is None:
-        drop = ['unknown', 'corpuscallosum']
+        drop = [
+            'unknown', 'corpuscallosum',  # default FreeSurfer
+            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
+        ]
     drop = _decode_list(drop)
 
     surfaces = fetch_fsaverage(version)[surf]
@@ -169,8 +172,7 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
     """
     Projects parcellated `data` to vertices defined in annotation files
 
-    Assigns np.nan to 'unknown' and 'corpuscallosum' vertices in annotation
-    files.
+    Assigns np.nan to all ROIs in `drop`
 
     Parameters
     ----------
@@ -195,14 +197,20 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
     """
 
     if drop is None:
-        drop = ['unknown', 'corpuscallosum']
+        drop = [
+            'unknown', 'corpuscallosum',  # default FreeSurfer
+            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
+        ]
     drop = _decode_list(drop)
 
     start = end = 0
     projected = []
 
     # check this so we're not unduly surprised by anything...
-    expected = sum([len(read_annot(a)[-1]) - 2 for a in [lhannot, rhannot]])
+    expected = 0
+    for a in [lhannot, rhannot]:
+        names = _decode_list(read_annot(a)[-1])
+        expected += len(names) - len(set(drop) & set(names))
     if expected != len(data):
         raise ValueError('Number of parcels in provided annotation files '
                          'differs from size of parcellated data array.\n'
@@ -214,10 +222,12 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
         # read files and update end index for `data`
         labels, ctab, names = read_annot(annot)
         names = _decode_list(names)
-        end += len(names) - 2  # unknown and corpuscallosum
+        todrop = set(names) & set(drop)
+        end += len(names) - len(todrop)  # unknown and corpuscallosum
 
         # get indices of unknown and corpuscallosum and insert NaN values
-        inds = [names.index(f) - n for n, f in enumerate(drop)]
+        inds = sorted([names.index(f) for f in todrop])
+        inds = [f - n for n, f in enumerate(inds)]
         currdata = np.insert(data[start:end], inds, np.nan)
 
         # project to vertices and store
@@ -254,7 +264,10 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
     """
 
     if drop is None:
-        drop = ['unknown', 'corpuscallosum']
+        drop = [
+            'unknown', 'corpuscallosum',  # default FreeSurfer
+            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
+        ]
     drop = _decode_list(drop)
 
     start = end = 0
@@ -296,7 +309,7 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
             currdata = sums / counts
 
         # get indices of unkown and corpuscallosum and delete from parcels
-        inds = [names.index(f) for f in drop]
+        inds = sorted([names.index(f) for f in set(drop) & set(names)])
         currdata = np.delete(currdata, inds)
 
         # store parcellated data
@@ -387,7 +400,10 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     """
 
     if drop is None:
-        drop = ['unknown', 'corpuscallosum']
+        drop = [
+            'unknown', 'corpuscallosum',  # default FreeSurfer
+            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
+        ]
 
     # get coordinates and hemisphere designation for spin generation
     coords, hemiid = _get_fsaverage_coords(version, 'sphere')
@@ -472,7 +488,10 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
             return -1
 
     if drop is None:
-        drop = ['unknown', 'corpuscallosum']
+        drop = [
+            'unknown', 'corpuscallosum',  # default FreeSurfer
+            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
+        ]
     drop = _decode_list(drop)
 
     # get vertex-level labels (set drop labels to - values)
@@ -480,7 +499,8 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     for n, annot in enumerate([lhannot, rhannot]):
         labels, ctab, names = read_annot(annot)
         names = _decode_list(names)
-        inds = [names.index(f) - n for n, f in enumerate(drop)]
+        todrop = set(names) & set(drop)
+        inds = [names.index(f) - n for n, f in enumerate(todrop)]
         labs = np.arange(len(names) - len(inds)) + (end - (len(inds) * n))
         insert = np.arange(-1, -(len(inds) + 1), -1)
         vertices.append(np.insert(labs, inds, insert)[labels])
