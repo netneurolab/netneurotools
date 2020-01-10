@@ -16,10 +16,16 @@ import os.path as op
 import re
 import shutil
 
-from netneurotools import datasets, freesurfer
 import nibabel as nib
 import numpy as np
 import pandas as pd
+
+from netneurotools import datasets, freesurfer
+from netneurotools.utils import check_fs_subjid, run
+
+
+cmd = 'mri_surf2surf --srcsubject fsaverage --trgsubject {trgsubject} ' \
+      '--sval-annot {annot} --tval {tval} --hemi {hemi} --seed 1234'
 
 
 def combine_cammoun_500(lhannot, rhannot, subject_id, annot=None,
@@ -63,7 +69,6 @@ def combine_cammoun_500(lhannot, rhannot, subject_id, annot=None,
     cammoun500 : list
         List of created annotation files
     """
-    from netneurotools.utils import check_fs_subjid, run
 
     tolabel = 'mri_annotation2label --subject {subject_id} --hemi {hemi} ' \
               '--outdir {label_dir} --annotation {annot} --sd {subjects_dir}'
@@ -183,3 +188,25 @@ if __name__ == '__main__':
             src, tar = src[sidx], tar[sidx]
             labels = tar[np.searchsorted(src, labels)]
             nib.freesurfer.write_annot(annot, labels, ctab, names)
+
+    #####
+    # this should work now!
+    annotations = datasets.fetch_cammoun2012('surface')
+
+    # map (via surf2surf) fsaverage to fsaverage5/6 so we can provide those
+    for trg in ['fsaverage5', 'fsaverage6']:
+        for scale, (lh, rh) in annotations.items():
+            for annot, hemi in [(lh, 'lh'), (rh, 'rh')]:
+                tval = annot.replace('space-fsaverage', 'space-{}'.format(trg))
+
+                msg = f'Generating annotation file: {tval}'
+                print(msg, end='\r', flush=True)
+
+                run(cmd.format(trgsubject=trg,
+                               annot=annot,
+                               tval=tval,
+                               hemi=hemi),
+                    quiet=True)
+
+    print(' ' * len(msg) + '\b' * len(msg), end='', flush=True)
+

@@ -7,12 +7,26 @@
             ],
             "md5": "c3435f2720da6a74c3d55db54ebdbfff"
         },
-        "surface": {
+        "fsaverage": {
             "url": [
                 "mb37e",
                 "5ce6c30523fec40017e83439"
             ],
             "md5": "478599b362a88198396fdb15ad999f9e"
+        },
+        "fsaverage5": {
+            "url": [
+                "mb37e",
+                "5e189a1c57341903868036dd"
+            ],
+            "md5": "e96a456f14fd30f26734a7dfbcbb18e0"
+        },
+        "fsaverage6": {
+            "url": [
+                "mb37e",
+                "5e189a1b5734190380804072"
+            ],
+            "md5": "b220fb658e1abdfdf8bdb55b26f2acf3"
         },
         "volume": {
             "url": [

@@ -7,6 +7,7 @@ import itertools
 import json
 import os
 import os.path as op
+import warnings
 
 from nilearn.datasets.utils import _fetch_files
 import numpy as np
@@ -23,10 +24,10 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
 
     Parameters
     ----------
-    version : {'volume', 'surface', 'gcs'}
+    version : {'volume', 'fsaverage', 'fsaverage5', 'fsaverage6', 'gcs'}
         Specifies which version of the dataset to download, where 'volume' will
-        return .nii.gz atlas files defined in MNI152 space, 'surface' will
-        return .annot files defined in fsaverage space (FreeSurfer 6.0.1), and
+        return .nii.gz atlas files defined in MNI152 space, 'fsaverageX' will
+        return .annot files defined in fsaverageX space (FreeSurfer 6.0.1), and
         'gcs' will return FreeSurfer-style .gcs probabilistic atlas files for
         generating new, subject-specific parcellations
     data_dir : str, optional
@@ -61,7 +62,9 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     License: https://raw.githubusercontent.com/LTS5/cmp/master/COPYRIGHT
     """
 
-    versions = ['volume', 'surface', 'gcs']
+    versions = [
+        'volume', 'surface', 'gcs', 'fsaverage', 'fsaverage5', 'fsaverage6'
+    ]
     if version not in versions:
         raise ValueError('The version of Cammoun et al., 2012 parcellation '
                          'requested "{}" does not exist. Must be one of {}'
@@ -69,6 +72,13 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
 
     dataset_name = 'atl-cammoun2012'
     keys = ['scale033', 'scale060', 'scale125', 'scale250', 'scale500']
+
+    if version == 'surface':
+        warnings.warn('Providing `version="surface"` is deprecated and will '
+                      'be removed in a future release. For consistent '
+                      'behavior please use `version="fsaverage"` instead. ',
+                       DeprecationWarning, stacklevel=2)
+        version = 'fsaverage'
 
     data_dir = _get_data_dir(data_dir=data_dir)
     info = _get_dataset_info(dataset_name)[version]
@@ -87,10 +97,10 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
             'atl-Cammoun2012_space-MNI152NLin2009aSym_res-{}_deterministic{}'
             .format(res[-3:], suff) for res in keys for suff in ['.nii.gz']
         ] + ['atl-Cammoun2012_space-MNI152NLin2009aSym_info.csv']
-    elif version == 'surface':
+    elif version in ('fsaverage', 'fsaverage5', 'fsaverage6'):
         filenames = [
-            'atl-Cammoun2012_space-fsaverage_res-{}_hemi-{}_deterministic{}'
-            .format(res[-3:], hemi, suff) for res in keys
+            'atl-Cammoun2012_space-{}_res-{}_hemi-{}_deterministic{}'
+            .format(version, res[-3:], hemi, suff) for res in keys
             for hemi in ['L', 'R'] for suff in ['.annot']
         ]
     else:
@@ -106,7 +116,7 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
 
     if version == 'volume':
         keys += ['info']
-    elif version == 'surface':
+    elif version in ('fsaverage', 'fsaverage5', 'fsaverage6'):
         data = [data[i:i + 2] for i in range(0, len(data), 2)]
     else:
         data = [data[::2][i:i + 2] for i in range(0, len(data) // 2, 2)]
