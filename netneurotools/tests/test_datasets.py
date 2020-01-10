@@ -94,8 +94,7 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
 
     if 'fsaverage' in version:
         with pytest.warns(DeprecationWarning):
-            cammoun.datasets.fetch_cammoun2012('surface', data_dir=tmpdir,
-                                               verbose=0)
+            datasets.fetch_cammoun2012('surface', data_dir=tmpdir, verbose=0)
 
 
 @pytest.mark.parametrize('dataset, expected', [
