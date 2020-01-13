@@ -12,7 +12,7 @@ from netneurotools import datasets, freesurfer
 @pytest.fixture(scope='module')
 def cammoun_surf(tmp_path_factory):
     tmpdir = str(tmp_path_factory.getbasetemp())
-    return datasets.fetch_cammoun2012('surface', data_dir=tmpdir, verbose=0)
+    return datasets.fetch_cammoun2012('fsaverage', data_dir=tmpdir, verbose=0)
 
 
 @pytest.mark.parametrize('scale, parcels', [
