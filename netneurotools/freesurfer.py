@@ -139,7 +139,7 @@ def find_parcel_centroids(*, lhannot, rhannot, version='fsaverage',
         defined in `lhannot` and `rhannot`
     hemiid : (N,) numpy.ndarray
         Array denoting hemisphere designation of coordinates in `centroids`,
-        where `hemiid=0` denotes the right and `hemiid=1` the left hemisphere
+        where `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
     """
 
     if drop is None:
@@ -363,7 +363,8 @@ def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
 
 
 def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
-              drop=None, seed=None, verbose=False, return_cost=False):
+              spins=None, drop=None, seed=None, verbose=False,
+              return_cost=False):
     """
     Projects parcellated `data` to surface, rotates, and re-parcellates
 
@@ -429,8 +430,18 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
                          '    FSAVERAGE:  {} vertices'
                          .format(len(vertices), len(coords)))
 
-    spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
-                                  seed=seed, verbose=verbose)
+    if spins is None:
+        spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
+                                      seed=seed, verbose=verbose)
+    else:
+        spins = np.asarray(spins, dtype='int32')
+        if spins.shape[-1] != n_rotate:
+            raise ValueError('Provided `spins` does not match number of '
+                             'requested rotations with `n_rotate`. Please '
+                             'check inputs and try again.')
+        if return_cost:
+            raise ValueError('Cannot `return_cost` when `spins` are provided.')
+
     spun = np.zeros((len(data), n_rotate))
     for n in range(n_rotate):
         spun[:, n] = vertices_to_parcels(vertices[spins[:, n]],
@@ -444,7 +455,7 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
 
 
 def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
-                 drop=None, seed=None, verbose=False, return_cost=False):
+                 drop=None, seed=None, return_cost=False, **kwargs):
     """
     Rotates parcels in `{lh,rh}annot` and re-assigns based on maximum overlap
 
@@ -468,13 +479,11 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         will be inserted in place of the these regions in the returned data. If
         not specified, 'unknown' and 'corpuscallosum' are assumed to not be
         present. Default: None
-    seed : {int, np.random.RandomState instance, None}, optional
-        Seed for random number generation. Default: None
-    verbose : bool, optional
-        Whether to print occasional status messages. Default: False
     return_cost : bool, optional
         Whether to return cost array (specified as Euclidean distance) for each
         coordinate for each rotation Default: True
+    kwargs : key-value, optional
+        Key-value pairs passed to :func:`netneurotools.stats.gen_spinsamples`
 
     Returns
     -------
@@ -531,8 +540,7 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
                          .format(len(vertices), len(coords)))
 
     # spin and assign regions based on max overlap
-    spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
-                                  seed=seed, verbose=verbose)
+    spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate, **kwargs)
     regions = np.zeros((len(labels[mask]), n_rotate), dtype='int32')
     for n in range(n_rotate):
         regions[:, n] = labeled_comprehension(vertices[spins[:, n]], vertices,
