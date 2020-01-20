@@ -39,6 +39,13 @@ def test_project_reduce_vertices(cammoun_surf, scale, parcels):
     reduced = freesurfer.vertices_to_parcels(projected, rhannot=rh, lhannot=lh)
     assert np.allclose(data, reduced)
 
+    # can we do this with multi-dimensional data, too?
+    data = np.random.rand(parcels, 2)
+    projected = freesurfer.parcels_to_vertices(data, rhannot=rh, lhannot=lh)
+    assert projected.shape == (327684, 2)
+    reduced = freesurfer.vertices_to_parcels(projected, rhannot=rh, lhannot=lh)
+    assert np.allclose(data, reduced)
+
     # number of parcels != annotation spec
     with pytest.raises(ValueError):
         freesurfer.parcels_to_vertices(np.random.rand(parcels + 1),
