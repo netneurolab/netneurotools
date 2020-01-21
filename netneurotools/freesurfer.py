@@ -139,7 +139,7 @@ def find_parcel_centroids(*, lhannot, rhannot, version='fsaverage',
         defined in `lhannot` and `rhannot`
     hemiid : (N,) numpy.ndarray
         Array denoting hemisphere designation of coordinates in `centroids`,
-        where `hemiid=0` denotes the right and `hemiid=1` the left hemisphere
+        where `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
     """
 
     if drop is None:
@@ -203,13 +203,14 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
         ]
     drop = _decode_list(drop)
 
-    start = end = 0
-    projected = []
+    data = np.vstack(data)
 
     # check this so we're not unduly surprised by anything...
-    expected = 0
+    n_vert = expected = 0
     for a in [lhannot, rhannot]:
-        names = _decode_list(read_annot(a)[-1])
+        vn, _, names = read_annot(a)
+        n_vert += len(vn)
+        names = _decode_list(names)
         expected += len(names) - len(set(drop) & set(names))
     if expected != len(data):
         raise ValueError('Number of parcels in provided annotation files '
@@ -218,6 +219,8 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
                          '    RECEIVED: {} parcels'
                          .format(expected, len(data)))
 
+    projected = np.zeros((n_vert, data.shape[-1]), dtype=data.dtype)
+    start = end = n_vert = 0
     for annot in [lhannot, rhannot]:
         # read files and update end index for `data`
         labels, ctab, names = read_annot(annot)
@@ -228,13 +231,14 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
         # get indices of unknown and corpuscallosum and insert NaN values
         inds = sorted([names.index(f) for f in todrop])
         inds = [f - n for n, f in enumerate(inds)]
-        currdata = np.insert(data[start:end], inds, np.nan)
+        currdata = np.insert(data[start:end], inds, np.nan, axis=0)
 
         # project to vertices and store
-        projected.append(currdata[labels])
+        projected[n_vert:n_vert + len(labels), :] = currdata[labels]
         start = end
+        n_vert += len(labels)
 
-    return np.hstack(projected)
+    return np.squeeze(projected)
 
 
 def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
@@ -270,11 +274,14 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
         ]
     drop = _decode_list(drop)
 
-    start = end = 0
-    reduced = []
+    data = np.vstack(data)
 
-    # check this so we're not unduly surprised by anything...
-    expected = sum([len(read_annot(a)[0]) for a in [lhannot, rhannot]])
+    n_parc = expected = 0
+    for a in [lhannot, rhannot]:
+        vn, _, names = read_annot(a)
+        expected += len(vn)
+        names = _decode_list(names)
+        n_parc += len(names) - len(set(drop) & set(names))
     if expected != len(data):
         raise ValueError('Number of vertices in provided annotation files '
                          'differs from size of vertex-level data array.\n'
@@ -282,6 +289,8 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
                          '    RECEIVED: {} vertices'
                          .format(expected, len(data)))
 
+    reduced = np.zeros((n_parc, data.shape[-1]), dtype=data.dtype)
+    start = end = n_parc = 0
     for annot in [lhannot, rhannot]:
         # read files and update end index for `data`
         labels, ctab, names = read_annot(annot)
@@ -290,33 +299,36 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
         indices = np.unique(labels)
         end += len(labels)
 
-        # get average of vertex-level data within parcels
-        # set all NaN values to 0 before calling `_stats` because we are
-        # returning sums, so the 0 values won't impact the sums (if we left
-        # the NaNs then all parcels with even one NaN entry would be NaN)
-        currdata = np.squeeze(data[start:end])
-        isna = np.isnan(currdata)
-        counts, sums = _stats(np.nan_to_num(currdata), labels, indices)
+        for idx in range(data.shape[-1]):
+            # get average of vertex-level data within parcels
+            # set all NaN values to 0 before calling `_stats` because we are
+            # returning sums, so the 0 values won't impact the sums (if we left
+            # the NaNs then all parcels with even one NaN entry would be NaN)
+            currdata = np.squeeze(data[start:end, idx])
+            isna = np.isnan(currdata)
+            counts, sums = _stats(np.nan_to_num(currdata), labels, indices)
 
-        # however, we do need to account for the NaN values in the counts
-        # so that our means are similar to what we'd get from e.g., np.nanmean
-        # here, our "sums" are the counts of NaN values in our parcels
-        _, nacounts = _stats(isna, labels, indices)
-        counts = (np.asanyarray(counts, dtype=float)
-                  - np.asanyarray(nacounts, dtype=float))
+            # however, we do need to account for the NaN values in the counts
+            # so that our means are similar to what we'd get from e.g.,
+            # np.nanmean here, our "sums" are the counts of NaN values in our
+            # parcels
+            _, nacounts = _stats(isna, labels, indices)
+            counts = (np.asanyarray(counts, dtype=float)
+                      - np.asanyarray(nacounts, dtype=float))
 
-        with np.errstate(divide='ignore', invalid='ignore'):
-            currdata = sums / counts
+            with np.errstate(divide='ignore', invalid='ignore'):
+                currdata = sums / counts
 
-        # get indices of unkown and corpuscallosum and delete from parcels
-        inds = sorted([names.index(f) for f in set(drop) & set(names)])
-        currdata = np.delete(currdata, inds)
+            # get indices of unkown and corpuscallosum and delete from parcels
+            inds = sorted([names.index(f) for f in set(drop) & set(names)])
+            currdata = np.delete(currdata, inds)
 
-        # store parcellated data
-        reduced.append(currdata)
+            # store parcellated data
+            reduced[n_parc:n_parc + len(names) - len(inds), idx] = currdata
         start = end
+        n_parc += len(names) - len(inds)
 
-    return np.hstack(reduced)
+    return np.squeeze(reduced)
 
 
 def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
@@ -351,7 +363,8 @@ def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
 
 
 def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
-              drop=None, seed=None, verbose=False, return_cost=False):
+              spins=None, drop=None, seed=None, verbose=False,
+              return_cost=False):
     """
     Projects parcellated `data` to surface, rotates, and re-parcellates
 
@@ -417,8 +430,18 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
                          '    FSAVERAGE:  {} vertices'
                          .format(len(vertices), len(coords)))
 
-    spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
-                                  seed=seed, verbose=verbose)
+    if spins is None:
+        spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
+                                      seed=seed, verbose=verbose)
+    else:
+        spins = np.asarray(spins, dtype='int32')
+        if spins.shape[-1] != n_rotate:
+            raise ValueError('Provided `spins` does not match number of '
+                             'requested rotations with `n_rotate`. Please '
+                             'check inputs and try again.')
+        if return_cost:
+            raise ValueError('Cannot `return_cost` when `spins` are provided.')
+
     spun = np.zeros((len(data), n_rotate))
     for n in range(n_rotate):
         spun[:, n] = vertices_to_parcels(vertices[spins[:, n]],
@@ -432,7 +455,7 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
 
 
 def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
-                 drop=None, seed=None, verbose=False, return_cost=False):
+                 drop=None, seed=None, return_cost=False, **kwargs):
     """
     Rotates parcels in `{lh,rh}annot` and re-assigns based on maximum overlap
 
@@ -456,13 +479,11 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         will be inserted in place of the these regions in the returned data. If
         not specified, 'unknown' and 'corpuscallosum' are assumed to not be
         present. Default: None
-    seed : {int, np.random.RandomState instance, None}, optional
-        Seed for random number generation. Default: None
-    verbose : bool, optional
-        Whether to print occasional status messages. Default: False
     return_cost : bool, optional
         Whether to return cost array (specified as Euclidean distance) for each
         coordinate for each rotation Default: True
+    kwargs : key-value, optional
+        Key-value pairs passed to :func:`netneurotools.stats.gen_spinsamples`
 
     Returns
     -------
@@ -519,8 +540,7 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
                          .format(len(vertices), len(coords)))
 
     # spin and assign regions based on max overlap
-    spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
-                                  seed=seed, verbose=verbose)
+    spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate, **kwargs)
     regions = np.zeros((len(labels[mask]), n_rotate), dtype='int32')
     for n in range(n_rotate):
         regions[:, n] = labeled_comprehension(vertices[spins[:, n]], vertices,
