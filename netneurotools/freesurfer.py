@@ -5,6 +5,7 @@ Functions for working with FreeSurfer data and parcellations
 
 import os
 import os.path as op
+import warnings
 
 from nibabel.freesurfer import read_annot, read_geometry
 import numpy as np
@@ -389,6 +390,10 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         'fsaverage5', 'fsaverage6'}. Default: 'fsaverage'
     n_rotate : int, optional
         Number of rotations to generate. Default: 1000
+    spins : array_like, optional
+        Pre-computed spins to use instead of generating them on the fly. If not
+        provided will use other provided parameters to create them. Default:
+        None
     drop : list, optional
         Specifies regions in {lh,rh}annot that are not present in `data`. NaNs
         will be inserted in place of the these regions in the returned data. If
@@ -400,7 +405,8 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         Whether to print occasional status messages. Default: False
     return_cost : bool, optional
         Whether to return cost array (specified as Euclidean distance) for each
-        coordinate for each rotation Default: True
+        coordinate for each rotation. Currently this option is not supported if
+        pre-computed `spins` are provided. Default: True
 
     Returns
     -------
@@ -419,34 +425,47 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         ]
 
     # get coordinates and hemisphere designation for spin generation
-    coords, hemiid = _get_fsaverage_coords(version, 'sphere')
     vertices = parcels_to_vertices(data, lhannot=lhannot, rhannot=rhannot,
                                    drop=drop)
 
-    if len(vertices) != len(coords):
-        raise ValueError('Provided annotation files have a different number '
-                         'of vertices than the specified fsaverage surface.\n'
-                         '    ANNOTATION: {} vertices\n'
-                         '    FSAVERAGE:  {} vertices'
-                         .format(len(vertices), len(coords)))
-
     if spins is None:
+        coords, hemiid = _get_fsaverage_coords(version, 'sphere')
+        if len(vertices) != len(coords):
+            raise ValueError('Provided annotation files have a different '
+                             'number of vertices than the specified fsaverage '
+                             'surface.\n    ANNOTATION: {} vertices\n     '
+                             'FSAVERAGE:  {} vertices'
+                             .format(len(vertices), len(coords)))
         spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
                                       seed=seed, verbose=verbose)
     else:
         spins = np.asarray(spins, dtype='int32')
+        if len(spins) != len(vertices):
+            raise ValueError('Provided `spins` array has a different number '
+                             'of vertices than the provided annotation files.'
+                             '\n    ANNOTATION: {} vertices\n     SPINS:      '
+                             '{} vertices\n'
+                             .format(len(vertices), len(spins)))
         if spins.shape[-1] != n_rotate:
-            raise ValueError('Provided `spins` does not match number of '
-                             'requested rotations with `n_rotate`. Please '
-                             'check inputs and try again.')
+            warnings.warn('Shape of provided `spins` array does not match '
+                          'number of rotations requested with `n_rotate`. '
+                          'Ignoring specified `n_rotate` parameter and using '
+                          'all provided `spins`.')
+            n_rotate = spins.shape[-1]
         if return_cost:
             raise ValueError('Cannot `return_cost` when `spins` are provided.')
 
-    spun = np.zeros((len(data), n_rotate))
+    spun = np.zeros(data.shape + (n_rotate,))
     for n in range(n_rotate):
-        spun[:, n] = vertices_to_parcels(vertices[spins[:, n]],
-                                         lhannot=lhannot, rhannot=rhannot,
-                                         drop=drop)
+        if verbose:
+            msg = f'Reducing vertices to parcels: {n:>5}/{n_rotate}'
+            print(msg, end='\b' * len(msg), flush=True)
+        spun[..., n] = vertices_to_parcels(vertices[spins[:, n]],
+                                           lhannot=lhannot, rhannot=rhannot,
+                                           drop=drop)
+
+    if verbose:
+        print(' ' * len(msg) + '\b' * len(msg), end='', flush=True)
 
     if return_cost:
         return spun, cost
