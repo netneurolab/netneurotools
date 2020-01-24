@@ -553,8 +553,7 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(5, 5),
         ax.axis('off')
         ax.set(xlim=0.57 * np.array(ax.get_xlim()),
                ylim=0.57 * np.array(ax.get_ylim()),
-               zlim=0.60 * np.array(ax.get_zlim()),
-               aspect=0.55 if view != (0, 90) else 0.7)
+               zlim=0.60 * np.array(ax.get_zlim()))
     fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
     # add colorbar to axes
