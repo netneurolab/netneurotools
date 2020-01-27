@@ -33,7 +33,8 @@ def test_add_triu():
 ])
 def test_get_centroids(tmpdir, scale, expected):
     # fetch test dataset
-    cammoun = datasets.fetch_cammoun2012('volume', data_dir=tmpdir, verbose=0)
+    cammoun = datasets.fetch_cammoun2012('MNI152NLin2009aSym', data_dir=tmpdir,
+                                         verbose=0)
 
     ijk = utils.get_centroids(cammoun[scale])
     xyz = utils.get_centroids(cammoun[scale], image_space=True)

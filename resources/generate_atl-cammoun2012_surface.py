@@ -24,8 +24,21 @@ from netneurotools import datasets, freesurfer
 from netneurotools.utils import check_fs_subjid, run
 
 
-cmd = 'mri_surf2surf --srcsubject fsaverage --trgsubject {trgsubject} ' \
-      '--sval-annot {annot} --tval {tval} --hemi {hemi} --seed 1234'
+ANNOT = 'atl-Cammoun2012_space-fsaverage_res-{}_hemi-{}_deterministic.annot'
+SURFCMD = 'mri_surf2surf --srcsubject fsaverage --trgsubject {trgsubject} ' \
+          '--sval-annot {annot} --tval {tval} --hemi {hemi} --seed 1234'
+GIICMD = 'mris_convert --annot {annot} {white} {gii}'
+HCPCMD = 'wb_command -label-resample {annot} ' \
+         '{path}/resample_fsaverage/' \
+         'fsaverage{vers}_std_sphere.{hemi}.{ires}k_fsavg_{hemi}.surf.gii ' \
+         '{path}/resample_fsaverage/' \
+         'fs_LR-deformed_to-fsaverage.{hemi}.sphere.{ores}k_fs_LR.surf.gii ' \
+         'ADAP_BARY_AREA {out} -area-metrics ' \
+         '{path}/resample_fsaverage/' \
+         'fsaverage{vers}.{hemi}.midthickness_va_avg.{ires}k_fsavg_{hemi}.' \
+         'shape.gii ' \
+         '{path}/resample_fsaverage/' \
+         'fs_LR.{hemi}.midthickness_va_avg.{ores}k_fs_LR.shape.gii'
 
 
 def combine_cammoun_500(lhannot, rhannot, subject_id, annot=None,
@@ -136,10 +149,6 @@ def combine_cammoun_500(lhannot, rhannot, subject_id, annot=None,
     return created
 
 
-FSUBJ = 'fsaverage'
-ANNOT = 'atl-Cammoun2012_space-{}_res-{}_hemi-{}_deterministic.annot'
-ANNOT = ANNOT.format(FSUBJ, '{}', '{}')
-
 if __name__ == '__main__':
     #####
     # get the GCS files and apply them onto the fsaverage surface
@@ -148,18 +157,18 @@ if __name__ == '__main__':
         for fn in gcsfiles:
             hemi = re.search('hemi-([RL])', fn).group(1)
             scale = re.search('res-(.*)_hemi-', fn).group(1)
-            out = op.join(op.dirname(fn), ANNOT.format(scale, hemi))
-            freesurfer.apply_prob_atlas(FSUBJ, fn, hemi.lower() + 'h',
+            dirname = op.join(op.dirname(op.dirname(fn)), 'fsaverage')
+            out = op.join(dirname, ANNOT.format(scale, hemi))
+            freesurfer.apply_prob_atlas('fsaverage', fn, hemi.lower() + 'h',
                                         ctab=fn.replace('.gcs', '.ctab'),
                                         annot=out)
 
     #####
     # get scale 500 parcellation files and combine
-    dirname = op.dirname(fn)
     lh = sorted(glob.glob(op.join(dirname, ANNOT.format('500*', 'L'))))
     rh = sorted(glob.glob(op.join(dirname, ANNOT.format('500*', 'R'))))
     annot500 = op.join(dirname, ANNOT.format('500', '{}'))
-    parc500 = combine_cammoun_500(lh, rh, FSUBJ, annot=annot500)
+    parc500 = combine_cammoun_500(lh, rh, 'fsaverage', annot=annot500)
     for fn in lh + rh:
         os.remove(fn)
 
@@ -191,21 +200,41 @@ if __name__ == '__main__':
 
     #####
     # this should work now!
-    annotations = datasets.fetch_cammoun2012('surface')
+    annotations = datasets.fetch_cammoun2012('fsaverage')
 
     # map (via surf2surf) fsaverage to fsaverage5/6 so we can provide those
     for trg in ['fsaverage5', 'fsaverage6']:
         for scale, (lh, rh) in annotations.items():
             for annot, hemi in [(lh, 'lh'), (rh, 'rh')]:
                 tval = annot.replace('space-fsaverage', 'space-{}'.format(trg))
-
+                tval = tval.replace('/fsaverage/', '/{}/'.format(trg))
                 msg = f'Generating annotation file: {tval}'
                 print(msg, end='\r', flush=True)
 
-                run(cmd.format(trgsubject=trg,
-                               annot=annot,
-                               tval=tval,
-                               hemi=hemi),
+                run(SURFCMD.format(trgsubject=trg,
+                                   annot=annot,
+                                   tval=tval,
+                                   hemi=hemi),
                     quiet=True)
+
+    print(' ' * len(msg) + '\b' * len(msg), end='', flush=True)
+
+    hcp = datasets.fetch_hcp_standards()
+    fsaverage = datasets.fetch_fsaverage()
+    for scale, (lh, rh) in annotations.items():
+        for annot, hemi in [(lh, 'lh'), (rh, 'rh')]:
+            outdir = op.join(op.dirname(op.dirname(annot)), 'fslr32k')
+            gii = annot.replace('.annot', '.label.gii')
+            white = fsaverage['white'][0 if hemi == 'lh' else 1]
+            fname = op.basename(gii).replace('fsaverage', 'fslr32k')
+            msg = f'Generating fslr32k file: {fname}'
+            print(msg, end='\r', flush=True)
+            run(GIICMD.format(annot=annot, white=white, gii=gii),
+                quiet=True)
+            run(HCPCMD.format(annot=gii, path=hcp, vers='',
+                              hemi=hemi[0].capitalize(),
+                              ires='164', ores='32',
+                              out=op.join(outdir, fname)),
+                quiet=True)
 
     print(' ' * len(msg) + '\b' * len(msg), end='', flush=True)

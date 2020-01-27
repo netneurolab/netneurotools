@@ -5,7 +5,6 @@ Functions for fetching datasets from the internet
 
 import itertools
 import json
-import os
 import os.path as op
 import warnings
 
@@ -17,19 +16,21 @@ from .utils import _get_data_dir, _get_dataset_info
 from ..utils import check_fs_subjid
 
 
-def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
-                      verbose=1):
+def fetch_cammoun2012(version='MNI125NLin2009aSym', data_dir=None, url=None,
+                      resume=True, verbose=1):
     """
     Downloads files for Cammoun et al., 2012 multiscale parcellation
 
     Parameters
     ----------
-    version : {'volume', 'fsaverage', 'fsaverage5', 'fsaverage6', 'gcs'}
-        Specifies which version of the dataset to download, where 'volume' will
-        return .nii.gz atlas files defined in MNI152 space, 'fsaverageX' will
-        return .annot files defined in fsaverageX space (FreeSurfer 6.0.1), and
-        'gcs' will return FreeSurfer-style .gcs probabilistic atlas files for
-        generating new, subject-specific parcellations
+    version : str, optional
+        Specifies which version of the dataset to download, where
+        'MNI125NLin2009aSym' will return .nii.gz atlas files defined in MNI152
+        space, 'fsaverageX' will return .annot files defined in fsaverageX
+        space (FreeSurfer 6.0.1), 'fslr32k' will return .label.gii files in
+        fs_LR_32k HCP space, and 'gcs' will return FreeSurfer-style .gcs
+        probabilistic atlas files for generating new, subject-specific
+        parcellations. Default: 'MNI125NLin2009aSym'
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
@@ -62,8 +63,23 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     License: https://raw.githubusercontent.com/LTS5/cmp/master/COPYRIGHT
     """
 
+    if version == 'surface':
+        warnings.warn('Providing `version="surface"` is deprecated and will '
+                      'be removed in a future release. For consistent '
+                      'behavior please use `version="fsaverage"` instead.',
+                      DeprecationWarning, stacklevel=2)
+        version = 'fsaverage'
+    elif version == 'volume':
+        warnings.warn('Providing `version="volume"` is deprecated and will '
+                      'be removed in a future release. For consistent '
+                      'behavior please use `version="MNI152NLin2009aSym"` '
+                      'instead.',
+                      DeprecationWarning, stacklevel=2)
+        version = 'MNI152NLin2009aSym'
+
     versions = [
-        'volume', 'surface', 'gcs', 'fsaverage', 'fsaverage5', 'fsaverage6'
+        'gcs', 'fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k',
+        'MNI152NLin2009aSym'
     ]
     if version not in versions:
         raise ValueError('The version of Cammoun et al., 2012 parcellation '
@@ -72,13 +88,6 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
 
     dataset_name = 'atl-cammoun2012'
     keys = ['scale033', 'scale060', 'scale125', 'scale250', 'scale500']
-
-    if version == 'surface':
-        warnings.warn('Providing `version="surface"` is deprecated and will '
-                      'be removed in a future release. For consistent '
-                      'behavior please use `version="fsaverage"` instead. ',
-                      DeprecationWarning, stacklevel=2)
-        version = 'fsaverage'
 
     data_dir = _get_data_dir(data_dir=data_dir)
     info = _get_dataset_info(dataset_name)[version]
@@ -92,11 +101,17 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
     }
 
     # filenames differ based on selected version of dataset
-    if version == 'volume':
+    if version == 'MNI152NLin2009aSym':
         filenames = [
             'atl-Cammoun2012_space-MNI152NLin2009aSym_res-{}_deterministic{}'
             .format(res[-3:], suff) for res in keys for suff in ['.nii.gz']
         ] + ['atl-Cammoun2012_space-MNI152NLin2009aSym_info.csv']
+    elif version == 'fslr32k':
+        filenames = [
+            'atl-Cammoun2012_space-fslr32k_res-{}_hemi-{}_deterministic{}'
+            .format(res[-3:], hemi, suff) for res in keys
+            for hemi in ['L', 'R'] for suff in ['.label.gii']
+        ]
     elif version in ('fsaverage', 'fsaverage5', 'fsaverage6'):
         filenames = [
             'atl-Cammoun2012_space-{}_res-{}_hemi-{}_deterministic{}'
@@ -111,12 +126,14 @@ def fetch_cammoun2012(version='volume', data_dir=None, url=None, resume=True,
             for hemi in ['L', 'R'] for suff in ['.gcs', '.ctab']
         ]
 
-    files = [(os.path.join(dataset_name, f), url, opts) for f in filenames]
+    files = [
+        (op.join(dataset_name, version, f), url, opts) for f in filenames
+    ]
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
-    if version == 'volume':
+    if version == 'MNI152NLin2009aSym':
         keys += ['info']
-    elif version in ('fsaverage', 'fsaverage5', 'fsaverage6'):
+    elif version in ('fslr32k', 'fsaverage', 'fsaverage5', 'fsaverage6'):
         data = [data[i:i + 2] for i in range(0, len(data), 2)]
     else:
         data = [data[::2][i:i + 2] for i in range(0, len(data) // 2, 2)]
@@ -313,7 +330,7 @@ def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
 
     try:
         data_dir = check_fs_subjid(version)[1]
-        data = [os.path.join(data_dir, f) for f in filenames]
+        data = [op.join(data_dir, f) for f in filenames]
     except FileNotFoundError:
         data = _fetch_files(data_dir, resume=resume, verbose=verbose,
                             files=[(op.join(dataset_name, f), url, opts)
@@ -393,7 +410,7 @@ def fetch_connectome(dataset, data_dir=None, url=None, resume=True,
     }
 
     filenames = [
-        os.path.join(dataset, '{}.csv'.format(fn)) for fn in info['keys']
+        op.join(dataset, '{}.csv'.format(fn)) for fn in info['keys']
     ] + [op.join(dataset, 'ref.txt')]
     data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
                         resume=resume, verbose=verbose)
@@ -454,7 +471,7 @@ def fetch_vazquez_rodriguez2019(data_dir=None, url=None, resume=True,
     }
 
     filenames = [
-        os.path.join(dataset_name, 'rsquared_gradient.csv')
+        op.join(dataset_name, 'rsquared_gradient.csv')
     ]
     data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
                         resume=resume, verbose=verbose)
@@ -534,10 +551,51 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
         .format(version, hemi, desc) for desc in keys for hemi in ['L', 'R']
     ]
 
-    files = [(os.path.join(dataset_name, version, f), url, opts)
+    files = [(op.join(dataset_name, version, f), url, opts)
              for f in filenames]
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
+
+
+def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
+    """
+    Fetches HCP standard mesh atlases for converting between FreeSurfer and HCP
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Returns
+    -------
+    standards : str
+        Filepath to standard_mesh_atlases directory
+    """
+    if url is None:
+        url = 'http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip'
+    dataset_name = 'standard_mesh_atlases'
+    data_dir = _get_data_dir(data_dir=data_dir)
+    opts = {
+        'uncompress': True,
+        'move': '{}.zip'.format(dataset_name)
+    }
+    filenames = [
+        'L.sphere.32k_fs_LR.surf.gii', 'R.sphere.32k_fs_LR.surf.gii'
+    ]
+    files = [(op.join(dataset_name, f), url, opts) for f in filenames]
+    _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+
+    return op.join(data_dir, dataset_name)
