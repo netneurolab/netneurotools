@@ -72,10 +72,11 @@ def test_fetch_fsaverage(tmpdir, version):
 
 
 @pytest.mark.parametrize('version, expected', [
-    ('volume', [1, 1, 1, 1, 1]),
+    ('MNI152NLin2009aSym', [1, 1, 1, 1, 1]),
     ('fsaverage', [2, 2, 2, 2, 2]),
     ('fsaverage5', [2, 2, 2, 2, 2]),
     ('fsaverage6', [2, 2, 2, 2, 2]),
+    ('fslr32k', [2, 2, 2, 2, 2]),
     ('gcs', [2, 2, 2, 2, 6])
 ])
 def test_fetch_cammoun2012(tmpdir, version, expected):
@@ -139,9 +140,14 @@ def test_fetch_schaefer2018(tmpdir, version):
                for k in keys)
 
 
+def test_fetch_hcp_standards(tmpdir):
+    hcp = datasets.fetch_hcp_standards(data_dir=tmpdir, verbose=0)
+    assert os.path.isdir(hcp)
+
+
 @pytest.mark.parametrize('dset, expected', [
-    ('atl-cammoun2012', ['volume', 'fsaverage', 'fsaverage5', 'fsaverage6',
-                         'gcs']),
+    ('atl-cammoun2012', ['fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k',
+                         'MNI152NLin2009aSym', 'gcs']),
     ('tpl-conte69', ['url', 'md5']),
     ('atl-pauli2018', ['url', 'md5', 'name']),
     ('tpl-fsaverage', ['fsaverage' + f for f in ['', '3', '4', '5', '6']]),
