@@ -5,35 +5,42 @@
                 "mb37e",
                 "5ce6bb4423fec40017e82c5e"
             ],
-            "md5": "c3435f2720da6a74c3d55db54ebdbfff"
+            "md5": "266c4520af768e766328fb8e6648005d"
         },
         "fsaverage": {
             "url": [
                 "mb37e",
                 "5ce6c30523fec40017e83439"
             ],
-            "md5": "478599b362a88198396fdb15ad999f9e"
+            "md5": "2a19eb4744c0ce6c243f721bd43ecff0"
         },
         "fsaverage5": {
             "url": [
                 "mb37e",
                 "5e189a1c57341903868036dd"
             ],
-            "md5": "e96a456f14fd30f26734a7dfbcbb18e0"
+            "md5": "2afb22e1887d47f1ca81c340fff7692b"
         },
         "fsaverage6": {
             "url": [
                 "mb37e",
                 "5e189a1b5734190380804072"
             ],
-            "md5": "b220fb658e1abdfdf8bdb55b26f2acf3"
+            "md5": "1df743bff13316f67bd41d13ec691c97"
         },
-        "volume": {
+        "MNI152NLin2009aSym": {
             "url": [
                 "mb37e",
-                "5ce6bb438d6e05001860abca"
+                "5e2f4bf0e71ef800301880c2"
             ],
-            "md5": "088fb64b397557dfa01901f04f4cd9d2"
+            "md5": "9da30bad22d732aa5f00a6d178d087c4"
+        },
+        "fslr32k": {
+            "url": [
+                "mb37e",
+                "5e2f4bf1e71ef80027189c56"
+            ],
+            "md5": "a5177319d5e0b8825a91d503ded1a59e"
         }
     },
     "atl-pauli2018": [
