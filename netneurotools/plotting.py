@@ -387,7 +387,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
         from .datasets import fetch_fsaverage
         from .datasets.utils import _get_data_dir
         fetch_fsaverage()
-        subjects_dir = _get_data_dir()
+        subjects_dir = os.path.join(_get_data_dir(), 'tpl-fsaverage')
         subject_id, subjects_dir = check_fs_subjid(subject, subjects_dir)
 
     # cast data to float (required for NaNs)
