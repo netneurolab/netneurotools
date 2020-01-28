@@ -118,5 +118,6 @@ sphinx_gallery_conf = {
     'reference_url': {
         'netneurotools': None
     },
-    'thumbnail_size': (250, 250)
+    'thumbnail_size': (250, 250),
+    'ignore_pattern': r'/wip.*\.py',
 }
