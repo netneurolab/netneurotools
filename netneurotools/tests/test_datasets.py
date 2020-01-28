@@ -125,7 +125,7 @@ def test_fetch_connectome(tmpdir, dataset, expected):
 
 
 @pytest.mark.parametrize('version', [
-    'fsaverage', 'fsaverage5', 'fsaverage6'
+    'fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k'
 ])
 def test_fetch_schaefer2018(tmpdir, version):
     keys = [
@@ -134,10 +134,13 @@ def test_fetch_schaefer2018(tmpdir, version):
     ]
     schaefer = datasets.fetch_schaefer2018(version, data_dir=tmpdir, verbose=0)
 
-    assert all(k in schaefer
-               and len(schaefer[k]) == 2
-               and all(os.path.isfile(hemi) for hemi in schaefer[k])
-               for k in keys)
+    if version == 'fslr32k':
+        assert all(k in schaefer and os.path.isfile(schaefer[k]) for k in keys)
+    else:
+        assert all(k in schaefer
+                   and len(schaefer[k]) == 2
+                   and all(os.path.isfile(hemi) for hemi in schaefer[k])
+                   for k in keys)
 
 
 def test_fetch_hcp_standards(tmpdir):

@@ -343,6 +343,13 @@
                 "5dbc8d7bcfc96c000ec6dca2"
             ],
             "md5": "8738daccab4648c3e891a1c8d3a9ec1f"
+        },
+        "fslr32k": {
+            "url": [
+                "mb37e",
+                "5e3086e4af75930094bdd507"
+            ],
+            "md5": "d8378f33107ed5d98c27e8070ebb5aa2"
         }
     }
 }

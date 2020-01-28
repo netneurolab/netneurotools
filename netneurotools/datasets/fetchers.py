@@ -489,7 +489,7 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
 
     Parameters
     ----------
-    version : {'fsaverage', 'fsaverage5', 'fsaverage6'}
+    version : {'fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k'}
         Specifies which surface annotation files should be matched to. Default:
         'fsaverage'
     data_dir : str, optional
@@ -523,7 +523,7 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
     License: https://github.com/ThomasYeoLab/CBIG/blob/master/LICENSE.md
     """
 
-    versions = ['fsaverage', 'fsaverage5', 'fsaverage6']
+    versions = ['fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k']
     if version not in versions:
         raise ValueError('The version of Schaefer et al., 2018 parcellation '
                          'requested "{}" does not exist. Must be one of {}'
@@ -546,16 +546,22 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
         'move': '{}.tar.gz'.format(dataset_name)
     }
 
+    if version == 'fslr32k':
+        hemispheres, suffix = ['LR'], 'dlabel.nii'
+    else:
+        hemispheres, suffix = ['L', 'R'], 'annot'
     filenames = [
-        'atl-Schaefer2018_space-{}_hemi-{}_desc-{}_deterministic.annot'
-        .format(version, hemi, desc) for desc in keys for hemi in ['L', 'R']
+        'atl-Schaefer2018_space-{}_hemi-{}_desc-{}_deterministic.{}'
+        .format(version, hemi, desc, suffix)
+        for desc in keys for hemi in hemispheres
     ]
 
     files = [(op.join(dataset_name, version, f), url, opts)
              for f in filenames]
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
-    data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
+    if suffix == 'annot':
+        data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
 
