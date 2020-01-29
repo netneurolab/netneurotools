@@ -16,7 +16,7 @@ from .utils import _get_data_dir, _get_dataset_info
 from ..utils import check_fs_subjid
 
 
-def fetch_cammoun2012(version='MNI125NLin2009aSym', data_dir=None, url=None,
+def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
                       resume=True, verbose=1):
     """
     Downloads files for Cammoun et al., 2012 multiscale parcellation
@@ -25,12 +25,12 @@ def fetch_cammoun2012(version='MNI125NLin2009aSym', data_dir=None, url=None,
     ----------
     version : str, optional
         Specifies which version of the dataset to download, where
-        'MNI125NLin2009aSym' will return .nii.gz atlas files defined in MNI152
+        'MNI152NLin2009aSym' will return .nii.gz atlas files defined in MNI152
         space, 'fsaverageX' will return .annot files defined in fsaverageX
         space (FreeSurfer 6.0.1), 'fslr32k' will return .label.gii files in
         fs_LR_32k HCP space, and 'gcs' will return FreeSurfer-style .gcs
         probabilistic atlas files for generating new, subject-specific
-        parcellations. Default: 'MNI125NLin2009aSym'
+        parcellations. Default: 'MNI152NLin2009aSym'
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
