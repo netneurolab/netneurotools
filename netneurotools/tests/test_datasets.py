@@ -88,7 +88,7 @@ def test_fetch_cammoun2012(tmpdir, version, expected):
     # and keys are expected lengths!
     for k, e in zip(keys, expected):
         out = getattr(cammoun, k)
-        if isinstance(out, list):
+        if isinstance(out, (tuple, list)):
             assert len(out) == e
         else:
             assert isinstance(out, str) and out.endswith('.nii.gz')
