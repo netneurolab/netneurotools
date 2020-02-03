@@ -264,8 +264,8 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
     drop : list, optional
         Specifies regions in {lh,rh}annot that are not present in `data`. NaNs
         will be inserted in place of the these regions in the returned data. If
-        not specified, 'unknown' and 'corpuscallosum' are assumed to not be
-        present. Default: None
+        not specified, parcels defined in `netneurotools.freesurfer.FSIGNORE`
+        are assumed to not be present. Default: None
 
     Reurns
     ------
@@ -274,10 +274,7 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
     """
 
     if drop is None:
-        drop = [
-            'unknown', 'corpuscallosum',  # default FreeSurfer
-            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
-        ]
+        drop = FSIGNORE
     drop = _decode_list(drop)
 
     data = np.vstack(data)
@@ -335,8 +332,9 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
         hemisphere
     drop : list, optional
         Specifies regions in {lh,rh}annot that should be removed from the
-        parcellated version of `data`. If not specified, 'unknown' and
-        'corpuscallosum' will be removed. Default: None
+        parcellated version of `data`. If not specified, vertices corresponding
+        to parcels defined in `netneurotools.freesurfer.FSIGNORE` will be
+        removed. Default: None
 
     Reurns
     ------
@@ -345,10 +343,7 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
     """
 
     if drop is None:
-        drop = [
-            'unknown', 'corpuscallosum',  # default FreeSurfer
-            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
-        ]
+        drop = FSIGNORE
     drop = _decode_list(drop)
 
     data = np.vstack(data)
@@ -439,6 +434,60 @@ def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
     return np.row_stack(coords), np.hstack(hemi)
 
 
+def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
+                         seed=None, verbose=False, return_cost=False):
+    """
+    Generates spatial permutation resamples for fsaverage `version`
+
+    If `spins` are provided then performs checks to confirm they are valid
+
+    Parameters
+    ----------
+    version : str, optional
+        Specifies which version of `fsaverage` for which to generate spins.
+        Must be one of {'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5',
+        'fsaverage6'}. Default: 'fsaverage'
+    spins : array_like, optional
+        Pre-computed spins to use instead of generating them on the fly. If not
+        provided will use other provided parameters to create them. Default:
+        None
+    n_rotate : int, optional
+        Number of rotations to generate. Default: 1000
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation. Default: None
+    verbose : bool, optional
+        Whether to print occasional status messages. Default: False
+    return_cost : bool, optional
+        Whether to return cost array (specified as Euclidean distance) for each
+        coordinate for each rotation. Currently this option is not supported if
+        pre-computed `spins` are provided. Default: True
+
+    Returns
+    --------
+    spins : (N, S) numpy.ndarray
+        Resampling array
+    """
+
+    if spins is None:
+        coords, hemiid = _get_fsaverage_coords(version, 'sphere')
+        spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
+                                      seed=seed, verbose=verbose)
+        if return_cost:
+            return spins, cost
+
+    spins = np.asarray(spins, dtype='int32')
+    if spins.shape[-1] != n_rotate:
+        warnings.warn('Shape of provided `spins` array does not match '
+                      'number of rotations requested with `n_rotate`. '
+                      'Ignoring specified `n_rotate` parameter and using '
+                      'all provided `spins`.')
+        n_rotate = spins.shape[-1]
+    if return_cost:
+        raise ValueError('Cannot `return_cost` when `spins` are provided.')
+
+    return spins, None
+
+
 def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
               spins=None, drop=None, seed=None, verbose=False,
               return_cost=False):
@@ -473,8 +522,8 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     drop : list, optional
         Specifies regions in {lh,rh}annot that are not present in `data`. NaNs
         will be inserted in place of the these regions in the returned data. If
-        not specified, 'unknown' and 'corpuscallosum' are assumed to not be
-        present. Default: None
+        not specified, parcels defined in `netneurotools.freesurfer.FSIGNORE`
+        are assumed to not be present. Default: None
     seed : {int, np.random.RandomState instance, None}, optional
         Seed for random number generation. Default: None
     verbose : bool, optional
@@ -495,41 +544,23 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     """
 
     if drop is None:
-        drop = [
-            'unknown', 'corpuscallosum',  # default FreeSurfer
-            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
-        ]
+        drop = FSIGNORE
 
     # get coordinates and hemisphere designation for spin generation
     vertices = parcels_to_vertices(data, lhannot=lhannot, rhannot=rhannot,
                                    drop=drop)
 
-    if spins is None:
-        coords, hemiid = _get_fsaverage_coords(version, 'sphere')
-        if len(vertices) != len(coords):
-            raise ValueError('Provided annotation files have a different '
-                             'number of vertices than the specified fsaverage '
-                             'surface.\n    ANNOTATION: {} vertices\n     '
-                             'FSAVERAGE:  {} vertices'
-                             .format(len(vertices), len(coords)))
-        spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
-                                      seed=seed, verbose=verbose)
-    else:
-        spins = np.asarray(spins, dtype='int32')
-        if len(spins) != len(vertices):
-            raise ValueError('Provided `spins` array has a different number '
-                             'of vertices than the provided annotation files.'
-                             '\n    ANNOTATION: {} vertices\n     SPINS:      '
-                             '{} vertices\n'
-                             .format(len(vertices), len(spins)))
-        if spins.shape[-1] != n_rotate:
-            warnings.warn('Shape of provided `spins` array does not match '
-                          'number of rotations requested with `n_rotate`. '
-                          'Ignoring specified `n_rotate` parameter and using '
-                          'all provided `spins`.')
-            n_rotate = spins.shape[-1]
-        if return_cost:
-            raise ValueError('Cannot `return_cost` when `spins` are provided.')
+    # get spins + cost (if requested)
+    spins, cost = _get_fsaverage_spins(version=version, spins=spins,
+                                       n_rotate=n_rotate,
+                                       seed=seed, verbose=verbose,
+                                       return_cost=return_cost)
+    if len(vertices) != len(spins):
+        raise ValueError('Provided annotation files have a different '
+                         'number of vertices than the specified fsaverage '
+                         'surface.\n    ANNOTATION: {} vertices\n     '
+                         'FSAVERAGE:  {} vertices'
+                         .format(len(vertices), len(spins)))
 
     spun = np.zeros(data.shape + (n_rotate,))
     for n in range(n_rotate):
@@ -550,7 +581,8 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
 
 
 def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
-                 drop=None, seed=None, return_cost=False, **kwargs):
+                 spins=None, drop=None, seed=None, verbose=False,
+                 return_cost=False):
     """
     Rotates parcels in `{lh,rh}annot` and re-assigns based on maximum overlap
 
@@ -569,16 +601,22 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         'fsaverage5', 'fsaverage6'}. Default: 'fsaverage'
     n_rotate : int, optional
         Number of rotations to generate. Default: 1000
+    spins : array_like, optional
+        Pre-computed spins to use instead of generating them on the fly. If not
+        provided will use other provided parameters to create them. Default:
+        None
     drop : list, optional
         Specifies regions in {lh,rh}annot that are not present in `data`. NaNs
         will be inserted in place of the these regions in the returned data. If
-        not specified, 'unknown' and 'corpuscallosum' are assumed to not be
-        present. Default: None
+        not specified, parcels defined in `netneurotools.freesurfer.FSIGNORE`
+        are assumed to not be present. Default: None
+    seed : {int, np.random.RandomState instance, None}, optional
+        Seed for random number generation. Default: None
+    verbose : bool, optional
+        Whether to print occasional status messages. Default: False
     return_cost : bool, optional
         Whether to return cost array (specified as Euclidean distance) for each
-        coordinate for each rotation Default: True
-    kwargs : key-value, optional
-        Key-value pairs passed to :func:`netneurotools.stats.gen_spinsamples`
+        coordinate for each rotation. Default: True
 
     Returns
     -------
@@ -604,10 +642,7 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
             return -1
 
     if drop is None:
-        drop = [
-            'unknown', 'corpuscallosum',  # default FreeSurfer
-            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
-        ]
+        drop = FSIGNORE
     drop = _decode_list(drop)
 
     # get vertex-level labels (set drop labels to - values)
@@ -625,19 +660,24 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     labels = np.unique(vertices)
     mask = labels > -1
 
-    # get coordinates and hemisphere designation for spin generation
-    coords, hemiid = _get_fsaverage_coords(version, 'sphere')
-    if len(vertices) != len(coords):
-        raise ValueError('Provided annotation files have a different number '
-                         'of vertices than the specified fsaverage surface.\n'
-                         '    ANNOTATION: {} vertices\n'
-                         '    FSAVERAGE:  {} vertices'
-                         .format(len(vertices), len(coords)))
+    # get spins + cost (if requested)
+    spins, cost = _get_fsaverage_spins(version=version, spins=spins,
+                                       n_rotate=n_rotate,
+                                       seed=seed, verbose=verbose,
+                                       return_cost=return_cost)
+    if len(vertices) != len(spins):
+        raise ValueError('Provided annotation files have a different '
+                         'number of vertices than the specified fsaverage '
+                         'surface.\n    ANNOTATION: {} vertices\n     '
+                         'FSAVERAGE:  {} vertices'
+                         .format(len(vertices), len(spins)))
 
     # spin and assign regions based on max overlap
-    spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate, **kwargs)
     regions = np.zeros((len(labels[mask]), n_rotate), dtype='int32')
     for n in range(n_rotate):
+        if verbose:
+            msg = f'Calculating parcel overlap: {n:>5}/{n_rotate}'
+            print(msg, end='\b' * len(msg), flush=True)
         regions[:, n] = labeled_comprehension(vertices[spins[:, n]], vertices,
                                               labels, overlap, int, -1)[mask]
 

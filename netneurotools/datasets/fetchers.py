@@ -3,6 +3,7 @@
 Functions for fetching datasets from the internet
 """
 
+from collections import namedtuple
 import itertools
 import json
 import os.path as op
@@ -14,6 +15,8 @@ from sklearn.utils import Bunch
 
 from .utils import _get_data_dir, _get_dataset_info
 from ..utils import check_fs_subjid
+
+ANNOT = namedtuple('Surface', ('lh', 'rh'))
 
 
 def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
@@ -134,7 +137,7 @@ def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
     if version == 'MNI152NLin2009aSym':
         keys += ['info']
     elif version in ('fslr32k', 'fsaverage', 'fsaverage5', 'fsaverage6'):
-        data = [data[i:i + 2] for i in range(0, len(data), 2)]
+        data = [ANNOT(*data[i:i + 2]) for i in range(0, len(data), 2)]
     else:
         data = [data[::2][i:i + 2] for i in range(0, len(data) // 2, 2)]
         # deal with the fact that last scale is split into three files :sigh:
@@ -209,7 +212,7 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
         data[-1] = json.load(src)
 
     # bundle hemispheres together
-    data = [data[:-1][i:i + 2] for i in range(0, 6, 2)] + [data[-1]]
+    data = [ANNOT(*data[:-1][i:i + 2]) for i in range(0, 6, 2)] + [data[-1]]
 
     return Bunch(**dict(zip(keys + ['info'], data)))
 
@@ -336,7 +339,7 @@ def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
                             files=[(op.join(dataset_name, f), url, opts)
                                    for f in filenames])
 
-    data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
+    data = [ANNOT(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
 
@@ -561,7 +564,7 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     if suffix == 'annot':
-        data = [data[i:i + 2] for i in range(0, len(keys) * 2, 2)]
+        data = [ANNOT(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
 
