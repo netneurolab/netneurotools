@@ -3,18 +3,24 @@
 Functions for working with FreeSurfer data and parcellations
 """
 
+import itertools
 import os
 import os.path as op
 import warnings
 
 from nibabel.freesurfer import read_annot, read_geometry
 import numpy as np
+from scipy import sparse
 from scipy.ndimage.measurements import _stats, labeled_comprehension
 from scipy.spatial.distance import cdist
 
 from .datasets import fetch_fsaverage
 from .stats import gen_spinsamples
 from .utils import check_fs_subjid, run
+
+FSIGNORE = [
+    'unknown', 'corpuscallosum', 'Background+FreeSurfer_Defined_Medial_Wall'
+]
 
 
 def apply_prob_atlas(subject_id, gcs, hemi, *, orig='white', annot=None,
@@ -106,8 +112,8 @@ def _decode_list(vals):
     return [l.decode() if hasattr(l, 'decode') else l for l in vals]
 
 
-def find_parcel_centroids(*, lhannot, rhannot, version='fsaverage',
-                          surf='sphere', drop=None):
+def find_parcel_centroids(*, lhannot, rhannot, method='surface',
+                          version='fsaverage', surf='sphere', drop=None):
     """
     Returns vertex coords corresponding to centroids of parcels in annotations
 
@@ -121,6 +127,9 @@ def find_parcel_centroids(*, lhannot, rhannot, version='fsaverage',
         Path to .annot file containing labels of parcels on the {left,right}
         hemisphere. These must be specified as keyword arguments to avoid
         accidental order switching.
+    method : {'average', 'surface', 'geodesic'}, optional
+        Method for calculation of parcel centroid. See Notes for more
+        information. Default: 'surface'
     version : str, optional
         Specifies which version of `fsaverage` provided annotation files
         correspond to. Must be one of {'fsaverage', 'fsaverage3', 'fsaverage4',
@@ -130,8 +139,8 @@ def find_parcel_centroids(*, lhannot, rhannot, version='fsaverage',
         parcel centroids. Default: 'sphere'
     drop : list, optional
         Specifies regions in {lh,rh}annot for which the parcel centroid should
-        not be calculated. If not specified, centroids for 'unknown' and
-        'corpuscallosum' are not calculated. Default: None
+        not be calculated. If not specified, centroids for parcels defined in
+        `netneurotools.freesurfer.FSIGNORE` are not calculated. Default: None
 
     Returns
     -------
@@ -141,13 +150,38 @@ def find_parcel_centroids(*, lhannot, rhannot, version='fsaverage',
     hemiid : (N,) numpy.ndarray
         Array denoting hemisphere designation of coordinates in `centroids`,
         where `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
+
+    Notes
+    -----
+    The following methods can be used for finding parcel centroids:
+
+    1. ``method='average'``
+
+       Uses the arithmetic mean of the coordinates for the vertices in each
+       parcel. Note that in this case the calculated centroids will not act
+       actually fall on the surface of `surf`.
+
+    2. ``method='surface'``
+
+       Calculates the 'average' coordinates and then finds the closest vertex
+       on `surf`, where closest is defined as the vertex with the minimum
+       Euclidean distance.
+
+    3. ``method='geodesic'``
+
+       Uses the coordinates of the vertex with the minimum average geodesic
+       distance to all other vertices in the parcel. Note that this is slightly
+       more time-consuming than the other two methods, especially for
+       high-resolution meshes.
     """
 
+    methods = ['average', 'surface', 'geodesic']
+    if method not in methods:
+        raise ValueError('Provided method for centroid calculation {} is '
+                         'invalid. Must be one of {}'.format(methods, methods))
+
     if drop is None:
-        drop = [
-            'unknown', 'corpuscallosum',  # default FreeSurfer
-            'Background+FreeSurfer_Defined_Medial_Wall'  # common alternative
-        ]
+        drop = FSIGNORE
     drop = _decode_list(drop)
 
     surfaces = fetch_fsaverage(version)[surf]
@@ -161,12 +195,54 @@ def find_parcel_centroids(*, lhannot, rhannot, version='fsaverage',
         for lab in np.unique(labels):
             if names[lab] in drop:
                 continue
-            coords = np.atleast_2d(vertices[labels == lab].mean(axis=0))
-            roi = vertices[np.argmin(cdist(vertices, coords), axis=0)[0]]
+            if method in ['average', 'surface']:
+                roi = np.atleast_2d(vertices[labels == lab].mean(axis=0))
+                if method == 'surface':  # find closest vertex on the sphere
+                    roi = vertices[np.argmin(cdist(vertices, roi), axis=0)[0]]
+            elif method == 'geodesic':
+                inds, = np.where(labels == lab)
+                roi = _geodesic_parcel_centroid(vertices, faces, inds)
             centroids.append(roi)
             hemiid.append(n)
 
     return np.row_stack(centroids), np.asarray(hemiid)
+
+
+def _geodesic_parcel_centroid(vertices, faces, inds):
+    """
+    Calculates parcel centroids based on surface distance
+
+    Parameters
+    ----------
+    vertices : (N, 3)
+        Coordinates of vertices defining surface
+    faces : (F, 3)
+        Triangular faces defining surface
+    inds : (R,)
+        Indices of `vertices` that belong to parcel
+
+    Returns
+    --------
+    roi : (3,) numpy.ndarray
+        Vertex corresponding to centroid of parcel
+    """
+
+    # get the edges in our graph
+    keep = faces[np.sum(np.isin(faces, inds), axis=1) > 1]
+    edges = np.row_stack([list(itertools.combinations(f, 2)) for f in keep])
+    edges = np.row_stack([edges, np.fliplr(edges)])
+    weights = np.linalg.norm(np.diff(vertices[edges], axis=1), axis=-1)
+
+    # construct our sparse matrix on which to calculate shortest paths
+    mat = sparse.csc_matrix((np.squeeze(weights), (edges[:, 0], edges[:, 1])),
+                            shape=(len(vertices), len(vertices)))
+    paths = sparse.csgraph.dijkstra(mat, directed=False, indices=inds)[:, inds]
+
+    # the selected vertex is the one with the minimum average shortest path
+    # to the other vertices in the parcel
+    roi = vertices[inds[paths.mean(axis=1).argmin()]]
+
+    return roi
 
 
 def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
