@@ -151,6 +151,8 @@ Functions to download atlases and templates
     fetch_conte69
     fetch_fsaverage
     fetch_pauli2018
+    fetch_schaefer2018
+    fetch_hcp_standards
 
 Functions to download real-world datasets
 
@@ -160,6 +162,7 @@ Functions to download real-world datasets
 
    fetch_connectome
    fetch_mirchi2018
+   fetch_vazquez_rodriguez2019
 
 Functions to generate (pseudo-random) datasets
 
@@ -168,6 +171,28 @@ Functions to generate (pseudo-random) datasets
    :toctree: generated/
 
     make_correlated_xy
+
+.. _ref_freesurfer:
+
+:mod:`netneurotools.freesurfer` - FreeSurfer compatibility functions
+--------------------------------------------------------------------
+
+.. automodule:: netneurotools.freesurfer
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.freesurfer
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   apply_prob_atlas
+   find_parcel_centroids
+   parcels_to_vertices
+   vertices_to_parcels
+   spin_data
+   spin_parcels
 
 .. _ref_utils:
 

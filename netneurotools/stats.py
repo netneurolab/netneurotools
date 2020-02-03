@@ -651,7 +651,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     for n in range(n_rotate):
         count, duplicated = 0, True
 
-        if verbose and n % 10 == 0:
+        if verbose:
             msg = 'Generating spin {:>5} of {:>5}'.format(n, n_rotate)
             print(msg, end='\r', flush=True)
 
