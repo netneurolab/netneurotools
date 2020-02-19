@@ -465,8 +465,14 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
 
         # finally, add data to this hemisphere!
         brain.add_data(vtx_data, vmin, vmax, hemi=hemi, mid=center,
-                       thresh=thresh + 0.5, alpha=alpha, remove_existing=False,
+                       thresh=thresh + 0.5, alpha=1.0, remove_existing=False,
                        colormap=colormap, colorbar=colorbar, verbose=False)
+
+        if alpha != 1.0:
+            surf = brain.data_dict[hemi]['surfaces']
+            for n, s in enumerate(surf):
+                s.actor.property.opacity = alpha
+                s.render()
 
         # if we have a colorbar, update parameters accordingly
         if colorbar:
