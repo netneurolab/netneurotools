@@ -580,9 +580,9 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1,
         ...                         method='original', check_duplicates=False)
         array([[0],
-               [1],
+               [0],
                [2],
-               [2]], dtype=int32)
+               [3]], dtype=int32)
 
     While this is reasonable in most circumstances, if you feel incredibly
     strongly about having a perfect "permutation" (i.e., all indices appear
@@ -675,12 +675,6 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     cost = np.zeros((len(coords), n_rotate))
     inds = np.arange(len(coords), dtype='int32')
 
-    # precompute kd trees
-    kdtrees = (
-        spatial.cKDTree(coords[hemiid == 0]),
-        spatial.cKDTree(coords[hemiid == 1])
-    )
-
     # generate rotations and resampling array!
     msg, warned = '', False
     for n in range(n_rotate):
@@ -731,7 +725,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                 # huge thanks to https://stackoverflow.com/a/47779290 for this
                 # memory-efficient method
                 elif method == 'original':
-                    dist, col = kdtrees[h].query(coor @ rot, 1)
+                    dist, col = spatial.cKDTree(coor @ rot).query(coor, 1)
                     cost[hinds, n] = dist
 
                 resampled[hinds] = inds[hinds][col]
