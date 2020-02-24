@@ -135,17 +135,21 @@ def test_gen_spinsamples():
     hemi = np.hstack([np.zeros(len(coords) // 2), np.ones(len(coords) // 2)])
 
     # generate "normal" test spins
-    spins, cost = stats.gen_spinsamples(coords, hemi, n_rotate=10, seed=1234)
+    spins, cost = stats.gen_spinsamples(coords, hemi, n_rotate=10, seed=1234,
+                                        return_cost=True)
     assert spins.shape == (len(coords), 10)
     assert cost.shape == (len(coords), 10)
 
     # confirm that `exact` parameter functions as desired
-    spin_exact, cost_exact = stats.gen_spinsamples(coords, hemi, n_rotate=10,
-                                                   exact=True, seed=1234)
-    assert spin_exact.shape == (len(coords), 10)
-    assert cost.shape == (len(coords), 10)
-    for s in spin_exact.T:
-        assert len(np.unique(s)) == len(s)
+    for method in ['vasa', 'hungarian']:
+        spin_exact, cost_exact = stats.gen_spinsamples(coords, hemi,
+                                                       n_rotate=10, seed=1234,
+                                                       method=method,
+                                                       return_cost=True)
+        assert spin_exact.shape == (len(coords), 10)
+        assert cost.shape == (len(coords), 10)
+        for s in spin_exact.T:
+            assert len(np.unique(s)) == len(s)
 
     # confirm that check_duplicates will raise warnings
     # since spins aren't exact permutations we need to use 4C4 with repeats
