@@ -511,7 +511,8 @@ def _gen_rotation(seed=None):
 
 
 def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
-                    exact=False, seed=None, verbose=False, return_cost=True):
+                    method='original', exact=False, seed=None, verbose=False,
+                    return_cost=False):
     """
     Returns a resampling array for `coords` obtained from rotations / spins
 
@@ -524,8 +525,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     Due to irregular sampling of `coords` and the randomness of the rotations
     it is possible that some "rotations" may resample with replacement (i.e.,
     will not be a true permutation). The likelihood of this can be reduced by
-    either increasing the sampling density of `coords` or setting the ``exact``
-    parameter to True (though see Notes for more information on the latter).
+    either increasing the sampling density of `coords` or changing the
+    ``method`` parameter (see Notes for more information on the latter).
 
     Parameters
     ----------
@@ -543,10 +544,12 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         Whether to check for and attempt to avoid duplicate resamplings. A
         warnings will be raised if duplicates cannot be avoided. Setting to
         True may increase the runtime of this function! Default: True
-    exact : bool, optional
-        Whether each node/parcel/region should be uniquely re-assigned in every
-        rotation. Setting to True will drastically increase the memory demands
-        and runtime of this function! Default: False
+    method : {'original', 'vasa', 'hungarian'}, optional
+        Method by which to match non- and rotated coordinates. Specifying
+        'original' will use the method described in [ST1]_. Specfying 'vasa'
+        will use the method described in [ST4]_. Specfying 'hungarian' will use
+        the Hungarian algorithm to minimize the global cost of reassignment
+        (will dramatically increase runtime). Default: 'original'
     seed : {int, np.random.RandomState instance, None}, optional
         Seed for random number generation. Default: None
     verbose : bool, optional
@@ -574,29 +577,36 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         >>> from netneurotools import stats as nnstats
         >>> coords = [[0, 0, 1], [1, 0, 0], [0, 0, 1], [1, 0, 0]]
         >>> hemi = [0, 0, 1, 1]
-        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1)[0]
+        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1,
+        ...                         method='original', check_duplicates=False)
         array([[0],
-               [0],
+               [1],
                [2],
-               [3]], dtype=int32)
+               [2]], dtype=int32)
 
     While this is reasonable in most circumstances, if you feel incredibly
     strongly about having a perfect "permutation" (i.e., all indices appear
-    once and exactly once in the resampling), you can set the ``exact``
-    parameter to True:
+    once and exactly once in the resampling), you can set the ``method``
+    parameter to either 'vasa' or 'hungarian':
 
         >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1,
-        ...                         exact=True)[0]
+        ...                         method='vasa', check_duplicates=False)
         array([[1],
                [0],
                [2],
                [3]], dtype=int32)
+        >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1,
+        ...                         method='hungarian', check_duplicates=False)
+        array([[0],
+               [1],
+               [2],
+               [3]], dtype=int32)
 
-    Note that setting this parameter will *dramatically* increase the runtime
-    of the function. Refer to [ST1]_ for information on why the default (i.e.,
-    ``exact`` set to False) suffices in most cases.
+    Note that setting this parameter may increase the runtime of the function
+    (especially for `method='hungarian'`). Refer to [ST1]_ for information on
+    why the default (i.e., ``exact`` set to False) suffices in most cases.
 
-    For the original MATLAB implementation of this function refer to [ST4]_.
+    For the original MATLAB implementation of this function refer to [ST5]_.
 
     References
     ----------
@@ -613,8 +623,27 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
        A Spectral Clustering Framework for Individual and Group Parcellation of
        Cortical Surfaces in Lobes. Frontiers in Neuroscience, 12, 354.
 
-    .. [ST4] https://github.com/spin-test/spin-test
+    .. [ST4] Váša, F., Seidlitz, J., Romero-Garcia, R., Whitaker, K. J.,
+       Rosenthal, G., Vértes, P. E., ... & Jones, P. B. (2018). Adolescent
+       tuning of association cortex in human structural brain networks.
+       Cerebral Cortex, 28(1), 281-294.
+
+    .. [ST5] https://github.com/spin-test/spin-test
     """
+
+    methods = ['original', 'vasa', 'hungarian']
+    if method not in methods:
+        raise ValueError('Provided method "{}" invalid. Must be one of {}.'
+                         .format(method, methods))
+
+    if exact:
+        warnings.warn('The `exact` parameter will no longer be supported in '
+                      'an upcoming release. Please use the `method` parameter '
+                      'instead.', DeprecationWarning, stacklevel=3)
+        if exact == 'vasa' and method == 'original':
+            method = 'vasa'
+        elif exact and method == 'original':
+            method = 'hungarian'
 
     seed = check_random_state(seed)
 
@@ -673,36 +702,35 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                 # if we need an "exact" mapping (i.e., each node needs to be
                 # assigned EXACTLY once) then we have to calculate the full
                 # distance matrix which is a nightmare with respect to memory
-                # for anything that isn't parcellated data. that is, don't do
-                # this with vertex coordinates!
-                if exact:
+                # for anything that isn't parcellated data.
+                # that is, don't do this with vertex coordinates!
+                if method == 'vasa':
                     dist = spatial.distance_matrix(coor, coor @ rot)
-                    # min of max a la Vasa et al., 2017
-                    if exact == 'vasa':
-                        col = np.zeros(len(coor), dtype='int32')
-                        for r in range(len(dist)):
-                            # find parcel whose closest neighbor is farthest
-                            # away overall; assign to that
-                            row = dist.min(axis=1).argmax()
-                            col[row] = dist[row].argmin()
-                            cost[inds[hinds][row], n] = dist[row, col[row]]
-                            # set these to -inf and inf so they can't be
-                            # assigned again
-                            dist[row] = -np.inf
-                            dist[:, col[row]] = np.inf
-                    # optimization of total cost using Hungarian algorithm.
-                    # this may result in certain parcels having higher cost
-                    # than with `exact='vasa'` but should always result in the
-                    # total cost being lower #tradeoffs
-                    else:
-                        row, col = optimize.linear_sum_assignment(dist)
-                        cost[hinds, n] = dist[row, col]
+                    # min of max a la Vasa et al., 2018
+                    col = np.zeros(len(coor), dtype='int32')
+                    for r in range(len(dist)):
+                        # find parcel whose closest neighbor is farthest away
+                        # overall; assign to that
+                        row = dist.min(axis=1).argmax()
+                        col[row] = dist[row].argmin()
+                        cost[inds[hinds][row], n] = dist[row, col[row]]
+                        # set to -inf and inf so they can't be assigned again
+                        dist[row] = -np.inf
+                        dist[:, col[row]] = np.inf
+                # optimization of total cost using Hungarian algorithm. this
+                # may result in certain parcels having higher cost than with
+                # `method='vasa'` but should always result in the total cost
+                # being lower #tradeoffs
+                elif method == 'hungarian':
+                    dist = spatial.distance_matrix(coor, coor @ rot)
+                    row, col = optimize.linear_sum_assignment(dist)
+                    cost[hinds, n] = dist[row, col]
                 # if nodes can be assigned multiple targets, we can simply use
                 # the absolute minimum of the distances (no optimization
                 # required) which is _much_ lighter on memory
                 # huge thanks to https://stackoverflow.com/a/47779290 for this
                 # memory-efficient method
-                else:
+                elif method == 'original':
                     dist, col = kdtrees[h].query(coor @ rot, 1)
                     cost[hinds, n] = dist
 
@@ -712,6 +740,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
             if check_duplicates:
                 if np.any(np.all(resampled[:, None] == spinsamples[:, :n], 0)):
                     duplicated = True
+                # if our "spin" is identical to the input then that's no good
                 elif np.all(resampled == inds):
                     duplicated = True
 
