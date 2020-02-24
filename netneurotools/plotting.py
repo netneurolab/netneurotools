@@ -302,9 +302,9 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
 def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
                    views='lat', vmin=None, vmax=None, center=None, mask=None,
                    colormap='viridis', colorbar=True, alpha=0.8,
-                   label_fmt='%.2f', num_labels=3,
-                   size_per_view=500, subjects_dir=None, subject='fsaverage',
-                   noplot=None):
+                   label_fmt='%.2f', num_labels=3, size_per_view=500,
+                   subject_id='fsaverage', subjects_dir=None,
+                   noplot=None, **kwargs):
     """
     Plots `data` to fsaverage brain using `annot` as parcellation
 
@@ -358,8 +358,8 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
         'fsaverage'
     noplot : list, optional
         List of names in `lhannot` and `rhannot` to not plot. It is assumed
-        these are NOT present in `data`. If not specified, by default 'unknown'
-        and 'corpuscallosum' will not be plotted if they are present in the
+        these are NOT present in `data`. By default 'unknown' and
+        'corpuscallosum' will never be plotted if they are present in the
         provided annotation files. Default: None
 
     Returns
@@ -373,22 +373,22 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
     try:
         from surfer import Brain
     except ImportError:
-        raise ImportError('Cannot use plot_to_fsaverage() if pysurfer is not '
+        raise ImportError('Cannot use plot_fsaverage() if pysurfer is not '
                           'installed. Please install pysurfer and try again.')
 
     # check for FreeSurfer install w/fsaverage; otherwise, fetch required
     try:
-        subject_id, subjects_dir = check_fs_subjid(subject, subjects_dir)
+        subject_id, subjects_dir = check_fs_subjid(subject_id, subjects_dir)
     except FileNotFoundError:
-        if subject != 'fsaverage':
+        if subject_id != 'fsaverage':
             raise ValueError('Provided subject {} does not exist in provided '
                              'subjects_dir {}'
-                             .format(subject, subjects_dir))
+                             .format(subject_id, subjects_dir))
         from .datasets import fetch_fsaverage
         from .datasets.utils import _get_data_dir
         fetch_fsaverage()
         subjects_dir = os.path.join(_get_data_dir(), 'tpl-fsaverage')
-        subject_id, subjects_dir = check_fs_subjid(subject, subjects_dir)
+        subject_id, subjects_dir = check_fs_subjid(subject_id, subjects_dir)
 
     # cast data to float (required for NaNs)
     data = np.asarray(data, dtype='float')
@@ -417,14 +417,16 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
 
     # size of window will depend on # of views provided
     size = (size_per_view * 2, size_per_view * len(views))
-    brain = Brain(subject_id=subject, hemi='split', surf=surf,
-                  subjects_dir=subjects_dir, background='white',
-                  views=views, size=size)
+    brain_kws = dict(background='white')
+    brain_kws.update(**kwargs)
+    brain = Brain(subject_id=subject_id, hemi='split', surf=surf,
+                  subjects_dir=subjects_dir, views=views, size=size,
+                  **brain_kws)
 
     for annot, hemi in zip([lhannot, rhannot], ['lh', 'rh']):
         # loads annotation data for hemisphere, including vertex `labels`!
         if not annot.startswith(os.path.abspath(os.sep)):
-            annot = os.path.join(subjects_dir, subject, 'label', annot)
+            annot = os.path.join(subjects_dir, subject_id, 'label', annot)
         labels, ctab, names = nib.freesurfer.read_annot(annot)
 
         # get appropriate data, accounting for hemispheric asymmetry
@@ -449,7 +451,6 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
         inds = sorted([names.index(n) for n in currdrop])
         for i in inds:
             hemidata = np.insert(hemidata, i, np.nan)
-        # fulldata = np.insert(hemidata, inds - np.arange(len(inds)), np.nan)
         vtx_data = hemidata[labels]
         not_nan = ~np.isnan(vtx_data)
 
@@ -493,7 +494,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
     return brain
 
 
-def plot_point_brain(data, coords, views=None, cbar=False, figsize=(5, 5),
+def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
                      robust=True, size=50, **kwargs):
     """
     Plots `data` as a cloud of points in 3D space based on specified `coords`
@@ -511,7 +512,7 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(5, 5),
     cbar : bool, optional
         Whether to also show colorbar. Default: False
     figsize : tuple, optional
-        Figure size. Default: (5, 5)
+        Figure size. Default: (4, 4.8)
     robust : bool, optional
         Whether to use robust calculation of `vmin` and `vmax` for color scale.
     size : int, optional
