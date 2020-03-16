@@ -64,7 +64,7 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
         else:
             corrs = [np.corrcoef(data[..., sub]) for sub in
                      range(data.shape[-1])]
-        return np.mean(corrs, axis=0)
+        return np.nanmean(corrs, axis=0)
 
     if isinstance(data, list):
         collapsed_data = np.hstack(data)
