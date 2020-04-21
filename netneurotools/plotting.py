@@ -75,6 +75,7 @@ def sort_communities(consensus, communities):
 def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
                      ax=None, figsize=(6.4, 4.8), xlabels=None, ylabels=None,
                      xlabelrotation=90, ylabelrotation=0, cbar=True,
+                     square=True, xticklabels=None, yticklabels=None,
                      mask_diagonal=True, **kwargs):
     """
     Plots `data` as heatmap with borders drawn around `communities`
@@ -102,6 +103,11 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     {x,y}labelrotation : float, optional
         Angle of the rotation of the labels. Available only if `{x,y}labels`
         provided. Default : xlabelrotation: 90, ylabelrotation: 0
+    square : bool, optional
+        Setting the matrix with equal aspect. Default: True
+    {x,y}ticklabels : list, optional
+        Incompatible with `{x,y}labels`. List of labels for each entry (not
+        community) in `data`. Default: None
     cbar : bool, optional
         Whether to plot colorbar. Default: True
     mask_diagonal : bool, optional
@@ -114,6 +120,10 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     ax : matplotlib.axes.Axes
         Axis object containing plot
     """
+
+    for t, l in zip([xticklabels, yticklabels], [xlabels, ylabels]):
+        if t is not None and l is not None:
+            raise ValueError('Cannot set both {x,y}labels and {x,y}ticklabels')
 
     # get indices for sorting consensus
     if inds is None:
@@ -131,6 +141,10 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
 
     coll = ax.pcolormesh(plot_data, edgecolor='none', **kwargs)
     ax.set(xlim=(0, plot_data.shape[1]), ylim=(0, plot_data.shape[0]))
+
+    # set equal aspect
+    if square:
+        ax.set_aspect('equal')
 
     for side in ['top', 'right', 'left', 'bottom']:
         ax.spines[side].set_visible(False)
@@ -178,6 +192,15 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
                 ax.set_yticks(tickloc)
                 ax.set_yticklabels(labels=ylabels, rotation=ylabelrotation)
                 ax.tick_params(left=False, bottom=False)
+
+    if xticklabels is not None:
+        labels_ind = [xticklabels[i] for i in inds]
+        ax.set_xticks(np.arange(len(labels_ind)) + 0.5)
+        ax.set_xticklabels(labels_ind, rotation=90)
+    if yticklabels is not None:
+        labels_ind = [yticklabels[i] for i in inds]
+        ax.set_yticks(np.arange(len(labels_ind)) + 0.5)
+        ax.set_yticklabels(labels_ind)
 
     return ax
 
