@@ -148,6 +148,11 @@ def test_fetch_hcp_standards(tmpdir):
     assert os.path.isdir(hcp)
 
 
+def test_fetch_voneconomo(tmpdir):
+    vek = datasets.fetch_voneconomo(data_dir=tmpdir, verbose=0)
+    assert all(hasattr(vek, k) and len(vek[k]) == 2 for k in ['gcs', 'ctab'])
+
+
 @pytest.mark.parametrize('dset, expected', [
     ('atl-cammoun2012', ['fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k',
                          'MNI152NLin2009aSym', 'gcs']),
