@@ -230,7 +230,6 @@ def _geodesic_parcel_centroid(vertices, faces, inds):
     # get the edges in our graph
     keep = faces[np.sum(np.isin(faces, inds), axis=1) > 1]
     edges = np.row_stack([list(itertools.combinations(f, 2)) for f in keep])
-    edges = np.row_stack([edges, np.fliplr(edges)])
     weights = np.linalg.norm(np.diff(vertices[edges], axis=1), axis=-1)
 
     # construct our sparse matrix on which to calculate shortest paths
@@ -397,6 +396,7 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
 
             # store parcellated data
             reduced[n_parc:n_parc + len(names) - len(inds), idx] = currdata
+
         start = end
         n_parc += len(names) - len(inds)
 
@@ -435,7 +435,7 @@ def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
 
 
 def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
-                         seed=None, verbose=False, return_cost=False):
+                         **kwargs):
     """
     Generates spatial permutation resamples for fsaverage `version`
 
@@ -453,14 +453,12 @@ def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
         None
     n_rotate : int, optional
         Number of rotations to generate. Default: 1000
-    seed : {int, np.random.RandomState instance, None}, optional
-        Seed for random number generation. Default: None
-    verbose : bool, optional
-        Whether to print occasional status messages. Default: False
     return_cost : bool, optional
         Whether to return cost array (specified as Euclidean distance) for each
         coordinate for each rotation. Currently this option is not supported if
         pre-computed `spins` are provided. Default: True
+    kwargs : key-value pairs
+        Keyword arguments passed to `netneurotools.stats.gen_spinsamples`
 
     Returns
     --------
@@ -470,10 +468,10 @@ def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
 
     if spins is None:
         coords, hemiid = _get_fsaverage_coords(version, 'sphere')
-        spins, cost = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
-                                      seed=seed, verbose=verbose)
-        if return_cost:
-            return spins, cost
+        spins = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
+                                **kwargs)
+        if kwargs.get('return_cost'):
+            return spins
 
     spins = np.asarray(spins, dtype='int32')
     if spins.shape[-1] != n_rotate:
@@ -482,15 +480,12 @@ def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
                       'Ignoring specified `n_rotate` parameter and using '
                       'all provided `spins`.')
         n_rotate = spins.shape[-1]
-    if return_cost:
-        raise ValueError('Cannot `return_cost` when `spins` are provided.')
 
     return spins, None
 
 
 def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
-              spins=None, drop=None, seed=None, verbose=False,
-              return_cost=False):
+              spins=None, drop=None, verbose=False, **kwargs):
     """
     Projects parcellated `data` to surface, rotates, and re-parcellates
 
@@ -524,14 +519,10 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         will be inserted in place of the these regions in the returned data. If
         not specified, parcels defined in `netneurotools.freesurfer.FSIGNORE`
         are assumed to not be present. Default: None
-    seed : {int, np.random.RandomState instance, None}, optional
-        Seed for random number generation. Default: None
     verbose : bool, optional
         Whether to print occasional status messages. Default: False
-    return_cost : bool, optional
-        Whether to return cost array (specified as Euclidean distance) for each
-        coordinate for each rotation. Currently this option is not supported if
-        pre-computed `spins` are provided. Default: True
+    kwargs : key-value pairs
+        Keyword arguments passed to `netneurotools.stats.gen_spinsamples`
 
     Returns
     -------
@@ -553,8 +544,7 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     # get spins + cost (if requested)
     spins, cost = _get_fsaverage_spins(version=version, spins=spins,
                                        n_rotate=n_rotate,
-                                       seed=seed, verbose=verbose,
-                                       return_cost=return_cost)
+                                       verbose=verbose, **kwargs)
     if len(vertices) != len(spins):
         raise ValueError('Provided annotation files have a different '
                          'number of vertices than the specified fsaverage '
@@ -574,15 +564,14 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     if verbose:
         print(' ' * len(msg) + '\b' * len(msg), end='', flush=True)
 
-    if return_cost:
+    if kwargs.get('return_cost'):
         return spun, cost
 
     return spun
 
 
 def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
-                 spins=None, drop=None, seed=None, verbose=False,
-                 return_cost=False):
+                 spins=None, drop=None, verbose=False, **kwargs):
     """
     Rotates parcels in `{lh,rh}annot` and re-assigns based on maximum overlap
 
@@ -617,6 +606,8 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     return_cost : bool, optional
         Whether to return cost array (specified as Euclidean distance) for each
         coordinate for each rotation. Default: True
+    kwargs : key-value pairs
+        Keyword arguments passed to `netneurotools.stats.gen_spinsamples`
 
     Returns
     -------
@@ -662,9 +653,8 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
 
     # get spins + cost (if requested)
     spins, cost = _get_fsaverage_spins(version=version, spins=spins,
-                                       n_rotate=n_rotate,
-                                       seed=seed, verbose=verbose,
-                                       return_cost=return_cost)
+                                       n_rotate=n_rotate, verbose=verbose,
+                                       **kwargs)
     if len(vertices) != len(spins):
         raise ValueError('Provided annotation files have a different '
                          'number of vertices than the specified fsaverage '
@@ -681,7 +671,7 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         regions[:, n] = labeled_comprehension(vertices[spins[:, n]], vertices,
                                               labels, overlap, int, -1)[mask]
 
-    if return_cost:
+    if kwargs.get('return_cost'):
         return regions, cost
 
     return regions
