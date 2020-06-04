@@ -608,3 +608,62 @@ def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
     _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     return op.join(data_dir, dataset_name)
+
+
+def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
+    """
+    Fetches von-Economo Koskinas probabilistic FreeSurfer atlas
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys of format '{}Parcels{}Networks' where
+        corresponding values are the left/right hemisphere annotation files
+
+    References
+    ----------
+    Scholtens, L. H., de Reus, M. A., de Lange, S. C., Schmidt, R., & van den
+    Heuvel, M. P. (2018). An MRI von Economo–Koskinas atlas. NeuroImage, 170,
+    249-256.
+
+    Notes
+    -----
+    License: CC-BY-NC-SA 4.0
+    """
+
+    dataset_name = 'atl-voneconomo_koskinas'
+    keys = ['gcs', 'ctab']
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)
+    if url is None:
+        url = info['url']
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+    filenames = [
+        'atl-vonEconomoKoskinas_hemi-{}_probabilistic.{}'.format(hemi, suff)
+        for hemi in ['L', 'R'] for suff in ['gcs', 'ctab']
+    ]
+    files = [(op.join(dataset_name, f), url, opts) for f in filenames]
+    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+    data = [ANNOT(*data[n::2]) for n in range(len(keys))]
+
+    return Bunch(**dict(zip(keys, data)))
