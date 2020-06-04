@@ -109,7 +109,7 @@ def _decode_list(vals):
     """ List decoder
     """
 
-    return [l.decode() if hasattr(l, 'decode') else l for l in vals]
+    return [val.decode() if hasattr(val, 'decode') else val for val in vals]
 
 
 def find_parcel_centroids(*, lhannot, rhannot, method='surface',
