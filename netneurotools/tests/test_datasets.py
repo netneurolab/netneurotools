@@ -151,6 +151,7 @@ def test_fetch_hcp_standards(tmpdir):
 def test_fetch_voneconomo(tmpdir):
     vek = datasets.fetch_voneconomo(data_dir=tmpdir, verbose=0)
     assert all(hasattr(vek, k) and len(vek[k]) == 2 for k in ['gcs', 'ctab'])
+    assert isinstance(vek.get('info'), str)
 
 
 @pytest.mark.parametrize('dset, expected', [
