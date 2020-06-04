@@ -153,6 +153,7 @@ Functions to download atlases and templates
     fetch_pauli2018
     fetch_schaefer2018
     fetch_hcp_standards
+    fetch_voneconomo
 
 Functions to download real-world datasets
 
