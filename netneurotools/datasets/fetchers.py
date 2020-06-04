@@ -647,7 +647,7 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
     """
 
     dataset_name = 'atl-voneconomo_koskinas'
-    keys = ['gcs', 'ctab']
+    keys = ['gcs', 'ctab', 'info']
 
     data_dir = _get_data_dir(data_dir=data_dir)
     info = _get_dataset_info(dataset_name)
@@ -661,9 +661,9 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
     filenames = [
         'atl-vonEconomoKoskinas_hemi-{}_probabilistic.{}'.format(hemi, suff)
         for hemi in ['L', 'R'] for suff in ['gcs', 'ctab']
-    ]
+    ] + ['atl-vonEconomoKoskinas_info.csv']
     files = [(op.join(dataset_name, f), url, opts) for f in filenames]
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
-    data = [ANNOT(*data[n::2]) for n in range(len(keys))]
+    data = [ANNOT(*data[:-1:2])] + [ANNOT(*data[1:-1:2])] + [data[-1]]
 
     return Bunch(**dict(zip(keys, data)))
