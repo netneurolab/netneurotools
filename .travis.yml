@@ -48,7 +48,7 @@ before_install:
       pip install flake8;
     fi
   - if [ "${CHECK_TYPE}" == "test" ]; then
-      pip install "pytest>=3.6" pytest-cov coverage codecov;
+      pip install "pytest>=4.6" pytest-cov coverage codecov;
     fi
   - if [ ! -z "${INSTALL_NUMBA}"]; then
       pip install numba;
