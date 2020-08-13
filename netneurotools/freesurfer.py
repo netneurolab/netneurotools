@@ -3,7 +3,6 @@
 Functions for working with FreeSurfer data and parcellations
 """
 
-import itertools
 import os
 import os.path as op
 import warnings
@@ -16,6 +15,7 @@ from scipy.spatial.distance import cdist
 
 from .datasets import fetch_fsaverage
 from .stats import gen_spinsamples
+from .surface import make_surf_graph
 from .utils import check_fs_subjid, run
 
 FSIGNORE = [
@@ -227,14 +227,9 @@ def _geodesic_parcel_centroid(vertices, faces, inds):
         Vertex corresponding to centroid of parcel
     """
 
-    # get the edges in our graph
-    keep = faces[np.sum(np.isin(faces, inds), axis=1) > 1]
-    edges = np.row_stack([list(itertools.combinations(f, 2)) for f in keep])
-    weights = np.linalg.norm(np.diff(vertices[edges], axis=1), axis=-1)
-
-    # construct our sparse matrix on which to calculate shortest paths
-    mat = sparse.csc_matrix((np.squeeze(weights), (edges[:, 0], edges[:, 1])),
-                            shape=(len(vertices), len(vertices)))
+    mask = np.ones(len(vertices), dtype=bool)
+    mask[inds] = False
+    mat = make_surf_graph(vertices, faces, mask=mask)
     paths = sparse.csgraph.dijkstra(mat, directed=False, indices=inds)[:, inds]
 
     # the selected vertex is the one with the minimum average shortest path
