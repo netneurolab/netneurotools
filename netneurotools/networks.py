@@ -138,7 +138,7 @@ def _ecdf(data):
     return prob, quantiles
 
 
-def struct_consensus(data, distance, hemiid):
+def struct_consensus(data, distance, hemiid, weighted=False):
     """
     Calculates distance-dependent group consensus structural connectivity graph
 
@@ -178,11 +178,14 @@ def struct_consensus(data, distance, hemiid):
     hemiid : (N, 1) array_like
         Hemisphere designation for `N` nodes where a value of 0/1 indicates
         node `N_{i}` is in the right/left hemisphere, respectively
+    weighted : bool
+        Flag indicating whether or not to return a weighted consensus map. If
+        `True`, the consensus will be multiplied by the mean of `data`.
 
     Returns
     -------
     consensus : (N, N) numpy.ndarray
-        Binary, group-level connectivity matrix
+        Binary (default) or mean-weighted group-level connectivity matrix
 
     References
     ----------
@@ -272,6 +275,8 @@ def struct_consensus(data, distance, hemiid):
     consensus = consensus.sum(axis=2)
     consensus = np.logical_or(consensus, consensus.T).astype(int)
 
+    if weighted:
+        consensus = consensus * np.mean(data, axis=2)
     return consensus
 
 
