@@ -327,7 +327,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
                    colormap='viridis', colorbar=True, alpha=0.8,
                    label_fmt='%.2f', num_labels=3, size_per_view=500,
                    subject_id='fsaverage', subjects_dir=None,
-                   noplot=None, **kwargs):
+                   noplot=None, data_kws=None, **kwargs):
     """
     Plots `data` to fsaverage brain using `annot` as parcellation
 
@@ -384,6 +384,8 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
         these are NOT present in `data`. By default 'unknown' and
         'corpuscallosum' will never be plotted if they are present in the
         provided annotation files. Default: None
+    data_kws : dict, optional
+        Keyword arguments for Brain.add_data()
 
     Returns
     -------
@@ -415,6 +417,10 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
 
     # cast data to float (required for NaNs)
     data = np.asarray(data, dtype='float')
+
+    # handle data_kws if None
+    if data_kws is None:
+        data_kws = {}
 
     if order not in ['LR', 'RL']:
         raise ValueError('order must be either \'LR\' or \'RL\'')
@@ -490,7 +496,8 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
         # finally, add data to this hemisphere!
         brain.add_data(vtx_data, vmin, vmax, hemi=hemi, mid=center,
                        thresh=thresh + 0.5, alpha=1.0, remove_existing=False,
-                       colormap=colormap, colorbar=colorbar, verbose=False)
+                       colormap=colormap, colorbar=colorbar, verbose=False,
+                       **data_kws)
 
         if alpha != 1.0:
             surf = brain.data_dict[hemi]['surfaces']
