@@ -485,8 +485,10 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
     mask = np.logical_or(np.isnan(a), np.isnan(b))
     if nan_policy == 'raise' and np.any(mask):
         raise ValueError('Input cannot contain NaN when nan_policy is "omit"')
+    elif nan_policy == 'omit':
+        a, b = a.astype(float), b.astype(float)
+        a[mask], b[mask] = np.nan, np.nan
 
-    a[mask], b[mask] = np.nan, np.nan
     with np.errstate(invalid='ignore'):
         corr = (sstats.zscore(a, ddof=ddof, nan_policy=nan_policy)
                 * sstats.zscore(b, ddof=ddof, nan_policy=nan_policy))
