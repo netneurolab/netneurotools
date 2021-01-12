@@ -1,4 +1,4 @@
 include README.rst LICENSE environment.yml requirements.txt
 recursive-include netneurotools data/*
 
-include netneurotools/_version.py
+include versioneer.py

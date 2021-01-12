@@ -1,5 +1,9 @@
-#!/usr/bin/env python
+import os
 from setuptools import setup
+import sys
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 import versioneer
 
 if __name__ == "__main__":
