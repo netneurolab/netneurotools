@@ -5,6 +5,7 @@ notifications:
   email: change
 
 python:
+  - 3.6
   - 3.7
   - 3.8
 
@@ -33,7 +34,7 @@ jobs:
         - CHECK_TYPE=test
 
 before_install:
-  - python -m pip install --upgrade pip
+  - python -m pip install --upgrade pip build
   - if [ "${INSTALL_TYPE}" == "conda" ]; then
       wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
       bash miniconda.sh -b -p $HOME/miniconda;
@@ -55,14 +56,13 @@ before_install:
     fi
 
 install:
+  - python -m build
   - |
     if [ "${INSTALL_TYPE}" == "setup" ]; then
-      python setup.py install;
+      pip install .;
     elif [ "${INSTALL_TYPE}" == "sdist" ]; then
-      python setup.py sdist;
       pip install dist/*.tar.gz;
     elif [ "${INSTALL_TYPE}" == "wheel" ]; then
-      python setup.py bdist_wheel;
       pip install dist/*.whl;
     elif [ "${INSTALL_TYPE}" == "conda" ]; then
       pip install --no-deps .;

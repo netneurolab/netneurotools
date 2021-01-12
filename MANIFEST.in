@@ -1,4 +1,4 @@
-include README.md LICENSE environment.yml
+include README.rst LICENSE environment.yml requirements.txt
 recursive-include netneurotools_matlab *.m
 recursive-include netneurotools data/*
 
