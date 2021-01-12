@@ -461,9 +461,7 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
 
     Calculate both correlations simultaneously:
 
-    >>> x = np.column_stack((x1, x2))
-    >>> y = np.column_stack((y1, y2))
-    >>> stats.efficient_pearsonr(x, y)
+    >>> stats.efficient_pearsonr(np.c_[x1, x2], np.c_[y1, y2])
     (array([0.10032565, 0.79961189]), array([3.20636135e-01, 1.97429944e-23]))
     """
 
@@ -480,14 +478,14 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
     a, b = a.reshape(len(a), -1), b.reshape(len(b), -1)
     if (a.shape[1] != b.shape[1]):
         a, b = np.broadcast_arrays(a, b)
-        a, b = a.copy(), b.copy()
 
     mask = np.logical_or(np.isnan(a), np.isnan(b))
     if nan_policy == 'raise' and np.any(mask):
         raise ValueError('Input cannot contain NaN when nan_policy is "omit"')
     elif nan_policy == 'omit':
-        a, b = a.astype(float), b.astype(float)
-        a[mask], b[mask] = np.nan, np.nan
+        # avoid making copies of the data, if possible
+        a = np.ma.masked_array(a, mask, copy=False, fill_value=np.nan)
+        b = np.ma.masked_array(b, mask, copy=False, fill_value=np.nan)
 
     with np.errstate(invalid='ignore'):
         corr = (sstats.zscore(a, ddof=ddof, nan_policy=nan_policy)
@@ -495,6 +493,7 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
 
     sumfunc, n_obs = np.sum, len(a)
     if nan_policy == 'omit':
+        corr = corr.filled(np.nan)
         sumfunc = np.nansum
         n_obs = np.squeeze(np.sum(np.logical_not(np.isnan(corr)), axis=0))
 
