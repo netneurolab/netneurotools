@@ -1,9 +1,9 @@
 netneurotools: Tools for network neuroscience
 =============================================
 
-This toolbox is a collection of functions written in Python (and some Matlab!)
-that get frequent usage in the `Network Neuroscience Lab <www.misiclab.com>`_,
-housed in the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
+This toolbox is a collection of functions written in Python that get frequent
+usage in the `Network Neuroscience Lab <netneurolab.github.io/>`_, housed in
+the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
 
 .. image:: https://travis-ci.org/netneurolab/netneurotools.svg?branch=master
