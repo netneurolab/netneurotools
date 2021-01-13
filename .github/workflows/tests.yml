@@ -52,7 +52,7 @@ jobs:
             optional-depends: ''
           - os: ubuntu-latest
             python-version: 3.8
-            install: bdist_wheel
+            install: wheel
             check: test
             optional-depends: ''
         exclude:
