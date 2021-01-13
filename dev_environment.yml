@@ -16,7 +16,7 @@ dependencies:
     - "pytest>=3.6"
     - pytest-cov
     - scikit-learn
-    - "scipy>1.4.0"
+    - "scipy>=1.4.0"
     - "sphinx>=1.2"
     - sphinx-gallery
     - sphinx_rtd_theme
