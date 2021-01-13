@@ -8,13 +8,12 @@ python:
   - 3.6
   - 3.7
   - 3.8
+  - 3.9
 
 env:
   jobs:
-    - CHECK_TYPE=linting
     - CHECK_TYPE=docdoctest
     - CHECK_TYPE=test
-    - CHECK_TYPE=test INSTALL_NUMBA=true
   global:
     - INSTALL_TYPE=setup
 
@@ -32,9 +31,16 @@ jobs:
       env:
         - INSTALL_TYPE=conda
         - CHECK_TYPE=test
+    - python: 3.7
+      env:
+        - CHECK_TYPE=linting
+    - python: 3.7
+      env:
+        - CHECK_TYPE=test
+        - INSTALL_NUMBA=true
 
 before_install:
-  - python -m pip install --upgrade pip build
+  - python -m pip install --upgrade pip
   - if [ "${INSTALL_TYPE}" == "conda" ]; then
       wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
       bash miniconda.sh -b -p $HOME/miniconda;
@@ -46,26 +52,27 @@ before_install:
       source activate netneurotools;
     fi
   - if [ "${CHECK_TYPE}" == "linting" ]; then
-      pip install flake8;
+      python -m pip install flake8;
     fi
   - if [ "${CHECK_TYPE}" == "test" ]; then
-      pip install "pytest>=4.6" pytest-cov coverage codecov;
+      python -m pip install "pytest>=4.6" pytest-cov coverage codecov;
     fi
   - if [ ! -z "${INSTALL_NUMBA}"]; then
-      pip install numba;
+      python -m pip install numba;
     fi
+  - python -m pip install build
 
 install:
   - python -m build
   - |
     if [ "${INSTALL_TYPE}" == "setup" ]; then
-      pip install .;
+      python -m pip install .;
     elif [ "${INSTALL_TYPE}" == "sdist" ]; then
-      pip install dist/*.tar.gz;
+      python -m pip install dist/*.tar.gz;
     elif [ "${INSTALL_TYPE}" == "wheel" ]; then
-      pip install dist/*.whl;
+      python -m pip install dist/*.whl;
     elif [ "${INSTALL_TYPE}" == "conda" ]; then
-      pip install --no-deps .;
+      python -m pip install --no-deps .;
     else
       false;
     fi
