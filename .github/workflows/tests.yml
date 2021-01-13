@@ -2,6 +2,10 @@ name: netneurotools tests
 
 on: [push, pull_request]
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   check_skip:
     runs-on: ubuntu-latest
