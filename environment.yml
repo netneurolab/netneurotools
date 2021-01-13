@@ -3,13 +3,13 @@ channels:
     - defaults
     - conda-forge
 dependencies:
-    - python==3.7
+    - python>=3.6
     - matplotlib
     - nibabel
     - nilearn
     - "numpy>=1.16"
     - pip
     - scikit-learn
-    - scipy
+    - "scipy>=1.4.0"
     - pip:
         - git+https://github.com/aestrivex/bctpy.git#egg=bctpy

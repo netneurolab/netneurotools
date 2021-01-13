@@ -113,10 +113,6 @@ def zrand(X, Y):
     z_rand : float
         Z-rand index
 
-    See Also
-    --------
-    netneurotools_matlab/randz.m
-
     References
     ----------
     Amanda L. Traud, Eric D. Kelsic, Peter J. Mucha, and Mason A. Porter.
