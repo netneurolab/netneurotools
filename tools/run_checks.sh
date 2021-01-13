@@ -13,7 +13,7 @@ elif [ "$CHECK_TYPE" == "test" ]; then
     mkdir for_testing
     cd for_testing
     cp ../setup.cfg .
-    pytest --doctest-modules --cov netneurotools--cov-report xml \
+    pytest --doctest-modules --cov netneurotools --cov-report xml \
             --junitxml=test-results.xml -v --pyargs netneurotools
 else
     false

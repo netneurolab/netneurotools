@@ -14,6 +14,8 @@ else
   false
 fi
 
+python -c 'import netneurotools; print(netneurotools.__version__)'
+
 pip install "netneurotools[$CHECK_TYPE]"
 
 echo "Done installing netneurotools"
