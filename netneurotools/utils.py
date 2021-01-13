@@ -149,7 +149,7 @@ def run(cmd, env=None, return_proc=False, quiet=False):
     >>> p = utils.run('echo "hello world"', return_proc=True, quiet=True)
     >>> p.returncode
     0
-    >>> p.stdout
+    >>> p.stdout  # doctest: +SKIP
     'hello world\\n'
     """
 

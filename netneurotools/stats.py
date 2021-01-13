@@ -611,7 +611,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         array([[0],
                [0],
                [2],
-               [3]], dtype=int32)
+               [3]])
 
     While this is reasonable in most circumstances, if you feel incredibly
     strongly about having a perfect "permutation" (i.e., all indices appear
@@ -623,13 +623,13 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         array([[1],
                [0],
                [2],
-               [3]], dtype=int32)
+               [3]])
         >>> nnstats.gen_spinsamples(coords, hemi, n_rotate=1, seed=1,
         ...                         method='hungarian', check_duplicates=False)
         array([[0],
                [1],
                [2],
-               [3]], dtype=int32)
+               [3]])
 
     Note that setting this parameter may increase the runtime of the function
     (especially for `method='hungarian'`). Refer to [ST1]_ for information on
@@ -698,11 +698,9 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                          .format(np.unique(hemiid)))
 
     # empty array to store resampling indices
-    # int32 should be enough; if you're ever providing `coords` with more than
-    # 2147483647 rows please reconsider your life choices
-    spinsamples = np.zeros((len(coords), n_rotate), dtype='int32')
+    spinsamples = np.zeros((len(coords), n_rotate), dtype=int)
     cost = np.zeros((len(coords), n_rotate))
-    inds = np.arange(len(coords), dtype='int32')
+    inds = np.arange(len(coords), dtype=int)
 
     # generate rotations and resampling array!
     msg, warned = '', False
