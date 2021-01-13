@@ -29,7 +29,7 @@ jobs:
       matrix:
         os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
         python-version: ['3.6', '3.7', '3.8', '3.9']
-        architecture: ['x64', 'x86']
+        architecture: ['x86']
         install: ['setup']
         check: ['test']
         optional-depends: ['']
@@ -59,11 +59,6 @@ jobs:
             install: wheel
             check: test
             optional-depends: ''
-        exclude:
-          - os: ubuntu-latest
-            architecture: x86
-          - os: macos-latest
-            architecture: x86
     env:
       INSTALL_TYPE: ${{ matrix.install }}
       CHECK_TYPE: ${{ matrix.check }}
