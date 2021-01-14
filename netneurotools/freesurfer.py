@@ -271,7 +271,7 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
         drop = FSIGNORE
     drop = _decode_list(drop)
 
-    data = np.vstack(data)
+    data = np.vstack(data).astype(float)
 
     # check this so we're not unduly surprised by anything...
     n_vert = expected = 0
