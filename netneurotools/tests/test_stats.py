@@ -137,19 +137,23 @@ def test_gen_spinsamples():
     # generate "normal" test spins
     spins, cost = stats.gen_spinsamples(coords, hemi, n_rotate=10, seed=1234,
                                         return_cost=True)
-    assert spins.shape == (len(coords), 10)
-    assert cost.shape == (len(coords), 10)
+    assert spins.shape == spins.shape == (len(coords), 10)
 
-    # confirm that `exact` parameter functions as desired
+    # confirm that `method` parameter functions as desired
     for method in ['vasa', 'hungarian']:
         spin_exact, cost_exact = stats.gen_spinsamples(coords, hemi,
                                                        n_rotate=10, seed=1234,
                                                        method=method,
                                                        return_cost=True)
-        assert spin_exact.shape == (len(coords), 10)
-        assert cost.shape == (len(coords), 10)
+        assert spin_exact.shape == cost.shape == (len(coords), 10)
         for s in spin_exact.T:
             assert len(np.unique(s)) == len(s)
+
+    # check that one hemisphere works
+    mask = hemi == 0
+    spins, cost = stats.gen_spinsamples(coords[mask], hemi[mask], n_rotate=10,
+                                        seed=1234, return_cost=True)
+    assert spins.shape == cost.shape == (len(coords[mask]), 10)
 
     # confirm that check_duplicates will raise warnings
     # since spins aren't exact permutations we need to use 4C4 with repeats
@@ -169,8 +173,3 @@ def test_gen_spinsamples():
     # different length coords and hemi
     with pytest.raises(ValueError):
         stats.gen_spinsamples(coords, hemi[:-1])
-
-    # only one hemisphere
-    # TODO: should this be allowed?
-    with pytest.raises(ValueError):
-        stats.gen_spinsamples(coords[hemi == 0], hemi[hemi == 0])
