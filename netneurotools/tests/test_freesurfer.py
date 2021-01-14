@@ -67,6 +67,12 @@ def test_project_reduce_vertices(cammoun_surf, scale, parcels):
     reduced = freesurfer.vertices_to_parcels(projected, rhannot=rh, lhannot=lh)
     assert np.allclose(data, reduced)
 
+    # what about int arrays as input?
+    data = np.random.choice(10, size=parcels)
+    projected = freesurfer.parcels_to_vertices(data, rhannot=rh, lhannot=lh)
+    reduced = freesurfer.vertices_to_parcels(projected, rhannot=rh, lhannot=lh)
+    assert np.allclose(reduced, data)
+
     # number of parcels != annotation spec
     with pytest.raises(ValueError):
         freesurfer.parcels_to_vertices(np.random.rand(parcels + 1),
