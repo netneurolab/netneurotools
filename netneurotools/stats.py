@@ -691,7 +691,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         raise ValueError('Provided `coords` and `hemiid` must have the same '
                          'length. Provided lengths: coords = {}, hemiid = {}'
                          .format(len(coords), len(hemiid)))
-    if np.max(hemiid) != 1 or np.min(hemiid) != 0:
+    if np.max(hemiid) > 1 or np.min(hemiid) < 0:
         raise ValueError('Hemiid must have values in {0, 1} denoting left and '
                          'right hemisphere coordinates, respectively. '
                          + 'Provided array contains values: {}'
@@ -719,6 +719,8 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
             for h, rot in enumerate(_gen_rotation(seed=seed)):
                 hinds = (hemiid == h)
                 coor = coords[hinds]
+                if len(coor) == 0:
+                    continue
 
                 # if we need an "exact" mapping (i.e., each node needs to be
                 # assigned EXACTLY once) then we have to calculate the full
