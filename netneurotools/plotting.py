@@ -13,6 +13,8 @@ import nibabel as nib
 import numpy as np
 from scipy.stats import zscore
 
+from .freesurfer import FSIGNORE, _decode_list
+
 
 def _grid_communities(communities):
     """
@@ -322,12 +324,48 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     return lhplot, rhplot
 
 
-def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
-                   views='lat', vmin=None, vmax=None, center=None, mask=None,
-                   colormap='viridis', colorbar=True, alpha=0.8,
-                   label_fmt='%.2f', num_labels=3, size_per_view=500,
-                   subject_id='fsaverage', subjects_dir=None,
-                   noplot=None, data_kws=None, **kwargs):
+def _get_fs_subjid(subject_id, subjects_dir=None):
+    """
+    Gets fsaverage version `subject_id`, fetching if required
+
+    Parameters
+    ----------
+    subject_id : str
+        FreeSurfer subject ID
+    subjects_dir : str, optional
+        Path to FreeSurfer subject directory. If not set, will inherit from
+        the environmental variable $SUBJECTS_DIR. Default: None
+
+    Returns
+    -------
+    subject_id : str
+        FreeSurfer subject ID
+    subjects_dir : str
+        Path to subject directory with `subject_id`
+    """
+
+    from netneurotools.utils import check_fs_subjid
+
+    # check for FreeSurfer install w/fsaverage; otherwise, fetch required
+    try:
+        subject_id, subjects_dir = check_fs_subjid(subject_id, subjects_dir)
+    except FileNotFoundError:
+        if 'fsaverage' not in subject_id:
+            raise ValueError('Provided subject {} does not exist in provided '
+                             'subjects_dir {}'
+                             .format(subject_id, subjects_dir))
+        from netneurotools.datasets import fetch_fsaverage
+        from netneurotools.datasets.utils import _get_data_dir
+        fetch_fsaverage(subject_id)
+        subjects_dir = os.path.join(_get_data_dir(), 'tpl-fsaverage')
+        subject_id, subjects_dir = check_fs_subjid(subject_id, subjects_dir)
+
+    return subject_id, subjects_dir
+
+
+def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
+                   noplot=None, subject_id='fsaverage', subjects_dir=None,
+                   vmin=None, vmax=None, **kwargs):
     """
     Plots `data` to fsaverage brain using `annot` as parcellation
 
@@ -346,6 +384,121 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
     order : str, optional
         Order of the hemispheres in the data vector (either 'LR' or 'RL').
         Default: 'LR'
+    mask : (N,) array_like, optional
+        Binary array where entries indicate whether values in `data` should be
+        masked from plotting (True = mask; False = show). Default: None
+    noplot : list, optional
+        List of names in `lhannot` and `rhannot` to not plot. It is assumed
+        these are NOT present in `data`. By default 'unknown' and
+        'corpuscallosum' will never be plotted if they are present in the
+        provided annotation files. Default: None
+    subject_id : str, optional
+        Subject ID to use; must be present in `subjects_dir`. Default:
+        'fsaverage'
+    subjects_dir : str, optional
+        Path to FreeSurfer subject directory. If not set, will inherit from
+        the environmental variable $SUBJECTS_DIR. Default: None
+    vmin : float, optional
+        Minimum value for colorbar. If not provided, a robust estimation will
+        be used from values in `data`. Default: None
+    vmax : float, optional
+        Maximum value for colorbar. If not provided, a robust estimation will
+        be used from values in `data`. Default: None
+    kwargs : key-value pairs
+        Provided directly to :func:`~.plot_fsvertex` without modification.
+
+    Returns
+    -------
+    brain : surfer.Brain
+        Plotted PySurfer brain
+    """
+
+    subject_id, subjects_dir = _get_fs_subjid(subject_id, subjects_dir)
+
+    # cast data to float (required for NaNs)
+    data = np.asarray(data, dtype='float')
+
+    order = order.lower()
+    if order not in ('lr', 'rl'):
+        raise ValueError('order must be either \'lr\' or \'rl\'')
+
+    if mask is not None and len(mask) != len(data):
+        raise ValueError('Provided mask must be the same length as data.')
+
+    if vmin is None:
+        vmin = np.percentile(np.nan_to_num(data), 2.5)
+    if vmax is None:
+        vmax = np.percentile(np.nan_to_num(data), 97.5)
+
+    # parcels that should not be included in parcellation
+    drop = FSIGNORE.copy()
+    if noplot is not None:
+        if isinstance(noplot, str):
+            noplot = [noplot]
+        drop += list(noplot)
+    drop = _decode_list(drop)
+
+    vtx_data = []
+    for annot, hemi in zip((lhannot, rhannot), ('lh', 'rh')):
+        # loads annotation data for hemisphere, including vertex `labels`!
+        if not annot.startswith(os.path.abspath(os.sep)):
+            annot = os.path.join(subjects_dir, subject_id, 'label', annot)
+        labels, ctab, names = nib.freesurfer.read_annot(annot)
+        names = _decode_list(names)
+
+        # get appropriate data, accounting for hemispheric asymmetry
+        currdrop = np.intersect1d(drop, names)
+        if hemi == 'lh':
+            if order == 'lr':
+                split_id = len(names) - len(currdrop)
+                ldata, rdata = np.split(data, [split_id])
+                if mask is not None:
+                    lmask, rmask = np.split(mask, [split_id])
+            elif order == 'rl':
+                split_id = len(data) - len(names) + len(currdrop)
+                rdata, ldata = np.split(data, [split_id])
+                if mask is not None:
+                    rmask, lmask = np.split(mask, [split_id])
+        hemidata = ldata if hemi == 'lh' else rdata
+
+        # our `data` don't include the "ignored" parcels but our `labels` do,
+        # so we need to account for that. find the label ids that correspond to
+        # those and set them to NaN in the `data vector`
+        inds = sorted([names.index(n) for n in currdrop])
+        for i in inds:
+            hemidata = np.insert(hemidata, i, np.nan)
+        vtx = hemidata[labels]
+
+        # let's also mask data, if necessary
+        if mask is not None:
+            maskdata = lmask if hemi == 'lh' else rmask
+            maskdata = np.insert(maskdata, inds - np.arange(len(inds)), np.nan)
+            vtx[maskdata[labels] > 0] = np.nan
+
+        vtx_data.append(vtx)
+
+    brain = plot_fsvertex(np.hstack(vtx_data), order=order, mask=None,
+                          subject_id=subject_id, subjects_dir=subjects_dir,
+                          vmin=vmin, vmax=vmax, **kwargs)
+
+    return brain
+
+
+def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
+                  vmin=None, vmax=None, center=None, mask=None,
+                  colormap='viridis', colorbar=True, alpha=0.8,
+                  label_fmt='%.2f', num_labels=3, size_per_view=500,
+                  subject_id='fsaverage', subjects_dir=None, data_kws=None,
+                  **kwargs):
+    """
+    Plots vertex-wise `data` to fsaverage brain.
+
+    Parameters
+    ----------
+    data : (N,) array_like
+        Data for `N` parcels as defined in `annot`
+    order : {'lr', 'rl'}, optional
+        Order of the hemispheres in the data vector. Default: 'lr'
     surf : str, optional
         Surface on which to plot data. Default: 'pial'
     views : str or list, optional
@@ -379,11 +532,6 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
     subject : str, optional
         Subject ID to use; must be present in `subjects_dir`. Default:
         'fsaverage'
-    noplot : list, optional
-        List of names in `lhannot` and `rhannot` to not plot. It is assumed
-        these are NOT present in `data`. By default 'unknown' and
-        'corpuscallosum' will never be plotted if they are present in the
-        provided annotation files. Default: None
     data_kws : dict, optional
         Keyword arguments for Brain.add_data()
 
@@ -394,26 +542,13 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
     """
 
     # hold off on imports until
-    from .utils import check_fs_subjid
     try:
         from surfer import Brain
     except ImportError:
         raise ImportError('Cannot use plot_fsaverage() if pysurfer is not '
                           'installed. Please install pysurfer and try again.')
 
-    # check for FreeSurfer install w/fsaverage; otherwise, fetch required
-    try:
-        subject_id, subjects_dir = check_fs_subjid(subject_id, subjects_dir)
-    except FileNotFoundError:
-        if subject_id != 'fsaverage':
-            raise ValueError('Provided subject {} does not exist in provided '
-                             'subjects_dir {}'
-                             .format(subject_id, subjects_dir))
-        from .datasets import fetch_fsaverage
-        from .datasets.utils import _get_data_dir
-        fetch_fsaverage()
-        subjects_dir = os.path.join(_get_data_dir(), 'tpl-fsaverage')
-        subject_id, subjects_dir = check_fs_subjid(subject_id, subjects_dir)
+    subject_id, subjects_dir = _get_fs_subjid(subject_id, subjects_dir)
 
     # cast data to float (required for NaNs)
     data = np.asarray(data, dtype='float')
@@ -422,23 +557,17 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
     if data_kws is None:
         data_kws = {}
 
-    if order not in ['LR', 'RL']:
-        raise ValueError('order must be either \'LR\' or \'RL\'')
-
     if mask is not None and len(mask) != len(data):
         raise ValueError('Provided mask must be the same length as data.')
 
-    if vmin is None:
-        vmin = np.percentile(data, 2.5)
-    if vmax is None:
-        vmax = np.percentile(data, 97.5)
+    order = order.lower()
+    if order not in ['lr', 'rl']:
+        raise ValueError('Specified order must be either \'lr\' or \'rl\'')
 
-    # parcels that should not be included in parcellation
-    drop = [b'unknown', b'corpuscallosum']
-    if noplot is not None:
-        if isinstance(noplot, str):
-            noplot = [noplot]
-        drop += list(noplot)
+    if vmin is None:
+        vmin = np.percentile(np.nan_to_num(data), 2.5)
+    if vmax is None:
+        vmax = np.percentile(np.nan_to_num(data), 97.5)
 
     # set up brain views
     if not isinstance(views, (np.ndarray, list)):
@@ -452,50 +581,23 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='LR', surf='pial',
                   subjects_dir=subjects_dir, views=views, size=size,
                   **brain_kws)
 
-    for annot, hemi in zip([lhannot, rhannot], ['lh', 'rh']):
-        # loads annotation data for hemisphere, including vertex `labels`!
-        if not annot.startswith(os.path.abspath(os.sep)):
-            annot = os.path.join(subjects_dir, subject_id, 'label', annot)
-        labels, ctab, names = nib.freesurfer.read_annot(annot)
-
-        # get appropriate data, accounting for hemispheric asymmetry
-        currdrop = np.intersect1d(drop, names)
-        if hemi == 'lh':
-            if order == 'LR':
-                splitID = len(names) - len(currdrop)
-                ldata, rdata = np.split(data, [splitID])
-                if mask is not None:
-                    lmask, rmask = np.split(mask, [splitID])
-            elif order == 'RL':
-                splitID = len(data) - len(names) + len(currdrop)
-                rdata, ldata = np.split(data, [splitID])
-                if mask is not None:
-                    rmask, lmask = np.split(mask, [splitID])
-        hemidata = ldata if hemi == 'lh' else rdata
-
-        # our `data` don't include unknown / corpuscallosum, but our `labels`
-        # do, so we need to account for that
-        # find the label ids that correspond to those and set them to NaN in
-        # the `data vector`
-        inds = sorted([names.index(n) for n in currdrop])
-        for i in inds:
-            hemidata = np.insert(hemidata, i, np.nan)
-        vtx_data = hemidata[labels]
-        not_nan = ~np.isnan(vtx_data)
-
-        # we don't want the NaN vertices (unknown / corpuscallosum) plotted
-        # let's drop those and set a threshold so they're hidden
-        thresh = vtx_data[not_nan].min() - 1
-        vtx_data[np.isnan(vtx_data)] = thresh
-        # let's also mask data, if necessary
+    hemis = ('lh', 'rh') if order == 'lr' else ('rh', 'lh')
+    for n, (hemi, vtx_data) in enumerate(zip(hemis, np.split(data, 2))):
+        # let's mask data, if necessary
         if mask is not None:
-            maskdata = lmask if hemi == 'lh' else rmask
-            maskdata = np.insert(maskdata, inds - np.arange(len(inds)), np.nan)
-            vtx_data[maskdata[labels] > 0] = thresh
+            maskdata = np.asarray(np.split(mask, 2)[n], dtype=bool)
+            vtx_data[maskdata] = np.nan
+
+        # we don't want NaN values plotted so set a threshold if they exist
+        thresh, nanmask = None, np.isnan(vtx_data)
+        if np.any(nanmask) > 0:
+            thresh = np.nanmin(vtx_data) - 1
+            vtx_data[nanmask] = thresh
+            thresh += 0.5
 
         # finally, add data to this hemisphere!
         brain.add_data(vtx_data, vmin, vmax, hemi=hemi, mid=center,
-                       thresh=thresh + 0.5, alpha=1.0, remove_existing=False,
+                       thresh=thresh, alpha=1.0, remove_existing=False,
                        colormap=colormap, colorbar=colorbar, verbose=False,
                        **data_kws)
 
