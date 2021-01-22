@@ -31,6 +31,10 @@ def _grid_communities(communities):
         Boundaries of communities
     """
 
+    communities = np.asarray(communities)
+    if 0 in communities:
+        communities = communities + 1
+
     comm = communities[np.argsort(communities)]
     bounds = []
     for i in range(1, np.max(comm) + 1):
@@ -61,7 +65,7 @@ def sort_communities(consensus, communities):
     """
 
     if 0 in communities:
-        communities += 1
+        communities = communities + 1
 
     bounds = _grid_communities(communities)
     inds = np.argsort(communities)
