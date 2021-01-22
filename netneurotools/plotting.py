@@ -575,11 +575,10 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
 
     # size of window will depend on # of views provided
     size = (size_per_view * 2, size_per_view * len(views))
-    brain_kws = dict(background='white')
+    brain_kws = dict(background='white', size=size)
     brain_kws.update(**kwargs)
     brain = Brain(subject_id=subject_id, hemi='split', surf=surf,
-                  subjects_dir=subjects_dir, views=views, size=size,
-                  **brain_kws)
+                  subjects_dir=subjects_dir, views=views, **brain_kws)
 
     hemis = ('lh', 'rh') if order == 'lr' else ('rh', 'lh')
     for n, (hemi, vtx_data) in enumerate(zip(hemis, np.split(data, 2))):
