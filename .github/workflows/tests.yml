@@ -27,63 +27,64 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
-        python-version: ['3.6', '3.7', '3.8', '3.9']
-        architecture: ['x64', 'x86']
-        install: ['setup']
-        check: ['test']
-        optional-depends: ['']
+        # os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        # python-version: ['3.6', '3.7', '3.8', '3.9']
+        # architecture: ['x64', 'x86']
+        # install: ['setup']
+        # check: ['test']
+        # optional-depends: ['']
         include:
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: setup
-            check: style
-            optional-depends: ''
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: setup
-            check: doc
-            optional-depends: ''
+          # - os: ubuntu-latest
+          #   python-version: 3.8
+          #   install: setup
+          #   check: style
+          #   optional-depends: ''
+          # - os: ubuntu-latest
+          #   python-version: 3.8
+          #   install: setup
+          #   check: doc
+          #   optional-depends: ''
           - os: ubuntu-latest
             python-version: 3.8
             install: setup
             check: test
-            optional-depends: 'numba pysurfer mayavi'
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: sdist
-            check: test
-            optional-depends: ''
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: wheel
-            check: test
-            optional-depends: ''
-        exclude:
-          - os: ubuntu-latest
-            architecture: x86
-          - os: macos-latest
-            architecture: x86
+            optional-depends: 'numba pyqt5 mayavi pysurfer'
+          # - os: ubuntu-latest
+          #   python-version: 3.8
+          #   install: sdist
+          #   check: test
+          #   optional-depends: ''
+          # - os: ubuntu-latest
+          #   python-version: 3.8
+          #   install: wheel
+          #   check: test
+          #   optional-depends: ''
+        # exclude:
+        #   - os: ubuntu-latest
+        #     architecture: x86
+        #   - os: macos-latest
+        #     architecture: x86
     env:
       INSTALL_TYPE: ${{ matrix.install }}
       CHECK_TYPE: ${{ matrix.check }}
       OPTIONAL_DEPENDS: ${{ matrix.optional-depends }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
         with:
           submodules: recursive
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-            python-version: ${{ matrix.python-version }}
-      - name: 'Display Python version'
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-      - name: 'Install dependencies'
+      - name: Install dependencies
         run: ./tools/install_dependencies.sh
-      - name: 'Install netneurotools'
+      - name: Install netneurotools
         run: ./tools/install_package.sh
-      - name: 'Run tests'
+      - name: Run tests
         run: ./tools/run_checks.sh
       - uses: codecov/codecov-action@v1
         with:
