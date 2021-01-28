@@ -48,7 +48,7 @@ jobs:
             python-version: 3.8
             install: setup
             check: test
-            optional-depends: numba
+            optional-depends: 'numba pysurfer mayavi'
           - os: ubuntu-latest
             python-version: 3.8
             install: sdist

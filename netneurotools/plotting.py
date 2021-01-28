@@ -37,7 +37,7 @@ def _grid_communities(communities):
 
     comm = communities[np.argsort(communities)]
     bounds = []
-    for i in range(1, np.max(comm) + 1):
+    for i in np.unique(comm):
         ind = np.where(comm == i)
         if len(ind) > 0:
             bounds.append(np.min(ind))
@@ -64,6 +64,7 @@ def sort_communities(consensus, communities):
         Index array for sorting `consensus`
     """
 
+    communities = np.asarray(communities)
     if 0 in communities:
         communities = communities + 1
 

@@ -19,7 +19,7 @@ def test_grid_communities():
 
 def test_sort_communities():
     data = np.arange(9).reshape(3, 3)
-    comms = [0, 0, 2]
+    comms = np.asarray([0, 0, 2])
     # check that comms with / without 0 community label yields same output
     assert np.allclose(plotting.sort_communities(data, comms), [1, 0, 2])
     assert np.allclose(plotting.sort_communities(data, comms + 1), [1, 0, 2])
@@ -34,25 +34,23 @@ def test_plot_mod_heatmap():
 
 @pytest.mark.filterwarnings('ignore')
 def test_plot_fsvertex():
-    # inside function so that import doesn't explode warnings
-    from surfer import Brain
+    surfer = pytest.importorskip('surfer')
 
     data = np.random.rand(20484)
     brain = plotting.plot_fsvertex(data, subject_id='fsaverage5',
                                    offscreen=True)
-    assert isinstance(brain, Brain)
+    assert isinstance(brain, surfer.Brain)
 
 
 @pytest.mark.filterwarnings('ignore')
 def test_plot_fsaverage():
-    # inside function so that import doesn't explode warnings
-    from surfer import Brain
+    surfer = pytest.importorskip('surfer')
 
     data = np.random.rand(68)
     lhannot, rhannot = datasets.fetch_cammoun2012('fsaverage5')['scale033']
     brain = plotting.plot_fsaverage(data, lhannot=lhannot, rhannot=rhannot,
                                     subject_id='fsaverage5', offscreen=True)
-    assert isinstance(brain, Brain)
+    assert isinstance(brain, surfer.Brain)
 
 
 def test_plot_point_brain():
