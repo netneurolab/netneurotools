@@ -430,9 +430,9 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
         raise ValueError('Provided mask must be the same length as data.')
 
     if vmin is None:
-        vmin = np.percentile(np.nan_to_num(data), 2.5)
+        vmin = np.nanpercentile(data, 2.5)
     if vmax is None:
-        vmax = np.percentile(np.nan_to_num(data), 97.5)
+        vmax = np.nanpercentile(data, 97.5)
 
     # parcels that should not be included in parcellation
     drop = FSIGNORE.copy()
@@ -569,9 +569,9 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
         raise ValueError('Specified order must be either \'lr\' or \'rl\'')
 
     if vmin is None:
-        vmin = np.percentile(np.nan_to_num(data), 2.5)
+        vmin = np.nanpercentile(data, 2.5)
     if vmax is None:
-        vmax = np.percentile(np.nan_to_num(data), 97.5)
+        vmax = np.nanpercentile(data, 97.5)
 
     # set up brain views
     if not isinstance(views, (np.ndarray, list)):
