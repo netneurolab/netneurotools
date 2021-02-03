@@ -3,6 +3,8 @@
 For testing netneurotools.plotting functionality
 """
 
+import matplotlib as mpl
+mpl.use('agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
