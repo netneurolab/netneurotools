@@ -117,7 +117,7 @@ def civet_to_freesurfer(brainmap, surface='mid', version='v1',
     icbm = fetch_civet(density='41k' if n_vert == 40962 else '164k',
                        version=version, data_dir=data_dir, verbose=0)[surface]
     fsavg = fetch_fsaverage(version=freesurfer, data_dir=data_dir, verbose=0)
-    fsavg = fsavg['pial' if surface == 'mid' else 'white']
+    fsavg = fsavg['pial' if surface == 'mid' else surface]
 
     data = []
     for n, hemi in enumerate(('lh', 'rh')):
@@ -128,6 +128,9 @@ def civet_to_freesurfer(brainmap, surface='mid', version='v1',
         else:
             idx = mapping[sl]
 
-        data.append(brainmap[sl][idx])
+        hdata = np.full(len(idx), np.nan)
+        mask = idx != n_vert
+        hdata[mask] = brainmap[sl][idx[mask]]
+        data.append(hdata)
 
     return np.hstack(data)
