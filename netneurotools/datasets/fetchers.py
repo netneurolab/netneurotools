@@ -16,7 +16,7 @@ from sklearn.utils import Bunch
 from .utils import _get_data_dir, _get_dataset_info
 from ..utils import check_fs_subjid
 
-ANNOT = namedtuple('Surface', ('lh', 'rh'))
+SURFACE = namedtuple('Surface', ('lh', 'rh'))
 
 
 def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
@@ -137,7 +137,7 @@ def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
     if version == 'MNI152NLin2009aSym':
         keys += ['info']
     elif version in ('fslr32k', 'fsaverage', 'fsaverage5', 'fsaverage6'):
-        data = [ANNOT(*data[i:i + 2]) for i in range(0, len(data), 2)]
+        data = [SURFACE(*data[i:i + 2]) for i in range(0, len(data), 2)]
     else:
         data = [data[::2][i:i + 2] for i in range(0, len(data) // 2, 2)]
         # deal with the fact that last scale is split into three files :sigh:
@@ -212,7 +212,7 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
         data[-1] = json.load(src)
 
     # bundle hemispheres together
-    data = [ANNOT(*data[:-1][i:i + 2]) for i in range(0, 6, 2)] + [data[-1]]
+    data = [SURFACE(*data[:-1][i:i + 2]) for i in range(0, 6, 2)] + [data[-1]]
 
     return Bunch(**dict(zip(keys + ['info'], data)))
 
@@ -339,7 +339,7 @@ def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
                             files=[(op.join(dataset_name, f), url, opts)
                                    for f in filenames])
 
-    data = [ANNOT(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
+    data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
 
@@ -564,7 +564,7 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     if suffix == 'annot':
-        data = [ANNOT(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
+        data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
 
@@ -734,6 +734,92 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
     ] + ['atl-vonEconomoKoskinas_info.csv']
     files = [(op.join(dataset_name, f), url, opts) for f in filenames]
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
-    data = [ANNOT(*data[:-1:2])] + [ANNOT(*data[1:-1:2])] + [data[-1]]
+    data = [SURFACE(*data[:-1:2])] + [SURFACE(*data[1:-1:2])] + [data[-1]]
+
+    return Bunch(**dict(zip(keys, data)))
+
+
+def fetch_civet(density='41k', version='v1', data_dir=None, url=None,
+                resume=True, verbose=1):
+    """
+    Fetches CIVET surface files
+
+    Parameters
+    ----------
+    density : {'41k', '164k'}, optional
+        Which density of the CIVET-space geometry files to fetch. The
+        high-resolution '164k' surface only exists for version 'v2'
+    version : {'v1, 'v2'}, optional
+        Which version of the CIVET surfaces to use. Default: 'v2'
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys ['mid', 'white'] containing geometry
+        files for CIVET surface. Note for version 'v1' the 'mid' and 'white'
+        files are identical.
+
+    References
+    ----------
+    Y. Ad-Dab’bagh, O. Lyttelton, J.-S. Muehlboeck, C. Lepage, D. Einarson, K.
+    Mok, O. Ivanov, R. Vincent, J. Lerch, E. Fombonne, A. C. Evans, The CIVET
+    image-processing environment: A fully automated comprehensive pipeline for
+    anatomical neuroimaging research. Proceedings of the 12th Annual Meeting of
+    the Organization for Human Brain Mapping (2006).
+
+    Notes
+    -----
+    License: https://github.com/aces/CIVET_Full_Project/blob/master/LICENSE
+    """
+
+    densities = ['41k', '164k']
+    if density not in densities:
+        raise ValueError('The density of CIVET requested "{}" does not exist. '
+                         'Must be one of {}'.format(density, densities))
+    versions = ['v1', 'v2']
+    if version not in versions:
+        raise ValueError('The version of CIVET requested "{}" does not exist. '
+                         'Must be one of {}'.format(version, versions))
+
+    if version == 'v1' and density == '164k':
+        raise ValueError('The "164k" density CIVET surface only exists for '
+                         'version "v2"')
+
+    dataset_name = 'tpl-civet'
+    keys = ['mid', 'white']
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)[version]['civet{}'.format(density)]
+    if url is None:
+        url = info['url']
+
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+    filenames = [
+        op.join(dataset_name, version, 'civet{}'.format(density),
+                'tpl-civet_space-ICBM152_hemi-{}_den-{}_{}.obj'
+                .format(hemi, density, surf))
+        for surf in keys for hemi in ['L', 'R']
+    ]
+
+    data = _fetch_files(data_dir, resume=resume, verbose=verbose,
+                        files=[(f, url, opts) for f in filenames])
+
+    data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))

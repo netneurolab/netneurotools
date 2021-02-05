@@ -149,6 +149,7 @@ Functions to download atlases and templates
    :toctree: generated/
 
     fetch_cammoun2012
+    fetch_civet
     fetch_conte69
     fetch_fsaverage
     fetch_pauli2018
