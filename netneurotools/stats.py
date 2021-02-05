@@ -791,8 +791,8 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
     """
     Returns the dominance analysis statistics for multilinear regression.
 
-    This is a rewritten & simplified version of [DA1]_. It is briefly tested against
-    the original package, but still in early stages.
+    This is a rewritten & simplified version of [DA1]_. It is briefly
+    tested against the original package, but still in early stages.
     Please feel free to report any bugs.
 
     Warning: Still work-in-progress. Parameters might change!
@@ -816,6 +816,29 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
     model_r_sq : dict
         Contains all model r squares
 
+    Notes
+    -----
+    Example usage
+
+    .. code:: python
+
+        from netneurotools.stats import get_dominance_stats
+        from sklearn.datasets import load_boston
+        X, y = load_boston(return_X_y=True)
+        model_metrics, model_r_sq = get_dominance_stats(X, y)
+
+    To compare with [DA1]_, use `use_adjusted_r_sq=False`
+
+    .. code:: python
+
+        from dominance_analysis import Dominance_Datasets
+        from dominance_analysis import Dominance
+        boston_dataset=Dominance_Datasets.get_boston()
+        dominance_regression=Dominance(data=boston_dataset,
+                                       target='House_Price',objective=1)
+        incr_variable_rsquare=dominance_regression.incremental_rsquare()
+        dominance_regression.dominance_stats()
+
     References
     ----------
     .. [DA1] https://github.com/dominance-analysis/dominance-analysis
@@ -833,7 +856,8 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
         SS_Residual = sum((y - yhat) ** 2)
         SS_Total = sum((y - np.mean(y)) ** 2)
         r_squared = 1 - (float(SS_Residual)) / SS_Total
-        adjusted_r_squared = 1 - (1 - r_squared) * (len(y) - 1) / (len(y) - X.shape[1] - 1)
+        adjusted_r_squared = 1 - (1 - r_squared) * \
+            (len(y) - 1) / (len(y) - X.shape[1] - 1)
         if use_adjusted_r_sq:
             return adjusted_r_squared
         else:
@@ -844,15 +868,19 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
 
     # generate all predictor combinations in list (num of predictors) of lists
     n_predictor = X.shape[-1]
-    n_comb_len_group = n_predictor - 1
-    predictor_combs = [list(combinations(range(n_predictor), i)) for i in range(1, n_predictor + 1)]
+    # n_comb_len_group = n_predictor - 1
+    predictor_combs = [list(combinations(range(n_predictor), i))
+                       for i in range(1, n_predictor + 1)]
     if verbose:
-        print(f"[Dominance analysis] Generated {len([_ for i in predictor_combs for _ in i])} combinations")
+        print(f"[Dominance analysis] Generated \
+              {len([_ for i in predictor_combs for _ in i])} combinations")
 
     # get all r_sq's
     model_r_sq = dict([])
-    for len_group in tqdm(predictor_combs, desc='num-of-predictor loop', disable=~verbose):
-        for idx_tuple in tqdm(len_group, desc='insider loop', disable=~verbose):
+    for len_group in tqdm(predictor_combs, desc='num-of-predictor loop',
+                          disable=~verbose):
+        for idx_tuple in tqdm(len_group, desc='insider loop',
+                              disable=~verbose):
             r_sq = get_reg_r_sq(X[:, idx_tuple], y)
             model_r_sq[idx_tuple] = r_sq
     if verbose:
@@ -882,8 +910,9 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
             j_node_sel = [_ for _ in i_len_combs if j_node in _]
             reduced_list = [remove_ret(comb, j_node) for comb in j_node_sel]
             # print(j_node, j_node_sel, reduced_list)
-            diff_values = [model_r_sq[j_node_sel[_]] - model_r_sq[reduced_list[_]]
-                        for _ in range(len(reduced_list))]
+            diff_values = [
+                model_r_sq[j_node_sel[_]] - model_r_sq[reduced_list[_]]
+                for _ in range(len(reduced_list))]
             # print(diff_values)
             partial_dominance[i_len].append(np.mean(diff_values))
 
@@ -891,9 +920,11 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
     partial_dominance = np.array(partial_dominance)
     model_metrics["partial_dominance"] = partial_dominance
     # get total dominance
-    total_dominance = np.mean(np.r_[individual_dominance, partial_dominance], axis=0)
+    total_dominance = np.mean(
+        np.r_[individual_dominance, partial_dominance], axis=0)
     # test and save total dominance
-    assert np.allclose(total_dominance.sum(), model_r_sq[tuple(range(n_predictor))])
+    assert np.allclose(total_dominance.sum(),
+                       model_r_sq[tuple(range(n_predictor))])
     model_metrics["total_dominance"] = total_dominance
     # save full r^2
     model_metrics["full_r_sq"] = model_r_sq[tuple(range(n_predictor))]
