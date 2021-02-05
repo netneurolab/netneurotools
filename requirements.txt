@@ -5,3 +5,4 @@ nilearn
 numpy>=1.16
 scikit-learn
 scipy>=1.4.0
+tqdm
