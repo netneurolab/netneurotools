@@ -7,9 +7,11 @@ import warnings
 
 import numpy as np
 from tqdm import tqdm
+from itertools import combinations
 from scipy import optimize, spatial, special, stats as sstats
 from scipy.stats.stats import _chk2_asarray
 from sklearn.utils.validation import check_random_state
+from sklearn.linear_model import LinearRegression
 
 from . import utils
 
@@ -845,8 +847,11 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
 
     """
 
-    from itertools import combinations
-    from sklearn.linear_model import LinearRegression
+    # this helps to remove one element from a tuple
+    def remove_ret(tpl, elem):
+        lst = list(tpl)
+        lst.remove(elem)
+        return tuple(lst)
 
     # sklearn linear regression wrapper
     def get_reg_r_sq(X, y):
@@ -863,9 +868,6 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
         else:
             return r_squared
 
-    def complete_model_rsquare(X, y):
-        return get_reg_r_sq(X, y)
-
     # generate all predictor combinations in list (num of predictors) of lists
     n_predictor = X.shape[-1]
     # n_comb_len_group = n_predictor - 1
@@ -873,14 +875,14 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
                        for i in range(1, n_predictor + 1)]
     if verbose:
         print(f"[Dominance analysis] Generated \
-              {len([_ for i in predictor_combs for _ in i])} combinations")
+              {len([v for i in predictor_combs for v in i])} combinations")
 
     # get all r_sq's
-    model_r_sq = dict([])
+    model_r_sq = dict()
     for len_group in tqdm(predictor_combs, desc='num-of-predictor loop',
-                          disable=~verbose):
+                          disable=not verbose):
         for idx_tuple in tqdm(len_group, desc='insider loop',
-                              disable=~verbose):
+                              disable=not verbose):
             r_sq = get_reg_r_sq(X[:, idx_tuple], y)
             model_r_sq[idx_tuple] = r_sq
     if verbose:
@@ -896,24 +898,16 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
     individual_dominance = np.array(individual_dominance).reshape(1, -1)
     model_metrics["individual_dominance"] = individual_dominance
 
-    def remove_ret(tpl, elem):
-        lst = list(tpl)
-        lst.remove(elem)
-        return tuple(lst)
-
     # partial dominance
-    partial_dominance = [[] for _ in range(n_predictor - 1)]
+    partial_dominance = [[]] * (n_predictor - 1)
     for i_len in range(n_predictor - 1):
         i_len_combs = list(combinations(range(n_predictor), i_len + 2))
-        # print(i_len_combs)
         for j_node in range(n_predictor):
-            j_node_sel = [_ for _ in i_len_combs if j_node in _]
+            j_node_sel = [v for v in i_len_combs if j_node in v]
             reduced_list = [remove_ret(comb, j_node) for comb in j_node_sel]
-            # print(j_node, j_node_sel, reduced_list)
             diff_values = [
-                model_r_sq[j_node_sel[_]] - model_r_sq[reduced_list[_]]
-                for _ in range(len(reduced_list))]
-            # print(diff_values)
+                model_r_sq[j_node_sel[i]] - model_r_sq[reduced_list[i]]
+                for i in range(len(reduced_list))]
             partial_dominance[i_len].append(np.mean(diff_values))
 
     # save partial dominance
@@ -924,7 +918,8 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
         np.r_[individual_dominance, partial_dominance], axis=0)
     # test and save total dominance
     assert np.allclose(total_dominance.sum(),
-                       model_r_sq[tuple(range(n_predictor))])
+                       model_r_sq[tuple(range(n_predictor))]), \
+           "Sum of total dominance is not equal to full r square!"
     model_metrics["total_dominance"] = total_dominance
     # save full r^2
     model_metrics["full_r_sq"] = model_r_sq[tuple(range(n_predictor))]
