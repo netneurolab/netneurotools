@@ -610,6 +610,77 @@ def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
     return op.join(data_dir, dataset_name)
 
 
+def fetch_mmpall(version='fslr32k', data_dir=None, url=None, resume=True,
+                 verbose=1):
+    """
+    Downloads .label.gii files for Glasser et al., 2016 MMPAll atlas
+
+    Parameters
+    ----------
+    version : {'fslr32k'}
+        Specifies which surface annotation files should be matched to. Default:
+        'fslr32k'
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Namedtuple with fields ('lh', 'rh') corresponding to filepaths to
+        left/right hemisphere parcellation files
+
+    References
+    ----------
+    Glasser, M. F., Coalson, T. S., Robinson, E. C., Hacker, C. D., Harwell,
+    J., Yacoub, E., ... & Van Essen, D. C. (2016). A multi-modal parcellation
+    of human cerebral cortex. Nature, 536(7615), 171-178.
+
+    Notes
+    -----
+    License: https://www.humanconnectome.org/study/hcp-young-adult/document/
+    wu-minn-hcp-consortium-open-access-data-use-terms
+    """
+
+    versions = ['fslr32k']
+    if version not in versions:
+        raise ValueError('The version of Glasser et al., 2016 parcellation '
+                         'requested "{}" does not exist. Must be one of {}'
+                         .format(version, versions))
+
+    dataset_name = 'atl-mmpall'
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)[version]
+    if url is None:
+        url = info['url']
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+
+    hemispheres = ['L', 'R']
+    filenames = [
+        'atl-MMPAll_space-{}_hemi-{}_deterministic.label.gii'
+        .format(version, hemi) for hemi in hemispheres
+    ]
+
+    files = [(op.join(dataset_name, version, f), url, opts) for f in filenames]
+    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+
+    return ANNOT(*data)
+
+
 def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
     """
     Fetches von-Economo Koskinas probabilistic FreeSurfer atlas
@@ -632,8 +703,7 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
     Returns
     -------
     filenames : :class:`sklearn.utils.Bunch`
-        Dictionary-like object with keys of format '{}Parcels{}Networks' where
-        corresponding values are the left/right hemisphere annotation files
+        Dictionary-like object with keys ['gcs', 'ctab', 'info']
 
     References
     ----------
