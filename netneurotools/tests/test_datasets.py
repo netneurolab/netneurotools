@@ -148,6 +148,13 @@ def test_fetch_hcp_standards(tmpdir):
     assert os.path.isdir(hcp)
 
 
+def test_fetch_mmpall(tmpdir):
+    mmp = datasets.fetch_mmpall(data_dir=tmpdir, verbose=0)
+    assert len(mmp) == 2
+    assert all(os.path.isfile(hemi) for hemi in mmp)
+    assert all(hasattr(mmp, attr) for attr in ('lh', 'rh'))
+
+
 def test_fetch_voneconomo(tmpdir):
     vek = datasets.fetch_voneconomo(data_dir=tmpdir, verbose=0)
     assert all(hasattr(vek, k) and len(vek[k]) == 2 for k in ['gcs', 'ctab'])
