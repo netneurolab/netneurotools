@@ -111,6 +111,7 @@ Python Reference API
    permtest_1samp
    permtest_rel
    permtest_pearsonr
+   get_dominance_stats
 
 .. _ref_metrics:
 
