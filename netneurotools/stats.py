@@ -899,7 +899,7 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
     model_metrics["individual_dominance"] = individual_dominance
 
     # partial dominance
-    partial_dominance = [[]] * (n_predictor - 1)
+    partial_dominance = [[] for _ in range(n_predictor - 1)]
     for i_len in range(n_predictor - 1):
         i_len_combs = list(combinations(range(n_predictor), i_len + 2))
         for j_node in range(n_predictor):
