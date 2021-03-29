@@ -678,7 +678,7 @@ def fetch_mmpall(version='fslr32k', data_dir=None, url=None, resume=True,
     files = [(op.join(dataset_name, version, f), url, opts) for f in filenames]
     data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
-    return ANNOT(*data)
+    return SURFACE(*data)
 
 
 def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
