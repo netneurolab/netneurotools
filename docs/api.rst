@@ -197,6 +197,24 @@ Functions to generate (pseudo-random) datasets
    spin_data
    spin_parcels
 
+.. _ref_civet:
+
+:mod:`netneurotools.civet` - CIVET compatibility functions
+----------------------------------------------------------
+
+.. automodule:: netneurotools.civet
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.civet
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   read_civet
+   civet_to_freesurfer
+
 .. _ref_utils:
 
 :mod:`netneurotools.utils` - Miscellaneous, grab bag utilities
