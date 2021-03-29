@@ -149,6 +149,7 @@ Functions to download atlases and templates
    :toctree: generated/
 
     fetch_cammoun2012
+    fetch_civet
     fetch_conte69
     fetch_fsaverage
     fetch_pauli2018
@@ -195,6 +196,24 @@ Functions to generate (pseudo-random) datasets
    vertices_to_parcels
    spin_data
    spin_parcels
+
+.. _ref_civet:
+
+:mod:`netneurotools.civet` - CIVET compatibility functions
+----------------------------------------------------------
+
+.. automodule:: netneurotools.civet
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.civet
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   read_civet
+   civet_to_freesurfer
 
 .. _ref_utils:
 

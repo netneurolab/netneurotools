@@ -113,6 +113,33 @@
             "md5": "8f75b95c0e47ae935d10745baefa2c49"
         }
     },
+    "tpl-civet": {
+        "v1": {
+            "civet41k": {
+                "url": [
+                    "mb37e",
+                    "601daffd84ecf800fe031868"
+                ],
+                "md5": "b27219c876464992e1b61da1c60d8d6e"
+            }
+        },
+        "v2": {
+            "civet41k": {
+                "url": [
+                    "mb37e",
+                    "601dafe77ad0a80119d9483c"
+                ],
+                "md5": "a47b015e471c6a800d236f107fda5b4a"
+            },
+            "civet164k": {
+                "url": [
+                    "mb37e",
+                    "601dafe87ad0a8011ad94938"
+                ],
+                "md5": "02537ea65d5366acd8de729022a34bab"
+            }
+        }
+    },
     "ds-connectomes": {
         "celegans": {
             "url": [

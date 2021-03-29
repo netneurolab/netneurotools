@@ -183,6 +183,18 @@ def test_get_dataset_info(dset, expected):
         utils._get_dataset_info('notvalid')
 
 
+@pytest.mark.parametrize('version', [
+    'v1', 'v2'
+])
+def test_fetch_civet(tmpdir, version):
+    civet = datasets.fetch_civet(version=version, data_dir=tmpdir, verbose=0)
+    for key in ('mid', 'white'):
+        assert key in civet
+        for hemi in ('lh', 'rh'):
+            assert hasattr(civet[key], hemi)
+            assert os.path.isfile(getattr(civet[key], hemi))
+
+
 def test_get_data_dir(tmpdir):
     data_dir = utils._get_data_dir(tmpdir)
     assert os.path.isdir(data_dir)
