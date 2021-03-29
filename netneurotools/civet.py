@@ -5,13 +5,14 @@ Functions for working with CIVET data (ugh)
 
 import nibabel as nib
 import numpy as np
-from scipy.spatial import cKDTree
+from scipy.interpolate import griddata
 
 from .datasets import fetch_civet, fetch_fsaverage
 
 _MNI305to152 = np.array([[0.9975, -0.0073, 0.0176, -0.0429],
                          [0.0146, 1.0009, -0.0024, 1.5496],
-                         [-0.0130, -0.0093, 0.9971, 1.1840]])
+                         [-0.0130, -0.0093, 0.9971, 1.1840],
+                         [0.0000, 0.0000, 0.0000, 1.0000]])
 
 
 def read_civet(fname):
@@ -47,34 +48,9 @@ def read_civet(fname):
     return vertices, triangles
 
 
-def _get_civet_to_fs_mapping(obj, fs):
-    """
-    Returns a mapping between `obj` and `fs` geometry files
-
-    Parameters
-    ----------
-    obj : str or os.PathLike
-        Path to CIVET geometry file
-    fs : str or os.PathLike
-        Path to FreeSurfer geometry file
-
-    Returns
-    -------
-    idx : (N,) np.ndarray
-        Mapping from CIVET to FreeSurfer space
-    """
-
-    vert_cv, _ = read_civet(obj)
-    vert_fs, _ = nib.freesurfer.read_geometry(fs)
-
-    vert_fs = np.c_[vert_fs, np.ones(len(vert_fs))] @ _MNI305to152.T
-    _, idx = cKDTree(vert_cv).query(vert_fs, k=1, distance_upper_bound=10)
-
-    return idx
-
-
 def civet_to_freesurfer(brainmap, surface='mid', version='v1',
-                        freesurfer='fsaverage6', mapping=None, data_dir=None):
+                        freesurfer='fsaverage6', method='nearest',
+                        data_dir=None):
     """
     Projects `brainmap` in CIVET space to `freesurfer` fsaverage space
 
@@ -92,9 +68,9 @@ def civet_to_freesurfer(brainmap, surface='mid', version='v1',
         Which version of FreeSurfer space to project data to. Must be one of
         {'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'}.
         Default: 'fsaverage6'
-    mapping : array_like, optional
-        If mapping has been pre-computed for `surface` --> `version` and is
-        provided, this will be used instead of recomputing. Default: None
+    method : {'nearest', 'linear'}, optional
+        What method of interpolation to use when projecting the data between
+        surfaces. Default: 'nearest'
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
@@ -106,8 +82,9 @@ def civet_to_freesurfer(brainmap, surface='mid', version='v1',
         Provided `brainmap` mapped to FreeSurfer
     """
 
+    brainmap = np.asarray(brainmap)
     densities = (81924, 327684)
-    n_vert = len(brainmap)
+    n_vert = brainmap.shape[0]
     if n_vert not in densities:
         raise ValueError('Unable to interpret `brainmap` space; provided '
                          'array must have length in {}. Received: {}'
@@ -122,15 +99,10 @@ def civet_to_freesurfer(brainmap, surface='mid', version='v1',
     data = []
     for n, hemi in enumerate(('lh', 'rh')):
         sl = slice(n_vert * n, n_vert * (n + 1))
-        if mapping is None:
-            idx = _get_civet_to_fs_mapping(getattr(icbm, hemi),
-                                           getattr(fsavg, hemi))
-        else:
-            idx = mapping[sl]
-
-        hdata = np.full(len(idx), np.nan)
-        mask = idx != n_vert
-        hdata[mask] = brainmap[sl][idx[mask]]
-        data.append(hdata)
+        vert_cv, _ = read_civet(getattr(icbm, hemi))
+        vert_fs = nib.affines.apply_affine(
+            _MNI305to152, nib.freesurfer.read_geometry(getattr(fsavg, hemi))[0]
+        )
+        data.append(griddata(vert_cv, brainmap[sl], vert_fs, method=method))
 
     return np.hstack(data)
