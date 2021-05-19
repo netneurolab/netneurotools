@@ -122,7 +122,7 @@ def rich_feeder_peripheral(x, sc, stat='median'):
     stat : str
         statistic to use over rich/feeder/peripheral links
         'mean' or 'median' (default)
-   
+
     Returns
     -------
     rfp : (3, k) numpy.ndarray
@@ -139,7 +139,7 @@ def rich_feeder_peripheral(x, sc, stat='median'):
     This code was written by Justine Hansen who promises to fix and even
     optimize the code should any issues arise, provided you let her know.
     """
-    
+
     nnodes = len(sc)
     mask = np.triu(np.ones(nnodes), 1) > 0
     node_degree = degrees_und(sc)
@@ -177,11 +177,11 @@ def rich_feeder_peripheral(x, sc, stat='median'):
             rfp[2, i] = np.mean(x[rfp_label[:, i] == 3])  # peripheral
 
         # p-value (Welch's t-test)
-        _, pvals[0,i] = ttest_ind(x[rfp_label[:, i] == 1], \
-                                  x[rfp_label[:, i] != 1], equal_var=False)
-        _, pvals[1,i] = ttest_ind(x[rfp_label[:, i] == 2], \
-                                  x[rfp_label[:, i] == 3], equal_var=False)
-        _, pvals[2,i] = ttest_ind(x[rfp_label[:, i] == 3], \
-                                  x[rfp_label[:, i] == 2], equal_var=False)
+        _, pvals[0, i] = ttest_ind(x[rfp_label[:, i] == 1],
+                                   x[rfp_label[:, i] != 1], equal_var=False)
+        _, pvals[1, i] = ttest_ind(x[rfp_label[:, i] == 2],
+                                   x[rfp_label[:, i] == 3], equal_var=False)
+        _, pvals[2, i] = ttest_ind(x[rfp_label[:, i] == 3],
+                                   x[rfp_label[:, i] == 2], equal_var=False)
 
     return rfp, pvals
