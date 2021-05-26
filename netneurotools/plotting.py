@@ -331,7 +331,7 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
     try:
         from mayavi import mlab
     except ImportError:
-        raise ImportError('Cannot use plot_surface() if mayavi is not '
+        raise ImportError('Cannot use plot_fslr() if mayavi is not '
                           'installed. Please install mayavi and try again.')
 
     opts = dict()
