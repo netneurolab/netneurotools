@@ -220,7 +220,6 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
 
     """
     Plots surface `data` on Conte69 Atlas
-
     Parameters
     ----------
     data : (N,) array_like
@@ -258,6 +257,68 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Default: (0, 0, 0)
     kwargs : key-value mapping
         Keyword arguments for `mayavi.mlab.triangular_mesh()`
+    Returns
+    -------
+    scene : mayavi.Scene
+        Scene object containing plot
+    """
+
+    return plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
+                     surf_type=surf, vmin=vmin, vmax=vmax, colormap=colormap,
+                     colorbar=colorbar, num_labels=num_labels,
+                     orientation=orientation, colorbartitle=colorbartitle,
+                     backgroundcolor=backgroundcolor,
+                     foregroundcolor=foregroundcolor, **kwargs)
+
+
+def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
+              surf_type='midthickness', vmin=None, vmax=None,
+              colormap='viridis', colorbar=True, num_labels=4,
+              orientation='horizontal', colorbartitle=None,
+              backgroundcolor=(1, 1, 1), foregroundcolor=(0, 0, 0),
+              **kwargs):
+
+    """
+    Plots surface `data` on a given fsLR32k atlas
+
+    Parameters
+    ----------
+    data : (N,) array_like
+        Surface data for N parcels
+    lhlabel : str
+        Path to .gii file (generic GIFTI file) containing labels to N/2 parcels
+        on the left hemisphere
+    rhlabel : str
+        Path to .gii file (generic GIFTI file) containing labels to N/2 parcels
+        on the right hemisphere
+    surf_atlas: {'conte69', 'yerkes19'}
+    surf_type : {'midthickness', 'inflated', 'vinflated'}, optional
+        Type of brain surface. Default: 'midthickness'
+    vmin : float, optional
+        Minimum value to scale the colormap. If None, the min of the data will
+        be used. Default: None
+    vmax : float, optional
+        Maximum value to scale the colormap. If None, the max of the data will
+        be used. Default: None
+    colormap : str, optional
+        Any colormap from matplotlib. Default: 'viridis'
+    colorbar : bool, optional
+        Wheter to display a colorbar. Default: True
+    num_labels : int, optional
+        The number of labels to display on the colorbar.
+        Available only if colorbar=True. Default: 4
+    orientation : str, optional
+        Defines the orientation of colorbar. Can be 'horizontal' or 'vertical'.
+        Available only if colorbar=True. Default: 'horizontal'
+    colorbartitle : str, optional
+        The title of colorbar. Available only if colorbar=True. Default: None
+    backgroundcolor : tuple of float values with RGB code in [0, 1], optional
+        Defines the background color. Default: (1, 1, 1)
+    foregroundcolor : tuple of float values with RGB code in [0, 1], optional
+        Defines the foreground color (e.g., colorbartitle color).
+        Default: (0, 0, 0)
+    kwargs : key-value mapping
+        Keyword arguments for `mayavi.mlab.triangular_mesh()`
 
     Returns
     -------
@@ -265,22 +326,27 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Scene object containing plot
     """
 
-    from .datasets import fetch_conte69
+    from .datasets import fetch_conte69, fetch_yerkes19
     try:
         from mayavi import mlab
     except ImportError:
-        raise ImportError('Cannot use plot_conte69() if mayavi is not '
+        raise ImportError('Cannot use plot_surface() if mayavi is not '
                           'installed. Please install mayavi and try again.')
 
     opts = dict()
     opts.update(**kwargs)
 
     try:
-        surface = fetch_conte69()[surf]
+        if surf_atlas == 'conte69':
+            surface = fetch_conte69()[surf_type]
+        elif surf_atlas == 'yerkes19':
+            surface = fetch_yerkes19()[surf_type]
+
     except KeyError:
         raise ValueError('Provided surf "{}" is not valid. Must be one of '
                          '[\'midthickness\', \'inflated\', \'vinflated\']'
-                         .format(surf))
+                         .format(surf_type))
+
     lhsurface, rhsurface = [nib.load(s) for s in surface]
 
     lhlabels = nib.load(lhlabel).darrays[0].data
@@ -288,7 +354,7 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
     lhvert, lhface = [d.data for d in lhsurface.darrays]
     rhvert, rhface = [d.data for d in rhsurface.darrays]
 
-    # add NaNs for subcortex
+    # add NaNs for medial wall
     data = np.append(np.nan, data)
 
     # get lh and rh data
