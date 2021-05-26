@@ -220,6 +220,7 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
 
     """
     Plots surface `data` on Conte69 Atlas
+
     Parameters
     ----------
     data : (N,) array_like
