@@ -416,6 +416,34 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     -------
     brain : surfer.Brain
         Plotted PySurfer brain
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from netneurotools.datasets import fetch_cammoun2012, \
+                                           fetch_schaefer2018
+    >>> from netneurotools.plotting import plot_fsaverage
+
+    Plotting with the Cammoun 2012 parcellation we specify `order='RL'` because
+    many of the Lausanne connectomes have data for the right hemisphere before
+    the left hemisphere.
+
+    >>> values = np.random.rand(219)
+    >>> scale = 'scale125'
+    >>> cammoun = fetch_cammoun2012('fsaverage', verbose=False)[scale]
+    >>> plot_fsaverage(values, order='RL',
+    ...                lhannot=cammoun.lh, rhannot=cammoun.rh) # doctest: +SKIP
+
+    Plotting with the Schaefer 2018 parcellation we can use the default
+    parameter for `order`:
+
+    >>> values = np.random.rand(400)
+    >>> scale = '400Parcels7Networks'
+    >>> schaefer = fetch_schaefer2018('fsaverage', verbose=False)[scale]
+    >>> plot_fsaverage(values,
+    ...                lhannot=schaefer.lh,
+    ...                rhannot=schaefer.rh)  # doctest: +SKIP
+
     """
 
     subject_id, subjects_dir = _get_fs_subjid(subject_id, subjects_dir)
