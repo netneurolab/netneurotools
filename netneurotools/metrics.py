@@ -105,23 +105,16 @@ def communicability_wei(adjacency):
 
 def rich_feeder_peripheral(x, sc, stat='median'):
     """
-    Calculates median or mean "connectivity" in rich (hub to hub), feeder
-    (hub to non-hub), and peripheral (non-hub to non-hub) links.
-
-    This function takes a square symmetric correlation/connectivity matrix `x`
-    and computes the median or mean value within rich, feeder, and peripheral
-    links. Hubs are defined againt a threshold (from 0 to the maximum degree
-    `k`, defined on the structural connectivity matrix, `sc`).
+    Calculates connectivity values in rich, feeder, and peripheral edges.
 
     Parameters
     ----------
     x : (N, N) numpy.ndarray
         Symmetric correlation or connectivity matrix
     sc : (N, N) numpy.ndarray
-        binary structural connectivity matrix
-    stat : str
-        statistic to use over rich/feeder/peripheral links
-        'mean' or 'median' (default)
+        Binary structural connectivity matrix
+    stat : {'mean', 'median'}, optional
+        Statistic to use over rich/feeder/peripheral links. Default: 'median'
 
     Returns
     -------
@@ -132,7 +125,7 @@ def rich_feeder_peripheral(x, sc, stat='median'):
         p-value for each link, computed using Welch's t-test.
         Rich links are compared against non-rich links. Feeder links are
         compared against peripheral links. Peripheral links are compared
-        against feeder links. T-test is two-sided.
+        against feeder links. T-test is one-sided.
 
     Author
     ------
@@ -140,48 +133,51 @@ def rich_feeder_peripheral(x, sc, stat='median'):
     optimize the code should any issues arise, provided you let her know.
     """
 
+    stats = ['mean', 'median']
+    if stat not in stats:
+        raise ValueError(f'Provided stat {stat} not valid.\
+                         Must be one of {stats}')
+
     nnodes = len(sc)
     mask = np.triu(np.ones(nnodes), 1) > 0
     node_degree = degrees_und(sc)
     k = np.max(node_degree).astype(np.int64)
     rfp_label = np.zeros((len(sc[mask]), k))
 
-    for i in range(k):                        # for each degree threshold
-        hub_idx = np.where(node_degree >= i)  # find the hubs
+    for degthresh in range(k):  # for each degree threshold
+        hub_idx = np.where(node_degree >= degthresh)  # find the hubs
         hub = np.zeros([nnodes, 1])
         hub[hub_idx, :] = 1
 
-        rfp = np.zeros([nnodes, nnodes])       # for each link, define rfp
-        for ii in range(nnodes):
-            for iii in range(nnodes):
-                if hub[ii] + hub[iii] == 2:
-                    rfp[ii, iii] = 1  # rich
-                if hub[ii] + hub[iii] == 1:
-                    rfp[ii, iii] = 2  # feeder
-                if hub[ii] + hub[iii] == 0:
-                    rfp[ii, iii] = 3  # peripheral
-        rfp_label[:, i] = rfp[mask]
+        rfp = np.zeros([nnodes, nnodes])      # for each link, define rfp
+        for edge1 in range(nnodes):
+            for edge2 in range(nnodes):
+                if hub[edge1] + hub[edge2] == 2:
+                    rfp[edge1, edge2] = 1  # rich
+                if hub[edge1] + hub[edge2] == 1:
+                    rfp[edge1, edge2] = 2  # feeder
+                if hub[edge1] + hub[edge2] == 0:
+                    rfp[edge1, edge2] = 3  # peripheral
+        rfp_label[:, degthresh] = rfp[mask]
 
     rfp = np.zeros([3, k])
     pvals = np.zeros([3, k])
-    for i in range(k):
+    for degthresh in range(k):
 
-        if stat == 'median':
-            rfp[0, i] = np.median(x[rfp_label[:, i] == 1])  # rich
-            rfp[1, i] = np.median(x[rfp_label[:, i] == 2])  # feeder
-            rfp[2, i] = np.median(x[rfp_label[:, i] == 3])  # peripheral
+        redfunc = np.median if stat == 'median' else np.mean
+        for linktype in range(3):
+            rfp[linktype, degthresh] = redfunc(x[rfp_label[:, degthresh] ==
+					         linktype + 1])
 
-        if stat == 'mean':
-            rfp[0, i] = np.mean(x[rfp_label[:, i] == 1])  # rich
-            rfp[1, i] = np.mean(x[rfp_label[:, i] == 2])  # feeder
-            rfp[2, i] = np.mean(x[rfp_label[:, i] == 3])  # peripheral
-
-        # p-value (Welch's t-test)
-        _, pvals[0, i] = ttest_ind(x[rfp_label[:, i] == 1],
-                                   x[rfp_label[:, i] != 1], equal_var=False)
-        _, pvals[1, i] = ttest_ind(x[rfp_label[:, i] == 2],
-                                   x[rfp_label[:, i] == 3], equal_var=False)
-        _, pvals[2, i] = ttest_ind(x[rfp_label[:, i] == 3],
-                                   x[rfp_label[:, i] == 2], equal_var=False)
+        # p-value (one-sided Welch's t-test)
+        _, pvals[0, degthresh] = ttest_ind(x[rfp_label[:, degthresh] == 1],
+                                   x[rfp_label[:, degthresh] != 1],
+                                   equal_var=False, alternative='greater')
+        _, pvals[1, degthresh] = ttest_ind(x[rfp_label[:, degthresh] == 2],
+                                   x[rfp_label[:, degthresh] == 3],
+                                   equal_var=False, alternative='greater')
+        _, pvals[2, degthresh] = ttest_ind(x[rfp_label[:, degthresh] == 3],
+                                   x[rfp_label[:, degthresh] == 2],
+                                   equal_var=False, alternative='greater')
 
     return rfp, pvals
