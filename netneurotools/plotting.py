@@ -440,7 +440,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     >>> schaefer = fetch_schaefer2018('fsaverage')['400Parcels7Networks']
     >>> plot_fsaverage(values,
     ...                lhannot=schaefer.lh,
-    ...                rhannot=schaefer.rh) # DOCTEST: +SKIP
+    ...                rhannot=schaefer.rh)  # doctest: +SKIP
 
     """
 
