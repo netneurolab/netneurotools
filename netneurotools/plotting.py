@@ -431,7 +431,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     >>> values = np.random.rand(219)
     >>> cammoun = fetch_cammoun2012('fsaverage')['scale125']
     >>> plot_fsaverage(values, order='RL',
-    ...                lhannot=cammoun.lh, rhannot=cammoun.rh) # DOCTEST: +SKIP
+    ...                lhannot=cammoun.lh, rhannot=cammoun.rh)  # doctest: +SKIP
 
     Plotting with the Schaefer 2018 parcellation we can use the default
     parameter for `order`:
