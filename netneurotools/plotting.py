@@ -429,7 +429,8 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     the left hemisphere.
 
     >>> values = np.random.rand(219)
-    >>> cammoun = fetch_cammoun2012('fsaverage')['scale125']
+    >>> scale = 'scale125'
+    >>> cammoun = fetch_cammoun2012('fsaverage', verbose=False)[scale]
     >>> plot_fsaverage(values, order='RL',
     ...                lhannot=cammoun.lh, rhannot=cammoun.rh) # doctest: +SKIP
 
@@ -437,7 +438,8 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     parameter for `order`:
 
     >>> values = np.random.rand(400)
-    >>> schaefer = fetch_schaefer2018('fsaverage')['400Parcels7Networks']
+    >>> scale = '400Parcels7Networks'
+    >>> schaefer = fetch_schaefer2018('fsaverage', verbose=False)[scale]
     >>> plot_fsaverage(values,
     ...                lhannot=schaefer.lh,
     ...                rhannot=schaefer.rh)  # doctest: +SKIP
