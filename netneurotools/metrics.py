@@ -167,7 +167,7 @@ def rich_feeder_peripheral(x, sc, stat='median'):
         redfunc = np.median if stat == 'median' else np.mean
         for linktype in range(3):
             rfp[linktype, degthresh] = redfunc(x[mask][rfp_label[:, degthresh]
-                                                 == linktype + 1])
+                                                       == linktype + 1])
 
         # p-value (one-sided Welch's t-test)
         _, pvals[0, degthresh] = ttest_ind(
