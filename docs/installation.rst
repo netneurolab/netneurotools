@@ -27,12 +27,18 @@ Alternatively, you can install ``netneurotools`` directly from PyPi with:
 Optional installation for surface plotting
 ------------------------------------------
 
-For surface plots like
-:py:func:`netneurotools.plotting.plot_fsaverage`, you would need
-VTK/mayavi/pysurfer installation. Here is a recipe for installing the
-bleeding-edge version of the dependencies. If you already have a working
-mayavi/pysurfer installation, there is generally no need to follow this
-part.
+In order to use surface plotting functionality like
+:py:func:`netneurotools.plotting.plot_fsaverage`, you will need a working
+``vtk``/``mayavi``/``pysurfer`` installation. These can generally be installed 
+with the following command:
+
+.. code-block: bash
+
+    pip install vtk mayavi pysurfer
+
+However, we include instructions below for installing the bleeding-edge version 
+of the dependencies. Note: if you already have a working ``mayavi``/``pysurfer`` 
+installation, there is generally no need to follow these instructions!
 
 -  Install Qt
 

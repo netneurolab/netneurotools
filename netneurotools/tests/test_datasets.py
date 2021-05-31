@@ -148,6 +148,13 @@ def test_fetch_hcp_standards(tmpdir):
     assert os.path.isdir(hcp)
 
 
+def test_fetch_mmpall(tmpdir):
+    mmp = datasets.fetch_mmpall(data_dir=tmpdir, verbose=0)
+    assert len(mmp) == 2
+    assert all(os.path.isfile(hemi) for hemi in mmp)
+    assert all(hasattr(mmp, attr) for attr in ('lh', 'rh'))
+
+
 def test_fetch_voneconomo(tmpdir):
     vek = datasets.fetch_voneconomo(data_dir=tmpdir, verbose=0)
     assert all(hasattr(vek, k) and len(vek[k]) == 2 for k in ['gcs', 'ctab'])
@@ -174,6 +181,18 @@ def test_get_dataset_info(dset, expected):
 
     with pytest.raises(KeyError):
         utils._get_dataset_info('notvalid')
+
+
+@pytest.mark.parametrize('version', [
+    'v1', 'v2'
+])
+def test_fetch_civet(tmpdir, version):
+    civet = datasets.fetch_civet(version=version, data_dir=tmpdir, verbose=0)
+    for key in ('mid', 'white'):
+        assert key in civet
+        for hemi in ('lh', 'rh'):
+            assert hasattr(civet[key], hemi)
+            assert os.path.isfile(getattr(civet[key], hemi))
 
 
 def test_get_data_dir(tmpdir):

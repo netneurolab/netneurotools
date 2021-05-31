@@ -417,56 +417,28 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     brain : surfer.Brain
         Plotted PySurfer brain
 
-    Notes
-    -----
-    -  Shown here the minimal example to plot on the fsaverage surface for
-       Lausanne and Schaefer parcellation. Optionally, fetch the annotation 
-       files using :py:func:`netneurotools.datasets.fetch_fsaverage`, here 
-       with ``version="fsaverage"``.
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from netneurotools.datasets import fetch_cammoun2012, fetch_schaefer2018
+    >>> from netneurotools.plotting import plot_fsaverage
 
-    -  For Lausanne, use
-       :py:func:`netneurotools.datasets.fetch_cammoun2012`
-       and ``plot_lausanne_surf()`` below.
+    Plotting with the Cammoun 2012 parcellation we specify `order='RL'` because 
+    many of the Lausanne connectomes have data for the right hemisphere before the 
+    left hemisphere.
 
-        -  Normally Lausanne connectomes have right hemisphere before left
-           hemisphere, thus ``order="RL"``
-            
-    -  For Schaefer, use
-       :py:func:`netneurotools.datasets.fetch_schaefer2018`
-       and ``plot_schaefer_surf()`` below.
+    >>> values = np.random.rand(219)
+    >>> cammoun = fetch_cammoun2012('fsaverage')['scale125']
+    >>> plot_fsaverage(values, order='RL', 
+    ...                lhannot=cammoun.lh, rhannot=cammoun.rh)   # DOCTEST: +SKIP
 
-    .. code:: python
+    Plotting with the Schaefer 2018 parcellation we can use the default parameter
+    for `order`:
 
-        from netneurotools.plotting import plot_fsaverage
-
-        data_dir = "~/nnt-data"  # this is the default location
-
-
-        def plot_lausanne_surf(values, scale="125", **kwargs):
-            # scales = ["033", "060", "125", "250", "500"]
-
-            surf = plot_fsaverage(
-                values,
-                order="RL",
-                lhannot=f"{data_dir}/atl-cammoun2012/atl-Cammoun2012_space-fsaverage_res-{scale}_hemi-L_deterministic.annot",
-                rhannot=f"{data_dir}/atl-cammoun2012/atl-Cammoun2012_space-fsaverage_res-{scale}_hemi-R_deterministic.annot",
-                **kwargs,
-            )
-            return surf
-
-
-        def plot_schaefer_surf(values, scale="400", yeo_scale=7, **kwargs):
-            # scales = ["100",..., "1000"]
-            # yeo_scales = [7, 17]
-
-            surf = plot_fsaverage(
-                values,
-                order="LR",
-                lhannot=f"{data_dir}/atl-schaefer2018/fsaverage/atl-Schaefer2018_space-fsaverage_hemi-L_desc-{scale}Parcels{yeo_scale}Networks_deterministic.annot",
-                rhannot=f"{data_dir}/atl-schaefer2018/fsaverage/atl-Schaefer2018_space-fsaverage_hemi-R_desc-{scale}Parcels{yeo_scale}Networks_deterministic.annot",
-                **kwargs,
-            )
-            return surf
+    >>> values = np.random.rand(400)
+    >>> schaefer = fetch_schaefer2018('fsaverage')['400Parcels7Networks']
+    >>> plot_fsaverage(values, 
+    ...                lhannot=schaefer.lh, rhannot=schaefer.rh)  # DOCTEST: +SKIP
 
     """
 
