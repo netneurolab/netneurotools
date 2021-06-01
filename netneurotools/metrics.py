@@ -6,6 +6,8 @@ from the Brain Connectivity Toolbox (https://sites.google.com/site/bctnet/).
 
 import numpy as np
 from scipy.linalg import expm
+from scipy.stats import ttest_ind
+from bct import degrees_und
 
 
 def communicability_bin(adjacency, normalize=False):
@@ -99,3 +101,86 @@ def communicability_wei(adjacency):
     cmc[np.diag_indices_from(cmc)] = 0
 
     return cmc
+
+
+def rich_feeder_peripheral(x, sc, stat='median'):
+    """
+    Calculates connectivity values in rich, feeder, and peripheral edges.
+
+    Parameters
+    ----------
+    x : (N, N) numpy.ndarray
+        Symmetric correlation or connectivity matrix
+    sc : (N, N) numpy.ndarray
+        Binary structural connectivity matrix
+    stat : {'mean', 'median'}, optional
+        Statistic to use over rich/feeder/peripheral links. Default: 'median'
+
+    Returns
+    -------
+    rfp : (3, k) numpy.ndarray
+        Array of median rich (0), feeder (1), and peripheral (2)
+        values, defined by `x`. `k` is the maximum degree defined on `sc`.
+    pvals : (3, k) numpy.ndarray
+        p-value for each link, computed using Welch's t-test.
+        Rich links are compared against non-rich links. Feeder links are
+        compared against peripheral links. Peripheral links are compared
+        against feeder links. T-test is one-sided.
+
+    Author
+    ------
+    This code was written by Justine Hansen who promises to fix and even
+    optimize the code should any issues arise, provided you let her know.
+    """
+
+    stats = ['mean', 'median']
+    if stat not in stats:
+        raise ValueError(f'Provided stat {stat} not valid.\
+                         Must be one of {stats}')
+
+    nnodes = len(sc)
+    mask = np.triu(np.ones(nnodes), 1) > 0
+    node_degree = degrees_und(sc)
+    k = np.max(node_degree).astype(np.int64)
+    rfp_label = np.zeros((len(sc[mask]), k))
+
+    for degthresh in range(k):  # for each degree threshold
+        hub_idx = np.where(node_degree >= degthresh)  # find the hubs
+        hub = np.zeros([nnodes, 1])
+        hub[hub_idx, :] = 1
+
+        rfp = np.zeros([nnodes, nnodes])      # for each link, define rfp
+        for edge1 in range(nnodes):
+            for edge2 in range(nnodes):
+                if hub[edge1] + hub[edge2] == 2:
+                    rfp[edge1, edge2] = 1  # rich
+                if hub[edge1] + hub[edge2] == 1:
+                    rfp[edge1, edge2] = 2  # feeder
+                if hub[edge1] + hub[edge2] == 0:
+                    rfp[edge1, edge2] = 3  # peripheral
+        rfp_label[:, degthresh] = rfp[mask]
+
+    rfp = np.zeros([3, k])
+    pvals = np.zeros([3, k])
+    for degthresh in range(k):
+
+        redfunc = np.median if stat == 'median' else np.mean
+        for linktype in range(3):
+            rfp[linktype, degthresh] = redfunc(x[mask][rfp_label[:, degthresh]
+                                                       == linktype + 1])
+
+        # p-value (one-sided Welch's t-test)
+        _, pvals[0, degthresh] = ttest_ind(
+            x[mask][rfp_label[:, degthresh] == 1],
+            x[mask][rfp_label[:, degthresh] != 1],
+            equal_var=False, alternative='greater')
+        _, pvals[1, degthresh] = ttest_ind(
+            x[mask][rfp_label[:, degthresh] == 2],
+            x[mask][rfp_label[:, degthresh] == 3],
+            equal_var=False, alternative='greater')
+        _, pvals[2, degthresh] = ttest_ind(
+            x[mask][rfp_label[:, degthresh] == 3],
+            x[mask][rfp_label[:, degthresh] == 2],
+            equal_var=False, alternative='greater')
+
+    return rfp, pvals
