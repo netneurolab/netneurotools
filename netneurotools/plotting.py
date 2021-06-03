@@ -550,7 +550,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
 
         vtx_data.append(vtx)
 
-    brain = plot_fsvertex(np.hstack(vtx_data), order=order, mask=None,
+    brain = plot_fsvertex(np.hstack(vtx_data), order='lr', mask=None,
                           subject_id=subject_id, subjects_dir=subjects_dir,
                           vmin=vmin, vmax=vmax, **kwargs)
 
