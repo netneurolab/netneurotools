@@ -52,6 +52,12 @@ def test_fetch_conte69(tmpdir):
                ['midthickness', 'inflated', 'vinflated', 'info'])
 
 
+def test_fetch_yerkes19(tmpdir):
+    conte = datasets.fetch_yerkes19(data_dir=tmpdir, verbose=0)
+    assert all(hasattr(conte, k) for k in
+               ['midthickness', 'inflated', 'vinflated'])
+
+
 def test_fetch_pauli2018(tmpdir):
     pauli = datasets.fetch_pauli2018(data_dir=tmpdir, verbose=0)
     assert all(hasattr(pauli, k) and os.path.isfile(pauli[k]) for k in

@@ -292,7 +292,8 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
     rhlabel : str
         Path to .gii file (generic GIFTI file) containing labels to N/2 parcels
         on the right hemisphere
-    surf_atlas: {'conte69', 'yerkes19'}
+    surf_atlas: {'conte69', 'yerkes19'}, optional
+        Surface atlas on which to plot 'data'. Default: 'conte69'
     surf_type : {'midthickness', 'inflated', 'vinflated'}, optional
         Type of brain surface. Default: 'midthickness'
     vmin : float, optional
