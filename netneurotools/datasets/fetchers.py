@@ -217,6 +217,75 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**dict(zip(keys + ['info'], data)))
 
 
+def fetch_yerkes19(data_dir=None, url=None, resume=None, verbose=1):
+    """
+    Downloads files for Donahue et al., 2016 Yerkes19 template
+
+    Parameters
+    ----------
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    url : str, optional
+        URL from which to download data. Default: None
+    resume : bool, optional
+        Whether to attempt to resume partial download, if possible. Default:
+        True
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with keys ['midthickness', 'inflated',
+        'vinflated'], where corresponding values are lists of filepaths to
+        downloaded template files.
+
+    References
+    ----------
+    https://balsa.wustl.edu/reference/show/976nz
+
+    Donahue, C. J., Sotiropoulos, S. N., Jbabdi, S., Hernandez-Fernandez, M.,
+    Behrens, T. E., Dyrby, T. B., ... & Glasser, M. F. (2016). Using diffusion
+    tractography to predict cortical connection strength and distance: a
+    quantitative comparison with tracers in the monkey. Journal of
+    Neuroscience, 36(25), 6758-6770.
+
+    Notes
+    -----
+    License: ???
+    """
+
+    dataset_name = 'tpl-yerkes19'
+    keys = ['midthickness', 'inflated', 'vinflated']
+
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)
+    if url is None:
+        url = info['url']
+
+    opts = {
+        'uncompress': True,
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
+    }
+
+    filenames = [
+        'tpl-yerkes19/tpl-yerkes19_space-fsLR32k_{}.{}.surf.gii'
+        .format(res, hemi) for res in keys for hemi in ['L', 'R']
+    ]
+
+    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+                        resume=resume, verbose=verbose)
+
+    # bundle hemispheres together
+    data = [SURFACE(*data[i:i + 2]) for i in range(0, 6, 2)]
+
+    return Bunch(**dict(zip(keys + ['info'], data)))
+
+
 def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
     """
     Downloads files for Pauli et al., 2018 subcortical parcellation
