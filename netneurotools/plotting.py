@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 import nibabel as nib
 import numpy as np
-from scipy.stats import zscore
 
 from .freesurfer import FSIGNORE, _decode_list
 
@@ -792,7 +791,7 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
         scaling = np.array([ax.get_xlim(),
                             ax.get_ylim(),
                             ax.get_zlim()])
-        ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]]*3)
+        ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]] * 3)
     fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
     # add colorbar to axes
