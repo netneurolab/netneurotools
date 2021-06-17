@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 import nibabel as nib
 import numpy as np
+from scipy.stats import zscore
 
 from .freesurfer import FSIGNORE, _decode_list
 
@@ -725,8 +726,8 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
     return brain
 
 
-def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
-                     robust=True, size=50, **kwargs):
+def plot_point_brain(data, coords, views=None, custom_aspect=True, cbar=False,
+                     figsize=(4, 4.8), robust=True, size=50, **kwargs):
     """
     Plots `data` as a cloud of points in 3D space based on specified `coords`
 
@@ -760,8 +761,12 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
                   axial=(90, 180), ax=(90, 180),
                   coronal=(0, 90), cor=(0, 90))
 
-    # coordinate space needs to be centered around zero for aspect ratio
+    # coordinate space needs to be centered around zero for custom aspect ratio
+    if custom_aspect:
+        coords = zscore(coords)
+
     x, y, z = coords[:, 0], coords[:, 1], coords[:, 2]
+
     if views is None:
         views = [_views[f] for f in ['sagittal', 'axial']]
     else:
@@ -788,11 +793,22 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
         col = ax.scatter(x, y, z, c=data, s=size, **opts)
         ax.view_init(*view)
         ax.axis('off')
-        scaling = np.array([ax.get_xlim(),
-                            ax.get_ylim(),
-                            ax.get_zlim()])
-        ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]] * 3)
-    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+
+        # if aspect is custom, manually set limits to the values we want
+        if custom_aspect:
+            if view != (0, 90):
+                ax.set(xlim=0.665 * np.array(ax.get_xlim()),
+                       ylim=0.665 * np.array(ax.get_ylim()),
+                       zlim=0.70 * np.array(ax.get_zlim()))
+
+        # otherwise, automatically scale axes to have 'equal' aspect ratios
+        else:
+            scaling = np.array([ax.get_xlim(),
+                                ax.get_ylim(),
+                                ax.get_zlim()])
+            ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]] * 3)
+
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0)
 
     # add colorbar to axes
     if cbar:
