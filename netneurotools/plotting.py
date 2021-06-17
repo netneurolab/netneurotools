@@ -800,10 +800,9 @@ def plot_point_brain(data, coords, views=None, custom_aspect=True, cbar=False,
 
         # if aspect is custom, manually set limits to the values we want
         if custom_aspect:
-            if view != (0, 90):
-                ax.set(xlim=0.665 * np.array(ax.get_xlim()),
-                       ylim=0.665 * np.array(ax.get_ylim()),
-                       zlim=0.70 * np.array(ax.get_zlim()))
+            ax.set(xlim=0.665 * np.array(ax.get_xlim()),
+                   ylim=0.665 * np.array(ax.get_ylim()),
+                   zlim=0.70 * np.array(ax.get_zlim()))
 
         # otherwise, automatically scale axes to have 'equal' aspect ratios
         else:
