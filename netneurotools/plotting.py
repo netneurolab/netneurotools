@@ -762,7 +762,6 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
                   coronal=(0, 90), cor=(0, 90))
 
     # coordinate space needs to be centered around zero for aspect ratio
-    coords = zscore(coords)
     x, y, z = coords[:, 0], coords[:, 1], coords[:, 2]
     if views is None:
         views = [_views[f] for f in ['sagittal', 'axial']]
@@ -789,10 +788,11 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
         # make the actual scatterplot and update the view / aspect ratios
         col = ax.scatter(x, y, z, c=data, s=size, **opts)
         ax.view_init(*view)
-        ax.axis('off')
-        ax.set(xlim=0.57 * np.array(ax.get_xlim()),
-               ylim=0.57 * np.array(ax.get_ylim()),
-               zlim=0.60 * np.array(ax.get_zlim()))
+        # ax.axis('off')
+        scaling = np.array([ax.get_xlim(),
+                            ax.get_ylim(),
+                            ax.get_zlim()])
+        ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]]*3)
     fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
     # add colorbar to axes
