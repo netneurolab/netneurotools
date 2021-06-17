@@ -787,7 +787,7 @@ def plot_point_brain(data, coords, views=None, cbar=False, figsize=(4, 4.8),
         # make the actual scatterplot and update the view / aspect ratios
         col = ax.scatter(x, y, z, c=data, s=size, **opts)
         ax.view_init(*view)
-        # ax.axis('off')
+        ax.axis('off')
         scaling = np.array([ax.get_xlim(),
                             ax.get_ylim(),
                             ax.get_zlim()])
