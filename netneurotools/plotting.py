@@ -741,6 +741,10 @@ def plot_point_brain(data, coords, views=None, custom_aspect=True, cbar=False,
         List specifying which views to use. Can be any of {'sagittal', 'sag',
         'coronal', 'cor', 'axial', 'ax'}. If not specified will use 'sagittal'
         and 'axial'. Default: None
+    custom_aspect: bool, optional
+        Whether to use a custom aspect ratio, specifically set to visualize
+        brain data, but that deforms the data, or automatically scale axes to
+        have an 'equal' aspect ratios. Default: True
     cbar : bool, optional
         Whether to also show colorbar. Default: False
     figsize : tuple, optional
