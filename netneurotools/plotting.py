@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 import nibabel as nib
 import numpy as np
-from scipy.stats import zscore
 
 from .freesurfer import FSIGNORE, _decode_list
 
@@ -726,8 +725,9 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
     return brain
 
 
-def plot_point_brain(data, coords, views=None, custom_aspect=True, cbar=False,
-                     figsize=(4, 4.8), robust=True, size=50, **kwargs):
+def plot_point_brain(data, coords, views=None, views_orientation='vertical',
+                     cbar=False, figsize=(4, 4.8), robust=True, size=50,
+                     **kwargs):
     """
     Plots `data` as a cloud of points in 3D space based on specified `coords`
 
@@ -741,10 +741,9 @@ def plot_point_brain(data, coords, views=None, custom_aspect=True, cbar=False,
         List specifying which views to use. Can be any of {'sagittal', 'sag',
         'coronal', 'cor', 'axial', 'ax'}. If not specified will use 'sagittal'
         and 'axial'. Default: None
-    custom_aspect: bool, optional
-        Whether to use a custom aspect ratio, specifically set to visualize
-        brain data, but that deforms the data, or automatically scale axes to
-        have an 'equal' aspect ratios. Default: True
+    views_orientation: str, optional
+        Orientation of the views. Can be either 'vertical' or 'horizontal'.
+        Default: 'vertical'.
     cbar : bool, optional
         Whether to also show colorbar. Default: False
     figsize : tuple, optional
@@ -765,10 +764,6 @@ def plot_point_brain(data, coords, views=None, custom_aspect=True, cbar=False,
                   axial=(90, 180), ax=(90, 180),
                   coronal=(0, 90), cor=(0, 90))
 
-    # coordinate space needs to be centered around zero for custom aspect ratio
-    if custom_aspect:
-        coords = zscore(coords)
-
     x, y, z = coords[:, 0], coords[:, 1], coords[:, 2]
 
     if views is None:
@@ -778,8 +773,13 @@ def plot_point_brain(data, coords, views=None, custom_aspect=True, cbar=False,
             views = [views]
         views = [_views[f] for f in views]
 
+    if views_orientation == 'vertical':
+        ncols, nrows = 1, len(views)
+    elif views_orientation == 'horizontal':
+        ncols, nrows = len(views), 1
+
     # create figure and axes (3d projections)
-    fig, axes = plt.subplots(ncols=1, nrows=len(views),
+    fig, axes = plt.subplots(ncols=ncols, nrows=nrows,
                              figsize=figsize,
                              subplot_kw=dict(projection='3d'))
 
@@ -797,21 +797,12 @@ def plot_point_brain(data, coords, views=None, custom_aspect=True, cbar=False,
         col = ax.scatter(x, y, z, c=data, s=size, **opts)
         ax.view_init(*view)
         ax.axis('off')
+        scaling = np.array([ax.get_xlim(),
+                            ax.get_ylim(),
+                            ax.get_zlim()])
+        ax.set_box_aspect(tuple(scaling[:, 1] - scaling[:, 0]))
 
-        # if aspect is custom, manually set limits to the values we want
-        if custom_aspect:
-            ax.set(xlim=0.665 * np.array(ax.get_xlim()),
-                   ylim=0.665 * np.array(ax.get_ylim()),
-                   zlim=0.70 * np.array(ax.get_zlim()))
-
-        # otherwise, automatically scale axes to have 'equal' aspect ratios
-        else:
-            scaling = np.array([ax.get_xlim(),
-                                ax.get_ylim(),
-                                ax.get_zlim()])
-            ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]] * 3)
-
-    fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0)
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0, wspace=0)
 
     # add colorbar to axes
     if cbar:
