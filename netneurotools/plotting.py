@@ -726,7 +726,7 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
 
 
 def plot_point_brain(data, coords, views=None, views_orientation='vertical',
-                     cbar=False, figsize=(4, 4.8), robust=True, size=50,
+                     views_size=(4, 2.4), cbar=False, robust=True, size=50,
                      **kwargs):
     """
     Plots `data` as a cloud of points in 3D space based on specified `coords`
@@ -744,10 +744,10 @@ def plot_point_brain(data, coords, views=None, views_orientation='vertical',
     views_orientation: str, optional
         Orientation of the views. Can be either 'vertical' or 'horizontal'.
         Default: 'vertical'.
+    views_size : tuple, optional
+        Figure size of each view. Default: (4, 2.4)
     cbar : bool, optional
         Whether to also show colorbar. Default: False
-    figsize : tuple, optional
-        Figure size. Default: (4, 4.8)
     robust : bool, optional
         Whether to use robust calculation of `vmin` and `vmax` for color scale.
     size : int, optional
@@ -777,6 +777,7 @@ def plot_point_brain(data, coords, views=None, views_orientation='vertical',
         ncols, nrows = 1, len(views)
     elif views_orientation == 'horizontal':
         ncols, nrows = len(views), 1
+    figsize = (ncols * views_size[0], nrows * views_size[1])
 
     # create figure and axes (3d projections)
     fig, axes = plt.subplots(ncols=ncols, nrows=nrows,
