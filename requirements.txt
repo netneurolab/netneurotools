@@ -5,4 +5,5 @@ nilearn
 numpy>=1.16
 scikit-learn
 scipy>=1.4.0
+matplotlib>=3.3.0
 tqdm

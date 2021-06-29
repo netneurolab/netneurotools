@@ -9,6 +9,7 @@ if [ -n "${OPTIONAL_DEPENDS}" ]; then
     for DEP in ${OPTIONAL_DEPENDS}; do
         if [ ${DEP} == "mayavi" ]; then
             python -m pip install numpy vtk
+            sudo apt update
             sudo apt-get install -y xvfb \
                                     x11-utils \
                                     mencoder \
