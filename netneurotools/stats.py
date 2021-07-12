@@ -6,10 +6,12 @@ Functions for performing statistical preprocessing and analyses
 import warnings
 
 import numpy as np
+import random
 from tqdm import tqdm
 from itertools import combinations
 from scipy import optimize, spatial, special, stats as sstats
 from scipy.stats.stats import _chk2_asarray
+from scipy.spatial.distance import squareform, pdist
 from sklearn.utils.validation import check_random_state
 from sklearn.linear_model import LinearRegression
 
@@ -925,3 +927,101 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
     model_metrics["full_r_sq"] = model_r_sq[tuple(range(n_predictor))]
 
     return model_metrics, model_r_sq
+
+
+def cv_distance_dependent(X, y, coords, train_pct=.75, nsplits=1000,
+                          metric='rsq', use_adjusted_rsq=True):
+    '''
+    Distance-dependent cross-validation of regression equation `y ~ X`
+
+    Parameters
+    ----------
+    X : (N[, R]) array_like
+        Coefficient matrix of `R` variables for `N` brain regions
+    y : (N,) array_like
+        Dependent variable vector for `N` brain regions
+    coords : (N, 3) array_like
+        Coordinate matrix for `N` brain regions
+    train_pct : float, optional
+        Percentage of brain regions in the training set. 0 < train_pct < 1
+        Default: 75%
+    nsplits : float, optional
+        Number of train/test splits. Default: 1000
+    metric : {'rsq', 'corr'}, optional
+        Metric of model assessment. 'rsq' will return the adjusted r-squared
+        of the train and test set model performance for each split. 'corr' will
+        return the correlation between predicted and empiracle observations
+        for the train and test set. Default: 'rsq'
+    use_adjusted_rsq : bool, optional
+        Whether to use adjusted r-squared. Only relevant if metric is 'rsq'.
+        Default: True
+
+    Returns
+    -------
+    train_metric : (nsplits,) list
+        List of length `nsplits` of performance metric on the training set.
+    test_metric : (nsplits,) list
+        List of length `nsplits` of performance metric on the test set.
+    '''
+
+    # sklearn linear regression wrapper
+    def get_reg_r_sq(X, y):
+        lin_reg = LinearRegression()
+        lin_reg.fit(X, y)
+        yhat = lin_reg.predict(X)
+        SS_Residual = sum((y - yhat) ** 2)
+        SS_Total = sum((y - np.mean(y)) ** 2)
+        r_squared = 1 - (float(SS_Residual)) / SS_Total
+        adjusted_r_squared = 1 - (1 - r_squared) * \
+            (len(y) - 1) / (len(y) - X.shape[1] - 1)
+        if use_adjusted_rsq:
+            return adjusted_r_squared
+        else:
+            return r_squared
+
+    P = squareform(pdist(coords, metric="euclidean"))
+    train_metric = []
+    test_metric = []
+
+    for i in range(nsplits):
+
+        # randomly chosen source node
+        sourceNode = random.choice(range(0, len(coords), 1))
+        # distance from source node to all other nodes in network
+        distances = P[sourceNode, :]
+        idx = np.argsort(distances)
+
+        # train_pct of nodes closest to source node comprise the training set
+        # the remaining (1 - train_pct) of nodes comprise the test set
+        train_idx = idx[:int(np.floor(train_pct * len(coords)))]
+        test_idx = idx[int(np.floor(train_pct * len(coords))):]
+
+        # linear regression
+        mdl = LinearRegression()
+        mdl.fit(X[train_idx, :], y[train_idx])
+        if metric == 'rsq':
+            # get r^2 of train set
+            train_metric.append(get_reg_r_sq(X[train_idx, :], y[train_idx]))
+
+        elif metric == 'corr':
+            rho, _ = sstats.pearsonr(mdl.predict(X[train_idx, :]),
+				     y[train_idx])
+            train_metric.append(rho)
+
+        # prediction on test set
+        yhat = mdl.predict(X[test_idx, :])
+        if metric == 'rsq':
+            # get r^2 of test set
+            SS_Residual = sum((y[test_idx] - yhat) ** 2)
+            SS_Total = sum((y[test_idx] - np.mean(y[test_idx])) ** 2)
+            r_squared = 1 - (float(SS_Residual)) / SS_Total
+            adjusted_r_squared = 1-(1-r_squared)*((len(y[test_idx]) - 1) /
+                                                  (len(y[test_idx]) -
+                                                   X.shape[1]-1))
+            test_metric.append(adjusted_r_squared)
+
+        elif metric == 'corr':
+            rho, _ = sstats.pearsonr(yhat, y[test_idx])
+            test_metric.append(rho)
+
+    return train_metric, test_metric
