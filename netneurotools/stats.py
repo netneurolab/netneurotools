@@ -1005,7 +1005,7 @@ def cv_distance_dependent(X, y, coords, train_pct=.75, nsplits=1000,
 
         elif metric == 'corr':
             rho, _ = sstats.pearsonr(mdl.predict(X[train_idx, :]),
-				     y[train_idx])
+                                     y[train_idx])
             train_metric.append(rho)
 
         # prediction on test set
@@ -1015,9 +1015,9 @@ def cv_distance_dependent(X, y, coords, train_pct=.75, nsplits=1000,
             SS_Residual = sum((y[test_idx] - yhat) ** 2)
             SS_Total = sum((y[test_idx] - np.mean(y[test_idx])) ** 2)
             r_squared = 1 - (float(SS_Residual)) / SS_Total
-            adjusted_r_squared = 1-(1-r_squared)*((len(y[test_idx]) - 1) /
-                                                  (len(y[test_idx]) -
-                                                   X.shape[1]-1))
+            adjusted_r_squared = 1 - (1 - r_squared) * ((len(y[test_idx]) - 1)
+                                                        / (len(y[test_idx])
+                                                           - X.shape[1] - 1))
             test_metric.append(adjusted_r_squared)
 
         elif metric == 'corr':
