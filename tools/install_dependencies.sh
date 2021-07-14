@@ -8,7 +8,7 @@ python -m pip install --upgrade -r requirements.txt
 if [ -n "${OPTIONAL_DEPENDS}" ]; then
     for DEP in ${OPTIONAL_DEPENDS}; do
         if [ ${DEP} == "mayavi" ]; then
-            python -m pip install numpy vtk
+            python -m pip install numpy vtk==9.0.1
             sudo apt update
             sudo apt-get install -y xvfb \
                                     x11-utils \
