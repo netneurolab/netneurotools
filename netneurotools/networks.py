@@ -408,7 +408,7 @@ def math_length_degree_distribution(W, D, nbins=10, nswap=1000,
     newB : (N, N) array-like
         binary rewired matrix
     newW: (N, N) array-like
-        weighted rewired matrix. Returns matrix of zeros of weighted=False.
+        weighted rewired matrix. Returns matrix of zeros if weighted=False.
     nr : int
         number of successful rewires
 
