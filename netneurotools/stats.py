@@ -9,7 +9,10 @@ import numpy as np
 from tqdm import tqdm
 from itertools import combinations
 from scipy import optimize, spatial, special, stats as sstats
-from scipy.stats.stats import _chk2_asarray
+try:  # scipy >= 1.8.0
+    from scipy.stats._stats_py import _chk2_asarray
+except ImportError:  # scipy < 1.8.0
+    from scipy.stats.stats import _chk2_asarray
 from sklearn.utils.validation import check_random_state
 from sklearn.linear_model import LinearRegression
 
