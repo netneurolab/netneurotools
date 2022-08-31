@@ -116,7 +116,8 @@ def _decode_list(vals):
 
 
 def find_parcel_centroids(*, lhannot, rhannot, method='surface',
-                          version='fsaverage', surf='sphere', drop=None):
+                          version='fsaverage', surf='sphere', drop=None,
+                          get_labelids=False):
     """
     Returns vertex coords corresponding to centroids of parcels in annotations
 
@@ -144,6 +145,8 @@ def find_parcel_centroids(*, lhannot, rhannot, method='surface',
         Specifies regions in {lh,rh}annot for which the parcel centroid should
         not be calculated. If not specified, centroids for parcels defined in
         `netneurotools.freesurfer.FSIGNORE` are not calculated. Default: None
+    get_labelids: boolean, optional
+        If True, return a list of label ids corresponding to each centroid
 
     Returns
     -------
@@ -153,6 +156,9 @@ def find_parcel_centroids(*, lhannot, rhannot, method='surface',
     hemiid : (N,) numpy.ndarray
         Array denoting hemisphere designation of coordinates in `centroids`,
         where `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
+    labelid : (N,) numpy.ndarray
+        Only returned if get_labelids == True. Array denoting label of coordinates in
+        `centroids`
 
     Notes
     -----
@@ -189,7 +195,7 @@ def find_parcel_centroids(*, lhannot, rhannot, method='surface',
 
     surfaces = fetch_fsaverage(version)[surf]
 
-    centroids, hemiid = [], []
+    centroids, hemiid, labelid = [], [], []
     for n, (annot, surf) in enumerate(zip([lhannot, rhannot], surfaces)):
         vertices, faces = read_geometry(surf)
         labels, ctab, names = read_annot(annot)
@@ -207,8 +213,14 @@ def find_parcel_centroids(*, lhannot, rhannot, method='surface',
                 roi = _geodesic_parcel_centroid(vertices, faces, inds)
             centroids.append(roi)
             hemiid.append(n)
+            if get_labelids:
+                labelid.append(lab)
 
-    return np.row_stack(centroids), np.asarray(hemiid)
+    main = np.row_stack(centroids), np.asarray(hemiid),
+    if get_labelids:
+        return *main, np.asarray(labelid)
+
+    return main
 
 
 def _geodesic_parcel_centroid(vertices, faces, inds):
