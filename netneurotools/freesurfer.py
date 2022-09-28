@@ -10,7 +10,10 @@ import warnings
 from nibabel.freesurfer import read_annot, read_geometry
 import numpy as np
 from scipy import sparse
-from scipy.ndimage.measurements import _stats, labeled_comprehension
+try:  # scipy >= 1.8.0
+    from scipy.ndimage._measurements import _stats, labeled_comprehension
+except ImportError:  # scipy < 1.8.0
+    from scipy.ndimage.measurements import _stats, labeled_comprehension
 from scipy.spatial.distance import cdist
 
 from .datasets import fetch_fsaverage
