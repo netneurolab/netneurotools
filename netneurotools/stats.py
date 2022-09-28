@@ -14,6 +14,7 @@ try:  # scipy >= 1.8.0
     from scipy.stats._stats_py import _chk2_asarray
 except ImportError:  # scipy < 1.8.0
     from scipy.stats.stats import _chk2_asarray
+from scipy.spatial.distance import squareform, pdist
 from sklearn.utils.validation import check_random_state
 from sklearn.linear_model import LinearRegression
 
