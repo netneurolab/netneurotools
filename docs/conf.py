@@ -15,7 +15,7 @@ import sys
 
 # Add project name, copyright holder, and author(s)
 project = 'netneurotools'
-copyright = '2018, netneurotools developers'
+copyright = '2018-2022, netneurotools developers'
 author = 'Network Neuroscience Lab'
 
 # Import project to get version info
@@ -62,7 +62,8 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+# https://github.com/sphinx-doc/sphinx/issues/10474
+# language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -83,7 +84,9 @@ html_show_sourcelink = False
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {}
+html_theme_options = {
+    "navigation_depth": 3
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -100,7 +103,7 @@ htmlhelp_basename = 'netneurotoolsdoc'
 
 # -- Extension configuration -------------------------------------------------
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.6', None),
+    'python': ('https://docs.python.org/3', None),
     'matplotlib': ('https://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
