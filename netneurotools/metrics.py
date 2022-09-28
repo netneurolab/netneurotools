@@ -4,6 +4,7 @@ Functions for calculating network metrics. Uses naming conventions adopted
 from the Brain Connectivity Toolbox (https://sites.google.com/site/bctnet/).
 """
 
+import itertools
 import numpy as np
 from scipy.linalg import expm
 from scipy.stats import ttest_ind
@@ -184,3 +185,144 @@ def rich_feeder_peripheral(x, sc, stat='median'):
             equal_var=False, alternative='greater')
 
     return rfp, pvals
+
+
+def navigation_wu(nav_dist_mat, sc_mat):
+    """
+    Computes network navigation
+
+    Parameters
+    ----------
+    nav_dist_mat : (N, N) array_like
+        Connection length/distance matrix.
+    sc_mat : (N, N) array_like
+        Structural connectivity matrix, only used to get connectedness.
+
+    Returns
+    -------
+    nav_sr : float
+        Overall navigation success rate
+    nav_sr_node : list of float
+        Nodal navigation success rate
+    nav_path_len : (N, N) array_like
+        Navigation path length matrix, infinite if no path exists.
+    nav_path_hop : (N, N) array_like
+        Navigation path hop matrix, infinite if no path exists.
+    nav_paths : list
+        List of tuples containing source node, target node, path length,
+        path hops, and the full path.
+
+    References
+    ----------
+    Seguin, C., Van Den Heuvel, M. P., & Zalesky, A. (2018). Navigation
+    of brain networks. Proceedings of the National Academy of Sciences,
+    115(24), 6297-6302.
+
+    Notes
+    -----
+    Euclidean distance between nodes are usually used for `nav_dist_mat`.
+    Distances returned from this function are also calculated from
+    `nav_dist_mat`.
+    Use :meth:`netneurotools.metrics.get_navigation_path_length`
+    to get path length in other metrics.
+
+    See Also
+    --------
+    netneurotools.metrics.get_navigation_path_length
+    """
+
+    nav_paths = []  # (source, target, distance, hops, path)
+    # navigate to the node that is closest to target
+    for src in range(len(nav_dist_mat)):
+        for tar in range(len(nav_dist_mat)):
+            curr_pos = src
+            curr_path = [src]
+            curr_dist = 0
+            while curr_pos != tar:
+                neig = np.where(sc_mat[curr_pos, :] != 0)[0]
+                if len(neig) == 0:  # not connected
+                    curr_path = []
+                    curr_dist = np.inf
+                    break
+                neig_dist_to_tar = nav_dist_mat[neig, tar]
+                min_dist_idx = np.argmin(neig_dist_to_tar)
+
+                new_pos = neig[min_dist_idx]
+                # Assume it is connected, and only testing for loops.
+                # if isempty(next_node)
+                # || next_node == last_node
+                # || pl_bin > max_hops
+                if (new_pos in curr_path):
+                    curr_path = []
+                    curr_dist = np.inf
+                    break
+                else:
+                    curr_path.append(new_pos)
+                    curr_dist += nav_dist_mat[curr_pos, new_pos]
+                    curr_pos = new_pos
+            nav_paths.append(
+                (src, tar, curr_dist, len(curr_path) - 1, curr_path))
+
+    nav_sr = len([_ for _ in nav_paths if _[3] != -1]) / len(nav_paths)
+
+    nav_sr_node = []
+    for k, g in itertools.groupby(
+        sorted(nav_paths, key=lambda x: x[0]), key=lambda x: x[0]
+    ):
+        curr_path = list(g)
+        nav_sr_node.append(
+            len([_ for _ in curr_path if _[3] != -1]) / len(curr_path))
+
+    nav_path_len = np.zeros_like(nav_dist_mat)
+    nav_path_hop = np.zeros_like(nav_dist_mat)
+    for nav_item in nav_paths:
+        i, j, length, hop, _ = nav_item
+        if hop != -1:
+            nav_path_len[i, j] = length
+            nav_path_hop[i, j] = hop
+        else:
+            nav_path_len[i, j] = np.inf
+            nav_path_hop[i, j] = np.inf
+
+    return nav_sr, nav_sr_node, nav_path_len, nav_path_hop, nav_paths
+
+
+def get_navigation_path_length(nav_paths, alt_dist_mat):
+    """
+    Get navigation path length from navigation results
+
+    Parameters
+    ----------
+    nav_paths : list
+        Return from netneurotools.metrics.navigation_wu
+    alt_dist_mat : (N, N) array_like
+        Alternative distance matrix, e.g. geodesic distance.
+
+    Returns
+    -------
+    nav_path_len : (N, N) array_like
+        Navigation path length matrix, in the alternative distance metric.
+
+    Notes
+    -----
+    Following the original BCT function.
+    `pl_wei = get_navigation_path_length(nav_paths, L)`
+    L is strength-to-length remapping of the connection weight matrix.
+    `pl_dis = get_navigation_path_length(nav_paths, D)`
+    D is Euclidean distance between node centroids.
+
+    See Also
+    --------
+    netneurotools.metrics.navigation_wu
+    """
+
+    nav_path_len = np.zeros_like(alt_dist_mat)
+    for nav_item in nav_paths:
+        i, j, _, hop, path = nav_item
+        if hop != -1:
+            nav_path_len[i, j] = np.sum(
+                [alt_dist_mat[path[_], path[_ + 1]] for _ in range(hop)]
+            )
+        else:
+            nav_path_len[i, j] = np.inf
+    return nav_path_len
