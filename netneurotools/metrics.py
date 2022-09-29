@@ -7,7 +7,160 @@ from the Brain Connectivity Toolbox (https://sites.google.com/site/bctnet/).
 import numpy as np
 from scipy.linalg import expm
 from scipy.stats import ttest_ind
-from bct import degrees_und
+from scipy.sparse.csgraph import shortest_path
+
+try:
+    from numba import njit
+    use_numba = True
+except ImportError:
+    use_numba = False
+
+
+def _binarize(W):
+    """
+    Binarizes a matrix
+
+    Parameters
+    ----------
+    W : (N, N) array_like
+        Matrix to be binarized
+
+    Returns
+    -------
+    binarized : (N, N) numpy.ndarray
+        Binarized matrix
+    """
+    return (W > 0) * 1
+
+
+if use_numba:
+    _binarize = njit(_binarize)
+
+
+def degrees_und(W):
+    """
+    Computes the degree of each node in `W`
+
+    Parameters
+    ----------
+    W : (N, N) array_like
+        Unweighted, undirected connection weight array.
+        Weighted array will be binarized prior to calculation.
+        Directedness will be ignored (out degree / row sum taken).
+
+    Returns
+    -------
+    deg : (N,) numpy.ndarray
+        Degree of each node in `W`
+    """
+    return np.sum(_binarize(W), axis=0)
+
+
+def degrees_dir(W):
+    """
+    Computes the in degree and out degree of each node in `W`
+
+    Parameters
+    ----------
+    W : (N, N) array_like
+        Unweighted, directed connection weight array.
+        Weighted array will be binarized prior to calculation.
+
+    Returns
+    -------
+    deg_in : (N,) numpy.ndarray
+        In-degree (column sum) of each node in `W`
+    deg_out : (N,) numpy.ndarray
+        Out-degree (row sum) of each node in `W`
+    deg : (N,) numpy.ndarray
+        Degree (in-degree + out-degree) of each node in `W`
+    """
+    W_bin = _binarize(W)
+    deg_in = np.sum(W_bin, axis=0)
+    deg_out = np.sum(W_bin, axis=1)
+    deg = deg_in + deg_out
+    return deg_in, deg_out, deg
+
+
+def distance_wei_floyd(D):
+    """
+    Computes the shortest path length between all pairs of nodes using
+    Floyd-Warshall algorithm.
+
+    Parameters
+    ----------
+    D : (N, N) array_like
+        Connection length or distance matrix.
+        Please do the weight-to-distance beforehand.
+
+    Returns
+    -------
+    spl_mat : (N, N) array_like
+        Shortest path length matrix
+    p_mat : (N, N) array_like
+        Predecessor matrix returned from `scipy.sparse.csgraph.shortest_path`
+
+    Notes
+    -----
+    This function is a wrapper for `scipy.sparse.csgraph.shortest_path`.
+    There may be more than one shortest path between two nodes, and we
+    only return the first one found by the algorithm.
+
+    References
+    ----------
+    .. [1] Floyd, R. W. (1962). Algorithm 97: shortest path. Communications of
+       the ACM, 5(6), 345.
+    .. [2] Roy, B. (1959). Transitivite et connexite. Comptes Rendus
+       Hebdomadaires Des Seances De L Academie Des Sciences, 249(2), 216-218.
+    .. [3] Warshall, S. (1962). A theorem on boolean matrices. Journal of the
+       ACM (JACM), 9(1), 11-12.
+    .. [4] https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
+
+    See Also
+    --------
+    netneurotools.metrics.retrieve_shortest_paths
+    """
+    spl_mat, p_mat = shortest_path(
+        D, method="FW", directed=False, return_predecessors=True,
+        unweighted=False, overwrite=False
+    )
+    return spl_mat, p_mat
+
+
+def retrieve_shortest_paths(s, t, p_mat):
+    """
+    Returns the shortest paths between two nodes.
+
+    Parameters
+    ----------
+    s : int
+        Source node
+    t : int
+        Target node
+    p_mat : (N, N) array_like
+        Predecessor matrix returned from `distance_wei_floyd`
+
+    Returns
+    -------
+    path : list of int
+        List of nodes in the shortest path from `s` to `t`. If no path
+        exists, returns `[-1]`.
+
+    See Also
+    --------
+    netneurotools.metrics.distance_wei_floyd
+    """
+    if p_mat[s, t] == -9999:
+        return [-1]
+    path = [t]
+    while path[-1] != s:
+        t = p_mat[s, t]
+        path.append(t)
+    return path[::-1]
+
+
+if use_numba:
+    retrieve_shortest_paths = njit(retrieve_shortest_paths)
 
 
 def communicability_bin(adjacency, normalize=False):
