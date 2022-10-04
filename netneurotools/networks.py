@@ -379,8 +379,8 @@ def threshold_network(network, retain=10):
 
 
 def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
-                                    replacement=False, weighted=True,
-                                    seed=None):
+                                     replacement=False, weighted=True,
+                                     seed=None):
     """
     Generates degree- and edge length-preserving surrogate connectomes.
 
@@ -448,7 +448,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     nr = 0
     newB = np.copy(B)
 
-    while((len(cn_x) >= 2) & (nr < nswap)):
+    while ((len(cn_x) >= 2) & (nr < nswap)):
         # choose randomly the edge to be rewired
         r = rs.randint(len(cn_x))
         n_x, n_y = cn_x[r], cn_y[r]
@@ -457,7 +457,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
         # options to rewire with
         # connected nodes that doesn't involve (n_x, n_y)
         index = (cn_x != n_x) & (cn_y != n_y) & (cn_y != n_x) & (cn_x != n_y)
-        if(len(np.where(index)[0]) == 0):
+        if len(np.where(index)[0]) == 0:
             cn_x = np.delete(cn_x, r)
             cn_y = np.delete(cn_y, r)
 
@@ -468,7 +468,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
             # L(n_x,n_y) = L(n_x, ops1_x) & L(ops1_x,ops1_y) = L(n_y, ops1_y)
             index = (L[n_x, n_y] == L[n_x, ops1_x]) & (
                 L[ops1_x, ops1_y] == L[n_y, ops1_y])
-            if(len(np.where(index)[0]) == 0):
+            if len(np.where(index)[0]) == 0:
                 cn_x = np.delete(cn_x, r)
                 cn_y = np.delete(cn_y, r)
 
@@ -479,7 +479,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
                          & (newB[min(n_y, ops2_y[i])][max(n_y,
                                                           ops2_y[i])] == 0)
                          for i in range(len(ops2_x))]
-                if(len(np.where(index)[0]) == 0):
+                if (len(np.where(index)[0]) == 0):
                     cn_x = np.delete(cn_x, r)
                     cn_y = np.delete(cn_y, r)
 
@@ -513,7 +513,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
                         cn_x = np.delete(cn_x, index)
                         cn_y = np.delete(cn_y, index)
 
-    if(nr < nswap):
+    if nr < nswap:
         print(f"I didn't finish, out of rewirable edges: {len(cn_x)}")
 
     i, j = np.triu_indices(N, k=1)
@@ -521,19 +521,19 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     newB[j, i] = newB[i, j]
 
     # check the number of edges is preserved
-    if(len(np.where(B != 0)[0]) != len(np.where(newB != 0)[0])):
+    if len(np.where(B != 0)[0]) != len(np.where(newB != 0)[0]):
         print(
             f"ERROR --- number of edges changed, \
             B:{len(np.where(B!=0)[0])}, newB:{len(np.where(newB!=0)[0])}")
     # check that the degree of the nodes it's the same
     for i in range(N):
-        if(np.sum(B[i]) != np.sum(newB[i])):
+        if np.sum(B[i]) != np.sum(newB[i]):
             print(
                 f"ERROR --- node {i} changed k by: \
                 {np.sum(B[i]) - np.sum(newB[i])}")
 
     newW = np.zeros((N, N))
-    if(weighted):
+    if weighted:
         # Reassign the weights
         mask = np.triu(B != 0, k=1)
         inids = D[mask]
