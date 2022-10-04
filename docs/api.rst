@@ -84,10 +84,13 @@ Python Reference API
    :template: function.rst
    :toctree: generated/
 
+   sort_communities
    plot_mod_heatmap
    plot_conte69
-   plot_point_brain
+   plot_fslr
    plot_fsaverage
+   plot_fsvertex
+   plot_point_brain
 
 .. _ref_stats:
 
@@ -130,6 +133,7 @@ Python Reference API
 
    communicability_bin
    communicability_wei
+   rich_feeder_peripheral
 
 .. _ref_datasets:
 
