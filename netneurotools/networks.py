@@ -378,7 +378,7 @@ def threshold_network(network, retain=10):
     return mst
 
 
-def math_length_degree_distribution(W, D, nbins=10, nswap=1000,
+def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
                                     replacement=False, weighted=True,
                                     seed=None):
     """
