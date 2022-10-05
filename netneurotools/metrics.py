@@ -128,7 +128,7 @@ def distance_wei_floyd(D):
     return spl_mat, p_mat
 
 
-def retrieve_shortest_paths(s, t, p_mat):
+def retrieve_shortest_path(s, t, p_mat):
     """
     Returns the shortest paths between two nodes.
 
