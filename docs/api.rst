@@ -27,6 +27,7 @@ Python Reference API
    struct_consensus
    threshold_network
    binarize_network
+   match_length_degree_distribution
 
 .. _ref_modularity:
 
@@ -131,9 +132,16 @@ Python Reference API
    :template: function.rst
    :toctree: generated/
 
+   _binarize
+   degrees_und
+   degrees_dir
+   distance_wei_floyd
+   retrieve_shortest_paths
    communicability_bin
    communicability_wei
    rich_feeder_peripheral
+   navigation_wu
+   get_navigation_path_length
 
 .. _ref_datasets:
 
@@ -238,3 +246,20 @@ Functions to generate (pseudo-random) datasets
    add_constant
    get_triu
    get_centroids
+
+.. _ref_colors:
+
+:mod:`netneurotools.colors` - Useful colormaps
+--------------------------------------------------------------
+
+.. automodule:: netneurotools.colors
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.colors
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   available_cmaps

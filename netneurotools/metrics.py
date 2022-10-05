@@ -281,8 +281,8 @@ def rich_feeder_peripheral(x, sc, stat='median'):
         compared against peripheral links. Peripheral links are compared
         against feeder links. T-test is one-sided.
 
-    Author
-    ------
+    Notes
+    -----
     This code was written by Justine Hansen who promises to fix and even
     optimize the code should any issues arise, provided you let her know.
     """
