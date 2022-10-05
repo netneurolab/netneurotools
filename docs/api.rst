@@ -136,7 +136,7 @@ Python Reference API
    degrees_und
    degrees_dir
    distance_wei_floyd
-   retrieve_shortest_paths
+   retrieve_shortest_path
    communicability_bin
    communicability_wei
    rich_feeder_peripheral
