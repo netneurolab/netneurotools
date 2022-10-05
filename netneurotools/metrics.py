@@ -119,7 +119,7 @@ def distance_wei_floyd(D):
 
     See Also
     --------
-    netneurotools.metrics.retrieve_shortest_paths
+    netneurotools.metrics.retrieve_shortest_path
     """
     spl_mat, p_mat = shortest_path(
         D, method="FW", directed=False, return_predecessors=True,
@@ -128,7 +128,7 @@ def distance_wei_floyd(D):
     return spl_mat, p_mat
 
 
-def retrieve_shortest_paths(s, t, p_mat):
+def retrieve_shortest_path(s, t, p_mat):
     """
     Returns the shortest paths between two nodes.
 
@@ -161,7 +161,7 @@ def retrieve_shortest_paths(s, t, p_mat):
 
 
 if use_numba:
-    retrieve_shortest_paths = njit(retrieve_shortest_paths)
+    retrieve_shortest_path = njit(retrieve_shortest_path)
 
 
 def communicability_bin(adjacency, normalize=False):
