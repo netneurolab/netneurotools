@@ -18,7 +18,8 @@ if [ -n "${OPTIONAL_DEPENDS}" ]; then
                                     libopengl0 \
                                     libglx0 \
                                     libdbus-1-3 \
-                                    qt5-default
+                                    qtbase5-dev \
+                                    qt5-qmake
         fi
         python -m pip install $DEP || true
     done
