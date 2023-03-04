@@ -6,7 +6,7 @@ from the Brain Connectivity Toolbox (https://sites.google.com/site/bctnet/).
 
 import itertools
 import numpy as np
-from scipy.linalg import expm
+import scipy
 from scipy.stats import ttest_ind
 from scipy.sparse.csgraph import shortest_path
 
@@ -207,7 +207,7 @@ def communicability_bin(adjacency, normalize=False):
         norm = np.linalg.eigvals(adjacency).max()
         adjacency = adjacency / norm
 
-    return expm(adjacency)
+    return scipy.sparse.linalg.expm(adjacency)
 
 
 def communicability_wei(adjacency):
@@ -251,7 +251,7 @@ def communicability_wei(adjacency):
     for_expm = square_sqrt @ adjacency @ square_sqrt
 
     # calculate matrix exponential of normalized matrix
-    cmc = expm(for_expm)
+    cmc = scipy.sparse.linalg.expm(for_expm)
     cmc[np.diag_indices_from(cmc)] = 0
 
     return cmc
@@ -479,3 +479,433 @@ def get_navigation_path_length(nav_paths, alt_dist_mat):
         else:
             nav_path_len[i, j] = np.inf
     return nav_path_len
+
+
+def search_information(W, D, has_memory=False):
+    """
+    Calculates search information.
+
+    This function implements search information, computes the amount
+    of information (measured in bits) that a random walker needs to
+    follow the shortest path between a given pair of nodes.
+
+    This function is adapted and optimized from the Brain Connectivity Toolbox.
+
+    Parameters
+    ----------
+    W : (N, N) ndarray
+        Weighted/unweighted, directed/undirected connection weight matrix.
+    D : (N, N) ndarray
+        Weighted/unweighted, directed/undirected connection length or
+        distance matrix. Please do the weight-to-distance beforehand.
+    has_memory : bool, optional
+        Memory for random walker, Default: False
+
+    Returns
+    -------
+    SI : (N, N) ndarray
+        Pairwise search information matrix. The diagonal is set to NaN.
+        Edges without a valid shortest path are set to np.inf.
+        It is not guaranteed to be symmetric even if input is symmetric.
+
+    References
+    ----------
+    .. [1] Rosvall, M., Trusina, A., Minnhagen, P., & Sneppen, K. (2005).
+       Networks and cities: An information perspective. Physical Review
+       Letters, 94(2), 028701.
+    .. [2] Goñi, J., Van Den Heuvel, M. P., Avena-Koenigsberger,
+       A., Velez de Mendizabal, N., Betzel, R. F., Griffa, A., ... &
+       Sporns, O. (2014). Resting-brain functional connectivity predicted
+       by analytic measures of network communication. Proceedings of the
+       National Academy of Sciences, 111(2), 833-838.
+    """
+    N = len(W)
+
+    is_sym = True if np.allclose(W, W.T) else False
+
+    T = W / np.sum(W, axis=1)[:, None]
+    _, p_mat = distance_wei_floyd(D)
+
+    SI = np.zeros((N, N))
+
+    if is_sym:  # symmetric case
+        for i in range(N):
+            for j in range(i + 1, N):
+                path = retrieve_shortest_path(i, j, p_mat)
+                if path[0] != -1:  # no path, depends on retrieve_shortest_path
+                    if has_memory:
+                        pr_step_ff = \
+                            [0] + [T[i, j] for i, j in zip(path[:-1], path[1:])]
+                        pr_step_bk = \
+                            [T[i, j] for i, j in zip(path[1:], path[:-1])] + [0]
+                        pr_step_ff = [
+                            i / (1 - j)
+                            for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
+                        ]
+                        pr_step_bk = [
+                            i / (1 - j)
+                            for i, j in zip(pr_step_bk[:-1], pr_step_bk[1:])
+                        ]
+                    else:
+                        pr_step_ff = \
+                            [T[i, j] for i, j in zip(path[:-1], path[1:])]
+                        pr_step_bk = \
+                            [T[i, j] for i, j in zip(path[1:], path[:-1])]
+                    SI[i, j] = -np.log2(np.prod(pr_step_ff))
+                    SI[j, i] = -np.log2(np.prod(pr_step_bk))
+                else:
+                    SI[i, j] = np.inf
+                    SI[j, i] = np.inf
+    else:  # asymmetric case
+        for i in range(N):
+            for j in range(N):
+                if i == j:  # skip self connection
+                    continue
+                if path[0] != -1:  # no path, depends on retrieve_shortest_path
+                    if has_memory:
+                        pr_step_ff = \
+                            [0] + [T[i, j] for i, j in zip(path[:-1], path[1:])]
+                        pr_step_ff = [
+                            i / (1 - j)
+                            for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
+                        ]
+                    else:
+                        pr_step_ff = [T[i, j] for i, j in zip(path[:-1], path[1:])]
+                    SI[i, j] = -np.log2(np.prod(pr_step_ff))
+                else:
+                    SI[i, j] = np.inf
+
+    np.fill_diagonal(SI, np.nan)
+
+    return SI
+
+
+def path_transitivity(D):
+    """
+    Calculates path transitivity.
+
+    This function implements path transitivity, calculating the density of
+    local detours (triangles) that are available along the shortest paths
+    between all pairs of nodes.
+
+    This function is adapted and optimized from the Brain Connectivity Toolbox.
+
+    Parameters
+    ----------
+    D : (N, N) ndarray
+        Weight or connection length matrix. Length matrix is recommended and
+        transform should have been applied.
+
+    Returns
+    -------
+    T_mat : (N, N) ndarray
+        Path transitivity matrix
+
+    References
+    ----------
+    .. [1] Goñi, J., Van Den Heuvel, M. P., Avena-Koenigsberger,
+       A., Velez de Mendizabal, N., Betzel, R. F., Griffa, A., ... &
+       Sporns, O. (2014). Resting-brain functional connectivity predicted
+       by analytic measures of network communication. Proceedings of the
+       National Academy of Sciences, 111(2), 833-838.
+    """
+
+    n = len(D)
+    m = np.zeros((n, n))
+    T_mat = np.zeros((n, n))
+
+    deg_wu = np.sum(D, axis=0)
+
+    for i in range(n - 1):
+        for j in range(i + 1, n):
+            sig_and = np.logical_and(D[i, :], D[j, :])
+            m[i, j] = np.dot(D[i, :] + D[j, :], sig_and) \
+                / (deg_wu[i] + deg_wu[j] - 2 * D[i, j])
+    m += m.transpose()
+
+    _, p_mat = distance_wei_floyd(D)
+
+    for i in range(n - 1):
+        for j in range(i + 1, n):
+            path = retrieve_shortest_path(i, j, p_mat)
+            K = len(path)
+            T_mat[i, j] = 2 \
+                * sum([m[i, j] for i, j in itertools.combinations(path, 2)]) \
+                / (K * (K - 1))
+    T_mat += T_mat.transpose()
+
+    return T_mat
+
+
+def flow_graph(W, r=None, t=1):
+    """
+    Calculates flow graph.
+
+    This function implements flow graph, instantiates a continuous
+    time random walk on network. Waiting time for walkers at each
+    node are distributed as Poisson with rate parameter r.
+    This function returns the flow graph at time t.
+
+    Parameters
+    ----------
+    W : (N, N) ndarray
+        Symmetric adjacency matrix.
+    r : (N,) or (N, 1) ndarray, optional
+        Rate parameter. Will be set to np.ones((N, 1)) if not specified.
+        Default: None
+    t : int, optional
+        Markov time. Default: 1
+
+    Returns
+    -------
+    dyn : (N, N) ndarray
+        flow graph at time T
+
+    References
+    ----------
+    .. [1] Lambiotte, R., Sinatra, R., Delvenne, J. C., Evans, T. S.,
+       Barahona, M., & Latora, V. (2011). Flow graphs: Interweaving
+       dynamics and structure. Physical Review E, 84(1), 017102.
+    .. [2] https://github.com/brain-networks/local_scfc/blob/main/fcn/fcn_flow_graph.m
+    """
+    if r is None:
+        r = np.ones((W.shape[0], 1))
+    else:
+        if r.ndim == 1:
+            r = r[:, None]
+    deg_wu = np.sum(W, axis=0, keepdims=True)  # (1, N)
+    deg_rate = np.sum(deg_wu / r, axis=0, keepdims=True)  # (N, N) => (1, N)
+    ps = deg_wu / (deg_rate * r)  # (1, N) / (N, N) => (N, N)
+    laplacian = np.diagflat(r) - np.multiply(np.divide(W, deg_wu), r)  # elementwise
+    dyn = np.multiply(
+        deg_rate * scipy.sparse.linalg.expm(-t * laplacian),
+        ps
+    )  # elementwise
+    dyn = (dyn + dyn.T) / 2
+    return dyn
+
+
+def mean_first_passage_time(W, tol=1e-3):
+    """
+    Calculates mean first passage time.
+
+    The first passage time from i to j is the expected number of steps it takes
+    a random walker starting at node i to arrive for the first time at node j.
+    The mean first passage time is not a symmetric measure: `mfpt(i,j)` may be
+    different from `mfpt(j,i)`.
+
+    This function is adapted and optimized from the Brain Connectivity Toolbox.
+
+    Parameters
+    ----------
+    W : (N x N) ndarray
+        Weighted/unweighted, direct/undirected connection weight/length array
+    tol : float, optional
+        Tolerance for eigenvalue of 1. Default: 1e-3
+
+    Returns
+    -------
+    mfpt : (N x N) ndarray
+        Pairwise mean first passage time array
+
+    References
+    ----------
+    .. [1] Goñi, J., Avena-Koenigsberger, A., Velez de Mendizabal, N.,
+       van den Heuvel, M. P., Betzel, R. F., & Sporns, O. (2013). Exploring the
+       morphospace of communication efficiency in complex networks. PLoS One,
+       8(3), e58070.
+    """
+    P = W / np.sum(W, axis=1)[:, None]  # transition matrix
+    n = len(P)
+    D, V = np.linalg.eig(P.T)
+    D_minidx = np.argmin(np.abs(D - 1))
+
+    if D[D_minidx] > 1 + tol:
+        raise ValueError(
+            f"Cannot find eigenvalue of 1. Minimum eigenvalue is larger than {tol}."
+        )
+
+    w = V[:, D_minidx][None, :]
+    w /= np.sum(w)
+    W_prob = np.real(np.repeat(w, n, 0))
+    Z = np.linalg.inv(np.eye(n) - P + W_prob)  # fundamental matrix
+    mfpt = (np.repeat(np.diag(Z)[None, :], n, 0) - Z) / W_prob
+    return mfpt
+
+
+def diffusion_efficiency(W):
+    """
+    Calculates diffusion efficiency.
+
+    The diffusion efficiency between nodes i and j is the inverse of the
+    mean first passage time from i to j, that is the expected number of
+    steps it takes a random walker starting at node i to arrive for the
+    first time at node j. Note that the mean first passage time is not a
+    symmetric measure -- mfpt(i,j) may be different from mfpt(j,i) -- and
+    the pair-wise diffusion efficiency matrix is hence also not symmetric.
+
+    This function is adapted and optimized from the Brain Connectivity Toolbox.
+
+    Parameters
+    ----------
+    W : (N x N) ndarray
+        Weighted/unweighted, direct/undirected connection weight/length array
+
+    Returns
+    -------
+    GE_diff : float
+        Global diffusion efficiency
+    E_diff : (N x N) ndarray
+        Pair-wise diffusion efficiency array
+
+    References
+    ----------
+    .. [1] Goñi, J., Avena-Koenigsberger, A., Velez de Mendizabal, N.,
+       van den Heuvel, M. P., Betzel, R. F., & Sporns, O. (2013). Exploring the
+       morphospace of communication efficiency in complex networks. PLoS One,
+       8(3), e58070.
+    """
+    n = W.shape[0]
+    mfpt = mean_first_passage_time(W)
+    E_diff = np.divide(1, mfpt)
+    np.fill_diagonal(E_diff, 0.0)
+    GE_diff = np.sum(E_diff) / (n * (n - 1))
+    return GE_diff, E_diff
+
+
+def resource_efficiency_bin(W_bin, lambda_prob=0.5):
+    """
+    Calculates resource efficiency and shortest-path probability.
+
+    The resource efficiency between nodes i and j is inversly proportional
+    to the amount of resources (i.e. number of particles or messages)
+    required to ensure with probability 0 < lambda < 1 that at least one of
+    them will arrive at node j in exactly SPL steps, where SPL is the
+    length of the shortest-path between i and j.
+
+    The shortest-path probability between nodes i and j is the probability
+    that a single random walker starting at node i will arrive at node j by
+    following (one of) the shortest path(s).
+
+    This function is adapted and optimized from the Brain Connectivity Toolbox.
+
+    Parameters
+    ----------
+    W : (N x N) array_like
+        Binary (unweighted) undirected connection matrix.
+    lambda_prob : float, optional
+        Probability of reaching the target node. Default: 0.5
+
+    Returns
+    -------
+    E_res : (N x N) ndarray
+        Resource efficiency array
+    prob_spl : (N x N) ndarray
+        Shortest-path probability array
+
+    References
+    ----------
+    .. [1] Goñi, J., Avena-Koenigsberger, A., Velez de Mendizabal, N.,
+       van den Heuvel, M. P., Betzel, R. F., & Sporns, O. (2013). Exploring the
+       morphospace of communication efficiency in complex networks. PLoS One,
+       8(3), e58070.
+    """
+    W_bin = _binarize(W_bin)
+    if not (0 < lambda_prob < 1):
+        raise ValueError("lambda_prob must be between 0 and 1.")
+
+    N = W_bin.shape[0]
+    spl_mat, _ = distance_wei_floyd(W_bin)
+    spl_mat = spl_mat.astype(int)
+    T = W_bin / np.sum(W_bin, axis=1)[:, None]
+
+    L_unique = np.unique(spl_mat)
+    prob_spl = np.zeros((N, N))
+    z = np.zeros((N, N))
+
+    for L_value in L_unique:
+        if L_value == 0:
+            continue
+        L_locs = (spl_mat == L_value)
+        h_cols = np.where(L_locs)[1]
+        h_vec = np.unique(h_cols)
+
+        prob_aux = np.zeros((N, N))
+        z_aux = np.zeros((N, N))
+        for h_value in h_vec:
+            B_h = T.copy()
+            B_h[h_value, :] = 0
+            B_h[h_value, h_value] = 1
+            B_h_L = np.linalg.matrix_power(B_h, L_value)
+            prob_aux[:, h_value] = B_h_L[:, h_value]
+            z_aux[:, h_value] = np.divide(
+                np.ones((N,)) * np.log(1 - lambda_prob),
+                np.log(1 - B_h_L[:, h_value])
+            )
+
+        prob_aux[~L_locs] = 0
+        prob_spl += prob_aux
+
+        z_aux[~L_locs] = 0
+        z += z_aux
+
+    np.fill_diagonal(prob_spl, 0.0)
+    z[prob_spl == 1] = 1
+    E_res = 1 / z
+    np.fill_diagonal(E_res, 0.0)
+
+    return E_res, prob_spl
+
+
+def matching_ind_und(W):
+    """
+    Calculates undirected matching index.
+
+    M0 = MATCHING_IND_UND(CIJ) computes matching index for undirected
+    graph specified by adjacency matrix CIJ. Matching index is a measure of
+    similarity between two nodes' connectivity profiles (excluding their
+    mutual connection, should it exist).
+
+    This function is adapted and optimized from the Brain Connectivity Toolbox.
+
+    Parameters
+    ----------
+    W : (N x N) ndarray
+        Undirected connection matrix.
+
+    Returns
+    -------
+    M0 : (N x N) ndarray
+        Matching index matrix
+
+    References
+    ----------
+    .. [1] Goñi, J., Van Den Heuvel, M. P., Avena-Koenigsberger,
+    A., Velez de Mendizabal, N., Betzel, R. F., Griffa, A., ... &
+    Sporns, O. (2014). Resting-brain functional connectivity predicted
+    by analytic measures of network communication. Proceedings of the
+    National Academy of Sciences, 111(2), 833-838.
+    """
+    n = W.shape[0]
+    K = np.sum(W, axis=0)
+    R_ind = np.nonzero(K)[0]
+    N = len(R_ind)
+    CIJ = W[np.ix_(R_ind, R_ind)]
+    M = np.zeros((N, N))
+
+    for i in range(N):
+        c1 = CIJ[i, :]
+        use = np.logical_or(c1 > 0, CIJ > 0)
+        use[:, i] = False
+        np.fill_diagonal(use, False)
+
+        ncon = np.sum((c1 + CIJ) * use, axis=1)
+        ncon_and = np.logical_and(np.logical_and(c1 > 0, CIJ > 0), use)
+        ncon_and_sum = np.sum(ncon_and, axis=1)
+        M[:, i] = 2 * ncon_and_sum / ncon
+
+    np.fill_diagonal(M, 0)
+    M[np.isnan(M)] = 0
+    M0 = np.zeros((n, n))
+    M0[np.ix_(R_ind, R_ind)] = M
+    return M0
