@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for working with CIVET data (ugh)
-"""
+"""Functions for working with CIVET data (ugh)."""
 
 import nibabel as nib
 import numpy as np
@@ -17,7 +15,7 @@ _MNI305to152 = np.array([[0.9975, -0.0073, 0.0176, -0.0429],
 
 def read_civet(fname):
     """
-    Reads a CIVET-style .obj geometry file
+    Read a CIVET-style .obj geometry file.
 
     Parameters
     ----------
@@ -29,7 +27,6 @@ def read_civet(fname):
     vertices : (N, 3)
     triangles : (T, 3)
     """
-
     k, polygons = 0, []
     with open(fname, 'r') as src:
         n_vert = int(src.readline().split()[6])
@@ -52,7 +49,7 @@ def civet_to_freesurfer(brainmap, surface='mid', version='v1',
                         freesurfer='fsaverage6', method='nearest',
                         data_dir=None):
     """
-    Projects `brainmap` in CIVET space to `freesurfer` fsaverage space
+    Project `brainmap` in CIVET space to `freesurfer` fsaverage space.
 
     Uses a nearest-neighbor projection based on the geometry of the vertices
 
@@ -81,7 +78,6 @@ def civet_to_freesurfer(brainmap, surface='mid', version='v1',
     data : np.ndarray
         Provided `brainmap` mapped to FreeSurfer
     """
-
     brainmap = np.asarray(brainmap)
     densities = (81924, 327684)
     n_vert = brainmap.shape[0]

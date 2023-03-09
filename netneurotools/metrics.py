@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Functions for calculating network metrics. Uses naming conventions adopted
-from the Brain Connectivity Toolbox (https://sites.google.com/site/bctnet/).
+Functions for calculating network metrics.
+
+Uses naming conventions adopted from the Brain Connectivity
+Toolbox (https://sites.google.com/site/bctnet/).
 """
 
 import itertools
@@ -19,7 +21,7 @@ except ImportError:
 
 def _binarize(W):
     """
-    Binarizes a matrix
+    Binarize a matrix.
 
     Parameters
     ----------
@@ -40,7 +42,7 @@ if use_numba:
 
 def degrees_und(W):
     """
-    Computes the degree of each node in `W`
+    Compute the degree of each node in `W`.
 
     Parameters
     ----------
@@ -59,7 +61,7 @@ def degrees_und(W):
 
 def degrees_dir(W):
     """
-    Computes the in degree and out degree of each node in `W`
+    Compute the in degree and out degree of each node in `W`.
 
     Parameters
     ----------
@@ -85,8 +87,7 @@ def degrees_dir(W):
 
 def distance_wei_floyd(D):
     """
-    Computes the shortest path length between all pairs of nodes using
-    Floyd-Warshall algorithm.
+    Compute the all-pairs shortest path length using Floyd-Warshall algorithm.
 
     Parameters
     ----------
@@ -130,7 +131,7 @@ def distance_wei_floyd(D):
 
 def retrieve_shortest_path(s, t, p_mat):
     """
-    Returns the shortest paths between two nodes.
+    Return the shortest paths between two nodes.
 
     Parameters
     ----------
@@ -166,7 +167,7 @@ if use_numba:
 
 def communicability_bin(adjacency, normalize=False):
     """
-    Computes the communicability of pairs of nodes in `adjacency`
+    Compute the communicability of pairs of nodes in `adjacency`.
 
     Parameters
     ----------
@@ -197,7 +198,6 @@ def communicability_bin(adjacency, normalize=False):
            [1.47624622, 2.71828183, 3.19452805],
            [3.19452805, 0.        , 4.19452805]])
     """
-
     if not np.any(np.logical_or(adjacency == 0, adjacency == 1)):
         raise ValueError('Provided adjancecy matrix must be unweighted.')
 
@@ -212,7 +212,7 @@ def communicability_bin(adjacency, normalize=False):
 
 def communicability_wei(adjacency):
     """
-    Computes the communicability of pairs of nodes in `adjacency`
+    Compute the communicability of pairs of nodes in `adjacency`.
 
     Parameters
     ----------
@@ -241,7 +241,6 @@ def communicability_wei(adjacency):
            [0.07810379, 0.        , 0.94712177],
            [0.32263651, 0.        , 0.        ]])
     """
-
     # negative square root of nodal degrees
     row_sum = adjacency.sum(1)
     neg_sqrt = np.power(row_sum, -0.5)
@@ -259,7 +258,7 @@ def communicability_wei(adjacency):
 
 def rich_feeder_peripheral(x, sc, stat='median'):
     """
-    Calculates connectivity values in rich, feeder, and peripheral edges.
+    Calculate connectivity values in rich, feeder, and peripheral edges.
 
     Parameters
     ----------
@@ -286,7 +285,6 @@ def rich_feeder_peripheral(x, sc, stat='median'):
     This code was written by Justine Hansen who promises to fix and even
     optimize the code should any issues arise, provided you let her know.
     """
-
     stats = ['mean', 'median']
     if stat not in stats:
         raise ValueError(f'Provided stat {stat} not valid.\
@@ -342,7 +340,7 @@ def rich_feeder_peripheral(x, sc, stat='median'):
 
 def navigation_wu(nav_dist_mat, sc_mat):
     """
-    Computes network navigation
+    Compute network navigation.
 
     Parameters
     ----------
@@ -383,7 +381,6 @@ def navigation_wu(nav_dist_mat, sc_mat):
     --------
     netneurotools.metrics.get_navigation_path_length
     """
-
     nav_paths = []  # (source, target, distance, hops, path)
     # navigate to the node that is closest to target
     for src in range(len(nav_dist_mat)):
@@ -442,7 +439,7 @@ def navigation_wu(nav_dist_mat, sc_mat):
 
 def get_navigation_path_length(nav_paths, alt_dist_mat):
     """
-    Get navigation path length from navigation results
+    Get navigation path length from navigation results.
 
     Parameters
     ----------
@@ -468,7 +465,6 @@ def get_navigation_path_length(nav_paths, alt_dist_mat):
     --------
     netneurotools.metrics.navigation_wu
     """
-
     nav_path_len = np.zeros_like(alt_dist_mat)
     for nav_item in nav_paths:
         i, j, _, hop, path = nav_item
@@ -483,7 +479,7 @@ def get_navigation_path_length(nav_paths, alt_dist_mat):
 
 def search_information(W, D, has_memory=False):
     """
-    Calculates search information.
+    Calculate search information.
 
     This function implements search information, computes the amount
     of information (measured in bits) that a random walker needs to
@@ -585,7 +581,7 @@ def search_information(W, D, has_memory=False):
 
 def path_transitivity(D):
     """
-    Calculates path transitivity.
+    Calculate path transitivity.
 
     This function implements path transitivity, calculating the density of
     local detours (triangles) that are available along the shortest paths
@@ -615,7 +611,6 @@ def path_transitivity(D):
        by analytic measures of network communication. Proceedings of the
        National Academy of Sciences, 111(2), 833-838.
     """
-
     n = len(D)
     m = np.zeros((n, n))
     T_mat = np.zeros((n, n))
@@ -645,7 +640,7 @@ def path_transitivity(D):
 
 def flow_graph(W, r=None, t=1):
     """
-    Calculates flow graph.
+    Calculate flow graph.
 
     This function implements flow graph, instantiates a continuous
     time random walk on network. Waiting time for walkers at each
@@ -696,7 +691,7 @@ def flow_graph(W, r=None, t=1):
 
 def mean_first_passage_time(W, tol=1e-3):
     """
-    Calculates mean first passage time.
+    Calculate mean first passage time.
 
     The first passage time from i to j is the expected number of steps it takes
     a random walker starting at node i to arrive for the first time at node j.
@@ -747,7 +742,7 @@ def mean_first_passage_time(W, tol=1e-3):
 
 def diffusion_efficiency(W):
     """
-    Calculates diffusion efficiency.
+    Calculate diffusion efficiency.
 
     The diffusion efficiency between nodes i and j is the inverse of the
     mean first passage time from i to j, that is the expected number of
@@ -790,7 +785,7 @@ def diffusion_efficiency(W):
 
 def resource_efficiency_bin(W_bin, lambda_prob=0.5):
     """
-    Calculates resource efficiency and shortest-path probability.
+    Calculate resource efficiency and shortest-path probability.
 
     The resource efficiency between nodes i and j is inversly proportional
     to the amount of resources (i.e. number of particles or messages)
@@ -877,7 +872,7 @@ def resource_efficiency_bin(W_bin, lambda_prob=0.5):
 
 def matching_ind_und(W):
     """
-    Calculates undirected matching index.
+    Calculate undirected matching index.
 
     M0 = MATCHING_IND_UND(CIJ) computes matching index for undirected
     graph specified by adjacency matrix CIJ. Matching index is a measure of

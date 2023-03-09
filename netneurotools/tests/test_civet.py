@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-For testing netneurotools.civet functionality
-"""
+"""For testing netneurotools.civet functionality."""
 
 import numpy as np
 import pytest

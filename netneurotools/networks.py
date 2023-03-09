@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for generating group-level networks from individual measurements
-"""
+"""Functions for generating group-level networks from individual measurements."""
 
 import numpy as np
 from scipy.sparse import csgraph
@@ -19,7 +17,7 @@ except ImportError:
 
 def func_consensus(data, n_boot=1000, ci=95, seed=None):
     """
-    Calculates thresholded group consensus functional connectivity graph
+    Calculate thresholded group consensus functional connectivity graph.
 
     This function concatenates all time series in `data` and computes a group
     correlation matrix based on this extended time series. It then generates
@@ -57,7 +55,6 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
     competitive spreading dynamics on the human connectome. Neuron, 86(6),
     1518-1529.
     """
-
     # check inputs
     rs = check_random_state(seed)
     if ci > 100 or ci < 0:
@@ -112,7 +109,7 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
 def _ecdf(data):
     """
-    Estimates empirical cumulative distribution function of `data`
+    Estimate empirical cumulative distribution function of `data`.
 
     Taken directly from StackOverflow. See original answer at
     https://stackoverflow.com/questions/33345780.
@@ -128,7 +125,6 @@ def _ecdf(data):
     quantiles : numpy.darray
         Quantiles
     """
-
     sample = np.atleast_1d(data)
 
     # find the unique values and their corresponding counts
@@ -146,7 +142,7 @@ def _ecdf(data):
 
 def struct_consensus(data, distance, hemiid, weighted=False):
     """
-    Calculates distance-dependent group consensus structural connectivity graph
+    Calculate distance-dependent group consensus structural connectivity graph.
 
     Takes as input a weighted stack of connectivity matrices with dimensions
     (N, N, S) where `N` is the number of nodes and `S` is the number of
@@ -199,7 +195,6 @@ def struct_consensus(data, distance, hemiid, weighted=False):
     dependent consensus thresholds for generating group-representative
     structural brain networks. Network Neuroscience, 1-22.
     """
-
     # confirm input shapes are as expected
     check_consistent_length(data, distance, hemiid)
     try:
@@ -288,7 +283,7 @@ def struct_consensus(data, distance, hemiid, weighted=False):
 
 def binarize_network(network, retain=10, keep_diag=False):
     """
-    Keeps top `retain` % of connections in `network` and binarizes
+    Keep top `retain` % of connections in `network` and binarizes.
 
     Uses the upper triangle for determining connection percentage, which may
     result in disconnected nodes. If this behavior is not desired see
@@ -312,7 +307,6 @@ def binarize_network(network, retain=10, keep_diag=False):
     --------
     netneurotools.networks.threshold_network
     """
-
     if retain < 0 or retain > 100:
         raise ValueError('Value provided for `retain` is outside [0, 100]: {}'
                          .format(retain))
@@ -330,7 +324,7 @@ def binarize_network(network, retain=10, keep_diag=False):
 
 def threshold_network(network, retain=10):
     """
-    Keeps top `retain` % of connections in `network` and binarizes
+    Keep top `retain` % of connections in `network` and binarizes.
 
     Uses a minimum spanning tree to ensure that no nodes are disconnected from
     the resulting thresholded graph
@@ -351,7 +345,6 @@ def threshold_network(network, retain=10):
     --------
     netneurotools.networks.binarize_network
     """
-
     if retain < 0 or retain > 100:
         raise ValueError('Value provided for `retain` must be a percent '
                          'in range [0, 100]. Provided: {}'.format(retain))
@@ -388,7 +381,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
                                      replacement=False, weighted=True,
                                      seed=None):
     """
-    Generates degree- and edge length-preserving surrogate connectomes.
+    Generate degree- and edge length-preserving surrogate connectomes.
 
     Parameters
     ----------
@@ -433,7 +426,6 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     long-distance connections in weighted, interareal connectomes. PNAS.
 
     """
-
     rs = check_random_state(seed)
     N = len(W)
     # divide the distances by lengths
@@ -564,7 +556,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
 
 def randmio_und(W, itr):
     """
-    Optimized version of randmio_und
+    Optimized version of randmio_und.
 
     This function randomizes an undirected network, while preserving the
     degree distribution. The function does not preserve the strength
@@ -587,7 +579,6 @@ def randmio_und(W, itr):
     eff : int
         number of actual rewirings carried out
     """  # noqa: E501
-
     W = W.copy()
     n = len(W)
     i, j = np.where(np.triu(W > 0, 1))

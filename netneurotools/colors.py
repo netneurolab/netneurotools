@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Useful colormaps
-"""
+"""Useful colormaps."""
 
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 
@@ -90,16 +88,12 @@ dinosaur = LinearSegmentedColormap.from_list(
 
 
 def available_cmaps():
-    """ Returns list of available colormaps in module
-    """
-
+    """Return list of available colormaps in module."""
     return __all__.copy()
 
 
 def _register_cmaps():
-    """ Registers all colormaps in module so they are accessible via matplotlib
-    """
-
+    """Register all colormaps in module so they are accessible via matplotlib."""
     from matplotlib.cm import register_cmap
 
     for cmap in __all__:

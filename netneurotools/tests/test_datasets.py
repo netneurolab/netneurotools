@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-For testing netneurotools.datasets functionality
-"""
+"""For testing netneurotools.datasets functionality."""
 
 import os
 

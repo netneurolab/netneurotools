@@ -1,8 +1,6 @@
 
 # -*- coding: utf-8 -*-
-"""
-Functions for making "random" datasets
-"""
+"""Functions for making "random" datasets."""
 
 import numpy as np
 from sklearn.utils.validation import check_random_state
@@ -10,7 +8,7 @@ from sklearn.utils.validation import check_random_state
 
 def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     """
-    Generates random vectors that are correlated to approximately `corr`
+    Generate random vectors that are correlated to approximately `corr`.
 
     Parameters
     ----------
@@ -61,7 +59,6 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
            [0.50965273, 1.        , 0.01089107],
            [0.30235686, 0.01089107, 1.        ]])
     """
-
     rs = check_random_state(seed)
 
     # no correlations outside [-1, 1] bounds

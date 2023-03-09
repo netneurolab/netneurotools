@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""For testing netneurotools.modularity functionality."""
 
 import numpy as np
 
@@ -35,8 +36,7 @@ def test_zrand_partitions():
     # make random communities
     comm = rs.choice(range(6), size=(10, 100))
     all_diff = modularity._zrand_partitions(comm)
-    all_same = modularity._zrand_partitions(np.repeat(comm[:, [0]], 10,
-                                                      axis=1))
+    all_same = modularity._zrand_partitions(np.repeat(comm[:, [0]], 10, axis=1))
 
     # partition of labels that are all the same should have higher average
     # zrand and lower stdev zrand
