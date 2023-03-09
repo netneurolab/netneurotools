@@ -491,6 +491,9 @@ def search_information(W, D, has_memory=False):
 
     This function is adapted and optimized from the Brain Connectivity Toolbox.
 
+    .. warning::
+       Test before use.
+
     Parameters
     ----------
     W : (N, N) ndarray
@@ -590,6 +593,9 @@ def path_transitivity(D):
 
     This function is adapted and optimized from the Brain Connectivity Toolbox.
 
+    .. warning::
+       Test before use.
+
     Parameters
     ----------
     D : (N, N) ndarray
@@ -646,6 +652,9 @@ def flow_graph(W, r=None, t=1):
     node are distributed as Poisson with rate parameter r.
     This function returns the flow graph at time t.
 
+    .. warning::
+       Test before use.
+
     Parameters
     ----------
     W : (N, N) ndarray
@@ -695,6 +704,9 @@ def mean_first_passage_time(W, tol=1e-3):
     different from `mfpt(j,i)`.
 
     This function is adapted and optimized from the Brain Connectivity Toolbox.
+
+    .. warning::
+       Test before use.
 
     Parameters
     ----------
@@ -746,6 +758,9 @@ def diffusion_efficiency(W):
 
     This function is adapted and optimized from the Brain Connectivity Toolbox.
 
+    .. warning::
+       Test before use.
+
     Parameters
     ----------
     W : (N x N) ndarray
@@ -788,6 +803,9 @@ def resource_efficiency_bin(W_bin, lambda_prob=0.5):
     following (one of) the shortest path(s).
 
     This function is adapted and optimized from the Brain Connectivity Toolbox.
+
+    .. warning::
+       Test before use.
 
     Parameters
     ----------
@@ -868,6 +886,9 @@ def matching_ind_und(W):
 
     This function is adapted and optimized from the Brain Connectivity Toolbox.
 
+    .. warning::
+       Test before use.
+
     Parameters
     ----------
     W : (N x N) ndarray
@@ -881,10 +902,10 @@ def matching_ind_und(W):
     References
     ----------
     .. [1] Goñi, J., Van Den Heuvel, M. P., Avena-Koenigsberger,
-    A., Velez de Mendizabal, N., Betzel, R. F., Griffa, A., ... &
-    Sporns, O. (2014). Resting-brain functional connectivity predicted
-    by analytic measures of network communication. Proceedings of the
-    National Academy of Sciences, 111(2), 833-838.
+       A., Velez de Mendizabal, N., Betzel, R. F., Griffa, A., ... &
+       Sporns, O. (2014). Resting-brain functional connectivity predicted
+       by analytic measures of network communication. Proceedings of the
+       National Academy of Sciences, 111(2), 833-838.
     """
     n = W.shape[0]
     K = np.sum(W, axis=0)
