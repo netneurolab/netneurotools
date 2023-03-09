@@ -325,8 +325,8 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
         to parcels defined in `netneurotools.freesurfer.FSIGNORE` will be
         removed. Default: None
 
-    Reurns
-    ------
+    Returns
+    -------
     reduced : numpy.ndarray
         Parcellated `data`, without regions specified in `drop`
     """
