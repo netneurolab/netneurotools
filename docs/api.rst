@@ -28,6 +28,7 @@ Python Reference API
    threshold_network
    binarize_network
    match_length_degree_distribution
+   randmio_und
 
 .. _ref_modularity:
 
@@ -142,6 +143,13 @@ Python Reference API
    rich_feeder_peripheral
    navigation_wu
    get_navigation_path_length
+   search_information
+   path_transitivity
+   flow_graph
+   mean_first_passage_time
+   diffusion_efficiency
+   resource_efficiency_bin
+   matching_ind_und
 
 .. _ref_datasets:
 

@@ -10,6 +10,12 @@ from sklearn.utils.validation import (check_random_state, check_array,
 
 from . import utils
 
+try:
+    from numba import njit
+    use_numba = True
+except ImportError:
+    use_numba = False
+
 
 def func_consensus(data, n_boot=1000, ci=95, seed=None):
     """
@@ -554,3 +560,91 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
         newW[j_sort, i_sort] = iniws
 
     return newB, newW, nr
+
+
+def randmio_und(W, itr):
+    '''
+    randomio_und
+
+    This function randomizes an undirected network, while preserving the
+    degree distribution. The function does not preserve the strength
+    distribution in weighted networks.
+
+    This function is significantly faster if numba is enabled, because
+    the main overhead is `np.random.randint`, see `here <https://stackoverflow.com/questions/58124646/why-in-python-is-random-randint-so-much-slower-than-random-random>`_
+
+    Parameters
+    ----------
+    W : (N, N) array-like
+        Undirected binary/weighted connection matrix
+    itr : int
+        rewiring parameter. Each edge is rewired approximately itr times.
+
+    Returns
+    -------
+    W : (N, N) array-like
+        Randomized network
+    eff : int
+        number of actual rewirings carried out
+    '''  # noqa: E501
+
+    W = W.copy()
+    n = len(W)
+    i, j = np.where(np.triu(W > 0, 1))
+    k = len(i)
+    itr *= k
+
+    # maximum number of rewiring attempts per iteration
+    max_attempts = np.round(n * k / (n * (n - 1)))
+    # actual number of successful rewirings
+    eff = 0
+
+    for _ in range(int(itr)):
+        att = 0
+        while att <= max_attempts:  # while not rewired
+            while True:
+                e1, e2 = np.random.randint(k), np.random.randint(k)
+                while e1 == e2:
+                    e2 = np.random.randint(k)
+                a, b = i[e1], j[e1]
+                c, d = i[e2], j[e2]
+
+                if a != c and a != d and b != c and b != d:
+                    break  # all 4 vertices must be different
+
+            # flip edge c-d with 50% probability
+            # to explore all potential rewirings
+            if np.random.random() > .5:
+                i[e2], j[e2] = d, c
+                c, d = d, c
+
+            # rewiring condition
+            # not flipped
+            # a--b    a  b
+            #      TO  X
+            # c--d    c  d
+            # if flipped
+            # a--b    a--b    a  b
+            #      TO      TO  X
+            # c--d    d--c    d  c
+            if not (W[a, d] or W[c, b]):
+                W[a, d] = W[a, b]
+                W[a, b] = 0
+                W[d, a] = W[b, a]
+                W[b, a] = 0
+                W[c, b] = W[c, d]
+                W[c, d] = 0
+                W[b, c] = W[d, c]
+                W[d, c] = 0
+
+                j[e1] = d
+                j[e2] = b  # reassign edge indices
+                eff += 1
+                break
+            att += 1
+
+    return W, eff
+
+
+if use_numba:
+    randmio_und = njit(randmio_und)
