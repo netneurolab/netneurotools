@@ -563,7 +563,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
 
 
 def randmio_und(W, itr):
-    '''
+    """
     Optimized version of randmio_und
 
     This function randomizes an undirected network, while preserving the
@@ -586,7 +586,7 @@ def randmio_und(W, itr):
         Randomized network
     eff : int
         number of actual rewirings carried out
-    '''  # noqa: E501
+    """  # noqa: E501
 
     W = W.copy()
     n = len(W)

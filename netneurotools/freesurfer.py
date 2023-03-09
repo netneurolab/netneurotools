@@ -225,7 +225,7 @@ def _geodesic_parcel_centroid(vertices, faces, inds):
         Indices of `vertices` that belong to parcel
 
     Returns
-    --------
+    -------
     roi : (3,) numpy.ndarray
         Vertex corresponding to centroid of parcel
     """
@@ -264,8 +264,8 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
         not specified, parcels defined in `netneurotools.freesurfer.FSIGNORE`
         are assumed to not be present. Default: None
 
-    Reurns
-    ------
+    Returns
+    -------
     projected : numpy.ndarray
         Vertex-level data
     """
