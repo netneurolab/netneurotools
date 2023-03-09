@@ -6,8 +6,8 @@ usage in the `Network Neuroscience Lab <netneurolab.github.io/>`_, housed in
 the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
 
-.. image:: https://travis-ci.org/netneurolab/netneurotools.svg?branch=master
-   :target: https://travis-ci.org/netneurolab/netneurotools
+.. image:: https://github.com/netneurolab/netneurotools/actions/workflows/tests.yml/badge.svg
+   :target: https://github.com/netneurolab/netneurotools/actions
 .. image:: https://codecov.io/gh/netneurolab/netneurotools/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/netneurolab/netneurotools
 .. image:: https://readthedocs.org/projects/netneurotools/badge/?version=latest

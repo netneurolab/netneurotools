@@ -564,7 +564,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
 
 def randmio_und(W, itr):
     '''
-    randomio_und
+    Optimized version of randmio_und
 
     This function randomizes an undirected network, while preserving the
     degree distribution. The function does not preserve the strength
