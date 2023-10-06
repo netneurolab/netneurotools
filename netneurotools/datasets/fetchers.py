@@ -648,7 +648,8 @@ def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
         Filepath to standard_mesh_atlases directory
     """
     if url is None:
-        url = 'http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip'
+        url = 'https://web.archive.org/web/20220121035833/' + \
+              'http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip'
     dataset_name = 'standard_mesh_atlases'
     data_dir = _get_data_dir(data_dir=data_dir)
     opts = {
