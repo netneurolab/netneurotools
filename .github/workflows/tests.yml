@@ -54,7 +54,7 @@ jobs:
       - name: Print netneurotools version
         run: python -c "import netneurotools; print(netneurotools.__version__)" 
       - name: Run tests
-        run: pytest --doctest-modules --cov netneurotools --cov-report xml --juintxml=junit/test-results.xml --verbose --pyargs netneurotools
+        run: pytest --doctest-modules --cov=netneurotools --cov-report=xml --juintxml=junit/test-results.xml --verbose --pyargs netneurotools
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
