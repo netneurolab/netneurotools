@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for working with network modularity
-"""
+"""Functions for working with network modularity."""
 
 import bct
 import numpy as np
@@ -19,7 +17,7 @@ except ImportError:
 def consensus_modularity(adjacency, gamma=1, B='modularity',
                          repeats=250, null_func=np.mean, seed=None):
     """
-    Finds community assignments from `adjacency` through consensus
+    Find community assignments from `adjacency` through consensus.
 
     Performs `repeats` iterations of community detection on `adjacency` and
     then uses consensus clustering on the resulting community assignments.
@@ -60,7 +58,6 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
     structure in networks. Chaos: An Interdisciplinary Journal of Nonlinear
     Science, 23(1), 013142.
     """
-
     # generate community partitions `repeat` times
     comms, Q_all = zip(*[bct.community_louvain(adjacency, gamma=gamma, B=B)
                          for i in range(repeats)])
@@ -77,7 +74,7 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
 
 def _dummyvar(labels):
     """
-    Generates dummy-coded array from provided community assignment `labels`
+    Generate dummy-coded array from provided community assignment `labels`.
 
     Parameters
     ----------
@@ -89,7 +86,6 @@ def _dummyvar(labels):
     ci : (N, G) numpy.ndarray
         Dummy-coded array where 1 indicates that a sample belongs to a group
     """
-
     comms = np.unique(labels)
 
     ci = np.zeros((len(labels), len(comms)))
@@ -101,7 +97,7 @@ def _dummyvar(labels):
 
 def zrand(X, Y):
     """
-    Calculates the z-Rand index of two community assignments
+    Calculate the z-Rand index of two community assignments.
 
     Parameters
     ----------
@@ -119,7 +115,6 @@ def zrand(X, Y):
     (2011). Comparing Community Structure to Characteristics in Online
     Collegiate Social Networks. SIAM Review, 53, 526-543.
     """
-
     if X.ndim > 1 or Y.ndim > 1:
         if X.shape[-1] > 1 or Y.shape[-1] > 1:
             raise ValueError('X and Y must have only one-dimension each. '
@@ -161,7 +156,7 @@ def zrand(X, Y):
 
 def _zrand_partitions(communities):
     """
-    Calculates z-Rand for all pairs of assignments in `communities`
+    Calculate z-Rand for all pairs of assignments in `communities`.
 
     Iterates through every pair of community assignment vectors in
     `communities` and calculates the z-Rand score to assess their similarity.
@@ -176,7 +171,6 @@ def _zrand_partitions(communities):
     all_zrand : array_like
         z-Rand score over all pairs of `R` partitions of community assignments
     """
-
     n_partitions = communities.shape[-1]
     all_zrand = np.zeros(int(n_partitions * (n_partitions - 1) / 2))
 
@@ -196,7 +190,7 @@ if use_numba:
 
 def get_modularity(adjacency, comm, gamma=1):
     """
-    Calculates modularity contribution for each community in `comm`
+    Calculate modularity contribution for each community in `comm`.
 
     Parameters
     ----------
@@ -218,7 +212,6 @@ def get_modularity(adjacency, comm, gamma=1):
     netneurotools.modularity.get_modularity_z
     netneurotools.modularity.get_modularity_sig
     """
-
     adjacency, comm = np.asarray(adjacency), np.asarray(comm)
     s = adjacency.sum()
     B = adjacency - (gamma * np.outer(adjacency.sum(axis=1),
@@ -236,7 +229,7 @@ def get_modularity(adjacency, comm, gamma=1):
 
 def get_modularity_z(adjacency, comm, gamma=1, n_perm=10000, seed=None):
     """
-    Calculates average z-score of community assignments by permutation
+    Calculate average z-score of community assignments by permutation.
 
     Parameters
     ----------
@@ -262,7 +255,6 @@ def get_modularity_z(adjacency, comm, gamma=1, n_perm=10000, seed=None):
     netneurotools.modularity.get_modularity
     netneurotools.modularity.get_modularity_sig
     """
-
     rs = check_random_state(seed)
 
     real_qs = get_modularity(adjacency, comm, gamma)
@@ -283,7 +275,7 @@ def get_modularity_z(adjacency, comm, gamma=1, n_perm=10000, seed=None):
 def get_modularity_sig(adjacency, comm, gamma=1, n_perm=10000, alpha=0.01,
                        seed=None):
     """
-    Calculates signifiance of community assignments in `comm` by permutation
+    Calculate significance of community assignments in `comm` by permutation.
 
     Parameters
     ----------
@@ -296,7 +288,7 @@ def get_modularity_sig(adjacency, comm, gamma=1, n_perm=10000, alpha=0.01,
     n_perm : int, optional
         Number of permutations to test against. Default: 10000
     alpha : (0,1) float, optional
-        Alpha level to assess signifiance. Default: 0.01
+        Alpha level to assess significance. Default: 0.01
     seed : {int, np.random.RandomState instance, None}, optional
         Seed for random number generation. Default: None
 
@@ -310,7 +302,6 @@ def get_modularity_sig(adjacency, comm, gamma=1, n_perm=10000, alpha=0.01,
     netneurotools.modularity.get_modularity_z
     netneurotools.modularity.get_modularity_sig
     """
-
     rs = check_random_state(seed)
 
     real_qs = get_modularity(adjacency, comm, gamma)

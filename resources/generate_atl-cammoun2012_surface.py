@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Generate surface annotation files for Cammoun et al., 2012 parcellation.
+
 This script was used to generate the FreeSurfer-style surface annotation files
 for the Cammoun et al., 2012 parcellation provided via `netneurotools`.
 
@@ -44,7 +46,7 @@ HCPCMD = 'wb_command -label-resample {annot} ' \
 def combine_cammoun_500(lhannot, rhannot, subject_id, annot=None,
                         subjects_dir=None, use_cache=True, quiet=False):
     """
-    Combines finest parcellation from Cammoun et al., 2012 for `subject_id`
+    Combine finest parcellation from Cammoun et al., 2012 for `subject_id`.
 
     The parcellations from Cammoun et al., 2012 have five distinct scales; the
     highest resolution parcellation (scale 500) is split into three GCS files
@@ -82,7 +84,6 @@ def combine_cammoun_500(lhannot, rhannot, subject_id, annot=None,
     cammoun500 : list
         List of created annotation files
     """
-
     tolabel = 'mri_annotation2label --subject {subject_id} --hemi {hemi} ' \
               '--outdir {label_dir} --annotation {annot} --sd {subjects_dir}'
     toannot = 'mris_label2annot --sd {subjects_dir} --s {subject_id} ' \

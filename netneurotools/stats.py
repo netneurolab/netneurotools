@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for performing statistical preprocessing and analyses
-"""
+"""Functions for performing statistical preprocessing and analyses."""
 
 import warnings
 
@@ -21,7 +19,7 @@ from . import utils
 
 def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
     """
-    Returns residuals of regression equation from `Y ~ X`
+    Return residuals of regression equation from `Y ~ X`.
 
     Parameters
     ----------
@@ -52,7 +50,6 @@ def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
     If both `Xc` and `Yc` are provided, these are used to calculate betas which
     are then applied to `X` and `Y`.
     """
-
     if ((Yc is None and Xc is not None) or (Yc is not None and Xc is None)):
         raise ValueError('If processing against a comparative group, you must '
                          'provide both `Xc` and `Yc`.')
@@ -86,7 +83,7 @@ def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
 
 def get_mad_outliers(data, thresh=3.5):
     """
-    Determines which samples in `data` are outliers
+    Determine which samples in `data` are outliers.
 
     Uses the Median Absolute Deviation for determining whether datapoints are
     outliers
@@ -133,7 +130,6 @@ def get_mad_outliers(data, thresh=3.5):
     >>> outliers
     array([False, False,  True])
     """
-
     data = np.asarray(data)
 
     if data.ndim == 1:
@@ -153,7 +149,7 @@ def get_mad_outliers(data, thresh=3.5):
 
 def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
     """
-    Non-parametric equivalent of :py:func:`scipy.stats.ttest_1samp`
+    Non-parametric equivalent of :py:func:`scipy.stats.ttest_1samp`.
 
     Generates two-tailed p-value for hypothesis of whether `a` differs from
     `popmean` using permutation tests
@@ -213,7 +209,6 @@ def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
     >>> stats.permtest_1samp(rvs.T, [5.0, 0.0], axis=1)
     (array([-0.985602  ,  4.94795031]), array([0.51548452, 0.000999  ]))
     """
-
     a, popmean, axis = _chk2_asarray(a, popmean, axis)
     rs = check_random_state(seed)
 
@@ -243,7 +238,7 @@ def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
 
 def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
     """
-    Non-parametric equivalent of :py:func:`scipy.stats.ttest_rel`
+    Non-parametric equivalent of :py:func:`scipy.stats.ttest_rel`.
 
     Generates two-tailed p-value for hypothesis of whether related samples `a`
     and `b` differ using permutation tests
@@ -291,7 +286,6 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
     >>> stats.permtest_rel(rvs1, rvs3)  # doctest: +SKIP
     (2.40533726097883, 0.000999000999000999)
     """
-
     a, b, axis = _chk2_asarray(a, b, axis)
     rs = check_random_state(seed)
 
@@ -327,7 +321,7 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
 
 def permtest_pearsonr(a, b, axis=0, n_perm=1000, resamples=None, seed=0):
     """
-    Non-parametric equivalent of :py:func:`scipy.stats.pearsonr`
+    Non-parametric equivalent of :py:func:`scipy.stats.pearsonr`.
 
     Generates two-tailed p-value for hypothesis of whether samples `a` and `b`
     are correlated using permutation tests
@@ -393,7 +387,6 @@ def permtest_pearsonr(a, b, axis=0, n_perm=1000, resamples=None, seed=0):
     >>> stats.permtest_pearsonr(np.column_stack([x, a]), np.column_stack([y, b]))
     (array([0.50004037, 0.89927523]), array([0.000999, 0.000999]))
     """  # noqa
-
     a, b, axis = _chk2_asarray(a, b, axis)
     rs = check_random_state(seed)
 
@@ -428,7 +421,7 @@ def permtest_pearsonr(a, b, axis=0, n_perm=1000, resamples=None, seed=0):
 
 def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
     """
-    Computes correlation of matching columns in `a` and `b`
+    Compute correlation of matching columns in `a` and `b`.
 
     Parameters
     ----------
@@ -470,7 +463,6 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
     >>> stats.efficient_pearsonr(np.c_[x1, x2], np.c_[y1, y2])
     (array([0.10032565, 0.79961189]), array([3.20636135e-01, 1.97429944e-23]))
     """
-
     a, b, axis = _chk2_asarray(a, b, 0)
     if len(a) != len(b):
         raise ValueError('Provided arrays do not have same length')
@@ -515,7 +507,7 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
 
 def _gen_rotation(seed=None):
     """
-    Generates random matrix for rotating spherical coordinates
+    Generate random matrix for rotating spherical coordinates.
 
     Parameters
     ----------
@@ -527,7 +519,6 @@ def _gen_rotation(seed=None):
     rotate_{l,r} : (3, 3) numpy.ndarray
         Rotations for left and right hemisphere coordinates, respectively
     """
-
     rs = check_random_state(seed)
 
     # for reflecting across Y-Z plane
@@ -549,7 +540,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                     method='original', exact=False, seed=None, verbose=False,
                     return_cost=False):
     """
-    Returns a resampling array for `coords` obtained from rotations / spins
+    Return a resampling array for `coords` obtained from rotations / spins.
 
     Using the method initially proposed in [ST1]_ (and later modified + updated
     based on findings in [ST2]_ and [ST3]_), this function applies random
@@ -665,7 +656,6 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
 
     .. [ST5] https://github.com/spin-test/spin-test
     """
-
     methods = ['original', 'vasa', 'hungarian']
     if method not in methods:
         raise ValueError('Provided method "{}" invalid. Must be one of {}.'
@@ -794,7 +784,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
 
 def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
     """
-    Returns the dominance analysis statistics for multilinear regression.
+    Return the dominance analysis statistics for multilinear regression.
 
     This is a rewritten & simplified version of [DA1]_. It is briefly
     tested against the original package, but still in early stages.
@@ -849,7 +839,6 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
     .. [DA1] https://github.com/dominance-analysis/dominance-analysis
 
     """
-
     # this helps to remove one element from a tuple
     def remove_ret(tpl, elem):
         lst = list(tpl)

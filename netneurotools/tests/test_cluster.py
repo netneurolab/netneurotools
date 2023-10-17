@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-For testing netneurotools.cluster functionality
-"""
+"""For testing netneurotools.cluster functionality."""
 
 import bct
 import numpy as np

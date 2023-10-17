@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for generating group-level networks from individual measurements
-"""
+"""Functions for generating group-level networks from individual measurements."""
 
 import numpy as np
 from scipy.sparse import csgraph
@@ -10,10 +8,16 @@ from sklearn.utils.validation import (check_random_state, check_array,
 
 from . import utils
 
+try:
+    from numba import njit
+    use_numba = True
+except ImportError:
+    use_numba = False
+
 
 def func_consensus(data, n_boot=1000, ci=95, seed=None):
     """
-    Calculates thresholded group consensus functional connectivity graph
+    Calculate thresholded group consensus functional connectivity graph.
 
     This function concatenates all time series in `data` and computes a group
     correlation matrix based on this extended time series. It then generates
@@ -51,7 +55,6 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
     competitive spreading dynamics on the human connectome. Neuron, 86(6),
     1518-1529.
     """
-
     # check inputs
     rs = check_random_state(seed)
     if ci > 100 or ci < 0:
@@ -106,7 +109,7 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
 def _ecdf(data):
     """
-    Estimates empirical cumulative distribution function of `data`
+    Estimate empirical cumulative distribution function of `data`.
 
     Taken directly from StackOverflow. See original answer at
     https://stackoverflow.com/questions/33345780.
@@ -122,7 +125,6 @@ def _ecdf(data):
     quantiles : numpy.darray
         Quantiles
     """
-
     sample = np.atleast_1d(data)
 
     # find the unique values and their corresponding counts
@@ -140,7 +142,7 @@ def _ecdf(data):
 
 def struct_consensus(data, distance, hemiid, weighted=False):
     """
-    Calculates distance-dependent group consensus structural connectivity graph
+    Calculate distance-dependent group consensus structural connectivity graph.
 
     Takes as input a weighted stack of connectivity matrices with dimensions
     (N, N, S) where `N` is the number of nodes and `S` is the number of
@@ -193,7 +195,6 @@ def struct_consensus(data, distance, hemiid, weighted=False):
     dependent consensus thresholds for generating group-representative
     structural brain networks. Network Neuroscience, 1-22.
     """
-
     # confirm input shapes are as expected
     check_consistent_length(data, distance, hemiid)
     try:
@@ -282,7 +283,7 @@ def struct_consensus(data, distance, hemiid, weighted=False):
 
 def binarize_network(network, retain=10, keep_diag=False):
     """
-    Keeps top `retain` % of connections in `network` and binarizes
+    Keep top `retain` % of connections in `network` and binarizes.
 
     Uses the upper triangle for determining connection percentage, which may
     result in disconnected nodes. If this behavior is not desired see
@@ -306,7 +307,6 @@ def binarize_network(network, retain=10, keep_diag=False):
     --------
     netneurotools.networks.threshold_network
     """
-
     if retain < 0 or retain > 100:
         raise ValueError('Value provided for `retain` is outside [0, 100]: {}'
                          .format(retain))
@@ -324,7 +324,7 @@ def binarize_network(network, retain=10, keep_diag=False):
 
 def threshold_network(network, retain=10):
     """
-    Keeps top `retain` % of connections in `network` and binarizes
+    Keep top `retain` % of connections in `network` and binarizes.
 
     Uses a minimum spanning tree to ensure that no nodes are disconnected from
     the resulting thresholded graph
@@ -345,7 +345,6 @@ def threshold_network(network, retain=10):
     --------
     netneurotools.networks.binarize_network
     """
-
     if retain < 0 or retain > 100:
         raise ValueError('Value provided for `retain` must be a percent '
                          'in range [0, 100]. Provided: {}'.format(retain))
@@ -382,7 +381,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
                                      replacement=False, weighted=True,
                                      seed=None):
     """
-    Generates degree- and edge length-preserving surrogate connectomes.
+    Generate degree- and edge length-preserving surrogate connectomes.
 
     Parameters
     ----------
@@ -427,7 +426,6 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     long-distance connections in weighted, interareal connectomes. PNAS.
 
     """
-
     rs = check_random_state(seed)
     N = len(W)
     # divide the distances by lengths
@@ -554,3 +552,90 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
         newW[j_sort, i_sort] = iniws
 
     return newB, newW, nr
+
+
+def randmio_und(W, itr):
+    """
+    Optimized version of randmio_und.
+
+    This function randomizes an undirected network, while preserving the
+    degree distribution. The function does not preserve the strength
+    distribution in weighted networks.
+
+    This function is significantly faster if numba is enabled, because
+    the main overhead is `np.random.randint`, see `here <https://stackoverflow.com/questions/58124646/why-in-python-is-random-randint-so-much-slower-than-random-random>`_
+
+    Parameters
+    ----------
+    W : (N, N) array-like
+        Undirected binary/weighted connection matrix
+    itr : int
+        rewiring parameter. Each edge is rewired approximately itr times.
+
+    Returns
+    -------
+    W : (N, N) array-like
+        Randomized network
+    eff : int
+        number of actual rewirings carried out
+    """  # noqa: E501
+    W = W.copy()
+    n = len(W)
+    i, j = np.where(np.triu(W > 0, 1))
+    k = len(i)
+    itr *= k
+
+    # maximum number of rewiring attempts per iteration
+    max_attempts = np.round(n * k / (n * (n - 1)))
+    # actual number of successful rewirings
+    eff = 0
+
+    for _ in range(int(itr)):
+        att = 0
+        while att <= max_attempts:  # while not rewired
+            while True:
+                e1, e2 = np.random.randint(k), np.random.randint(k)
+                while e1 == e2:
+                    e2 = np.random.randint(k)
+                a, b = i[e1], j[e1]
+                c, d = i[e2], j[e2]
+
+                if a != c and a != d and b != c and b != d:
+                    break  # all 4 vertices must be different
+
+            # flip edge c-d with 50% probability
+            # to explore all potential rewirings
+            if np.random.random() > .5:
+                i[e2], j[e2] = d, c
+                c, d = d, c
+
+            # rewiring condition
+            # not flipped
+            # a--b    a  b
+            #      TO  X
+            # c--d    c  d
+            # if flipped
+            # a--b    a--b    a  b
+            #      TO      TO  X
+            # c--d    d--c    d  c
+            if not (W[a, d] or W[c, b]):
+                W[a, d] = W[a, b]
+                W[a, b] = 0
+                W[d, a] = W[b, a]
+                W[b, a] = 0
+                W[c, b] = W[c, d]
+                W[c, d] = 0
+                W[b, c] = W[d, c]
+                W[d, c] = 0
+
+                j[e1] = d
+                j[e2] = b  # reassign edge indices
+                eff += 1
+                break
+            att += 1
+
+    return W, eff
+
+
+if use_numba:
+    randmio_und = njit(randmio_und)

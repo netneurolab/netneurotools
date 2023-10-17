@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for fetching datasets from the internet
-"""
+"""Functions for fetching datasets from the internet."""
 
 from collections import namedtuple
 import itertools
@@ -22,7 +20,7 @@ SURFACE = namedtuple('Surface', ('lh', 'rh'))
 def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
                       resume=True, verbose=1):
     """
-    Downloads files for Cammoun et al., 2012 multiscale parcellation
+    Download files for Cammoun et al., 2012 multiscale parcellation.
 
     Parameters
     ----------
@@ -65,7 +63,6 @@ def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
     -----
     License: https://raw.githubusercontent.com/LTS5/cmp/master/COPYRIGHT
     """
-
     if version == 'surface':
         warnings.warn('Providing `version="surface"` is deprecated and will '
                       'be removed in a future release. For consistent '
@@ -148,7 +145,7 @@ def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
 
 def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
     """
-    Downloads files for Van Essen et al., 2012 Conte69 template
+    Download files for Van Essen et al., 2012 Conte69 template.
 
     Parameters
     ----------
@@ -185,7 +182,6 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
     -----
     License: ???
     """
-
     dataset_name = 'tpl-conte69'
     keys = ['midthickness', 'inflated', 'vinflated']
 
@@ -219,7 +215,7 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_yerkes19(data_dir=None, url=None, resume=None, verbose=1):
     """
-    Downloads files for Donahue et al., 2016 Yerkes19 template
+    Download files for Donahue et al., 2016 Yerkes19 template.
 
     Parameters
     ----------
@@ -257,7 +253,6 @@ def fetch_yerkes19(data_dir=None, url=None, resume=None, verbose=1):
     -----
     License: ???
     """
-
     dataset_name = 'tpl-yerkes19'
     keys = ['midthickness', 'inflated', 'vinflated']
 
@@ -288,7 +283,7 @@ def fetch_yerkes19(data_dir=None, url=None, resume=None, verbose=1):
 
 def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
     """
-    Downloads files for Pauli et al., 2018 subcortical parcellation
+    Download files for Pauli et al., 2018 subcortical parcellation.
 
     Parameters
     ----------
@@ -321,7 +316,6 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
     -----
     License: CC-BY Attribution 4.0 International
     """
-
     dataset_name = 'atl-pauli2018'
     keys = ['probabilistic', 'deterministic', 'info']
 
@@ -342,7 +336,7 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
                     verbose=1):
     """
-    Downloads files for fsaverage FreeSurfer template
+    Download files for fsaverage FreeSurfer template.
 
     Parameters
     ----------
@@ -368,12 +362,7 @@ def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
         Dictionary-like object with keys ['surf'] where corresponding values
         are length-2 lists downloaded template files (each list composed of
         files for the left and right hemisphere).
-
-    References
-    ----------
-
     """
-
     versions = [
         'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'
     ]
@@ -415,21 +404,20 @@ def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
 
 def available_connectomes():
     """
-    Lists datasets available via :func:`~.fetch_connectome`
+    List datasets available via :func:`~.fetch_connectome`.
 
     Returns
     -------
     datasets : list of str
         List of available datasets
     """
-
     return sorted(_get_dataset_info('ds-connectomes').keys())
 
 
 def fetch_connectome(dataset, data_dir=None, url=None, resume=True,
                      verbose=1):
     """
-    Downloads files from multi-species connectomes
+    Download files from multi-species connectomes.
 
     Parameters
     ----------
@@ -464,7 +452,6 @@ def fetch_connectome(dataset, data_dir=None, url=None, resume=True,
     ----------
     See `ref` key of returned dictionary object for relevant dataset reference
     """
-
     if dataset not in available_connectomes():
         raise ValueError('Provided dataset {} not available; must be one of {}'
                          .format(dataset, available_connectomes()))
@@ -502,7 +489,7 @@ def fetch_connectome(dataset, data_dir=None, url=None, resume=True,
 def fetch_vazquez_rodriguez2019(data_dir=None, url=None, resume=True,
                                 verbose=1):
     """
-    Downloads files from Vazquez-Rodriguez et al., 2019, PNAS
+    Download files from Vazquez-Rodriguez et al., 2019, PNAS.
 
     Parameters
     ----------
@@ -529,7 +516,6 @@ def fetch_vazquez_rodriguez2019(data_dir=None, url=None, resume=True,
     ----------
     See `ref` key of returned dictionary object for relevant dataset reference
     """
-
     dataset_name = 'ds-vazquez_rodriguez2019'
 
     data_dir = _get_data_dir(data_dir=data_dir)
@@ -557,7 +543,7 @@ def fetch_vazquez_rodriguez2019(data_dir=None, url=None, resume=True,
 def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
                        resume=True, verbose=1):
     """
-    Downloads FreeSurfer .annot files for Schaefer et al., 2018 parcellation
+    Download FreeSurfer .annot files for Schaefer et al., 2018 parcellation.
 
     Parameters
     ----------
@@ -594,7 +580,6 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
     -----
     License: https://github.com/ThomasYeoLab/CBIG/blob/master/LICENSE.md
     """
-
     versions = ['fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k']
     if version not in versions:
         raise ValueError('The version of Schaefer et al., 2018 parcellation '
@@ -640,7 +625,7 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
 
 def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
     """
-    Fetches HCP standard mesh atlases for converting between FreeSurfer and HCP
+    Fetch HCP standard mesh atlases for converting between FreeSurfer and HCP.
 
     Parameters
     ----------
@@ -663,7 +648,8 @@ def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
         Filepath to standard_mesh_atlases directory
     """
     if url is None:
-        url = 'http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip'
+        url = 'https://web.archive.org/web/20220121035833/' + \
+              'http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip'
     dataset_name = 'standard_mesh_atlases'
     data_dir = _get_data_dir(data_dir=data_dir)
     opts = {
@@ -682,7 +668,7 @@ def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_mmpall(version='fslr32k', data_dir=None, url=None, resume=True,
                  verbose=1):
     """
-    Downloads .label.gii files for Glasser et al., 2016 MMPAll atlas
+    Download .label.gii files for Glasser et al., 2016 MMPAll atlas.
 
     Parameters
     ----------
@@ -719,7 +705,6 @@ def fetch_mmpall(version='fslr32k', data_dir=None, url=None, resume=True,
     License: https://www.humanconnectome.org/study/hcp-young-adult/document/
     wu-minn-hcp-consortium-open-access-data-use-terms
     """
-
     versions = ['fslr32k']
     if version not in versions:
         raise ValueError('The version of Glasser et al., 2016 parcellation '
@@ -752,7 +737,7 @@ def fetch_mmpall(version='fslr32k', data_dir=None, url=None, resume=True,
 
 def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
     """
-    Fetches von-Economo Koskinas probabilistic FreeSurfer atlas
+    Fetch von-Economo Koskinas probabilistic FreeSurfer atlas.
 
     Parameters
     ----------
@@ -784,7 +769,6 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
     -----
     License: CC-BY-NC-SA 4.0
     """
-
     dataset_name = 'atl-voneconomo_koskinas'
     keys = ['gcs', 'ctab', 'info']
 
@@ -811,7 +795,7 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_civet(density='41k', version='v1', data_dir=None, url=None,
                 resume=True, verbose=1):
     """
-    Fetches CIVET surface files
+    Fetch CIVET surface files.
 
     Parameters
     ----------
@@ -852,7 +836,6 @@ def fetch_civet(density='41k', version='v1', data_dir=None, url=None,
     -----
     License: https://github.com/aces/CIVET_Full_Project/blob/master/LICENSE
     """
-
     densities = ['41k', '164k']
     if density not in densities:
         raise ValueError('The density of CIVET requested "{}" does not exist. '

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-For testing netneurotools.plotting functionality
-"""
+"""For testing netneurotools.plotting functionality."""
 
 import matplotlib.pyplot as plt
 import numpy as np

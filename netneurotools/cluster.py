@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for clustering and working with cluster solutions
-"""
+"""Functions for clustering and working with cluster solutions."""
 
 import bct
 import numpy as np
@@ -12,7 +10,7 @@ from sklearn.utils.validation import check_random_state
 
 def _get_relabels(c1, c2):
     """
-    Finds mapping of labels from `c1` to `c2`
+    Find mapping of labels from `c1` to `c2`.
 
     Parameters
     ----------
@@ -46,7 +44,7 @@ def _get_relabels(c1, c2):
 
 def match_cluster_labels(source, target):
     """
-    Aligns cluster labels in `source` to those in `target`
+    Align cluster labels in `source` to those in `target`.
 
     Uses :func:`scipy.optimize.linear_sum_assignment` to match solutions. If
     `source` has fewer clusters than `target` the returned assignments may be
@@ -91,7 +89,6 @@ def match_cluster_labels(source, target):
     >>> cluster.match_cluster_labels(b, a)
     array([0, 0, 0, 2, 2, 2, 2, 2, 2, 2])
     """
-
     # try and match the source to target
     src, tar = _get_relabels(source, target)
 
@@ -112,7 +109,7 @@ def match_cluster_labels(source, target):
 
 def match_assignments(assignments, target=None, seed=None):
     """
-    Re-labels clusters in columns of `assignments` to best match `target`
+    Re-label clusters in columns of `assignments` to best match `target`.
 
     Uses :func:`~.cluster.match_cluster_labels` to align cluster assignments.
 
@@ -192,7 +189,6 @@ def match_assignments(assignments, target=None, seed=None):
            [1, 2, 2],
            [1, 2, 2]])
     """
-
     assignments = np.asarray(assignments).copy()
 
     # pick a random assignment with the lowest # of clusters as "target"
@@ -220,7 +216,7 @@ def match_assignments(assignments, target=None, seed=None):
 def reorder_assignments(assignments, consensus=None, col_sort=True,
                         row_sort=True, return_index=True, seed=None):
     """
-    Relabels and reorders rows / columns of `assignments` to "look better"
+    Relabel and reorders rows / columns of `assignments` to "look better".
 
     Relabels cluster solutions in `assignments` so that distinct clustering
     solutions have similar cluster labels. Then, swaps columns of `assignments`
@@ -254,8 +250,7 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
     """
 
     def _reorder_rows(arr):
-        """ Returns indices of rows in `arr` after hierarchical clustering
-        """
+        """Return indices of rows in `arr` after hierarchical clustering."""
         link = hierarchy.linkage(arr, method='average', metric='hamming')
         return hierarchy.dendrogram(link, no_plot=True)['leaves']
 
@@ -317,7 +312,7 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
 def find_consensus(assignments, null_func=np.mean, return_agreement=False,
                    seed=None):
     """
-    Finds consensus clustering labels from cluster solutions in `assignments`
+    Find consensus clustering labels from cluster solutions in `assignments`.
 
     Parameters
     ----------
@@ -348,7 +343,6 @@ def find_consensus(assignments, null_func=np.mean, return_agreement=False,
     structure in networks. Chaos: An Interdisciplinary Journal of Nonlinear
     Science, 23(1), 013142.
     """
-
     rs = check_random_state(seed)
     samp, comm = assignments.shape
 

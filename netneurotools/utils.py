@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Miscellaneous functions of various utility
-"""
+"""Miscellaneous functions of various utility."""
 
 import glob
 import os
@@ -15,10 +13,10 @@ from sklearn.utils.validation import check_array
 
 def add_constant(data):
     """
-    Adds a constant (i.e., intercept) term to `data`
+    Add a constant (i.e., intercept) term to `data`.
 
     Parameters
-    -----------
+    ----------
     data : (N, M) array_like
         Samples by features data array
 
@@ -40,14 +38,13 @@ def add_constant(data):
            [0., 0., 0., 0., 0., 1.],
            [0., 0., 0., 0., 0., 1.]])
     """
-
     data = check_array(data, ensure_2d=False)
     return np.column_stack([data, np.ones(len(data))])
 
 
 def get_triu(data, k=1):
     """
-    Returns vectorized version of upper triangle from `data`
+    Return vectorized version of upper triangle from `data`.
 
     Parameters
     ----------
@@ -70,13 +67,12 @@ def get_triu(data, k=1):
     >>> tri
     array([0.5 , 0.25, 0.33])
     """
-
     return data[np.triu_indices(len(data), k=k)].copy()
 
 
 def globpath(*args):
-    """"
-    Joins `args` with :py:func:`os.path.join` and returns sorted glob output
+    """
+    Join `args` with :py:func:`os.path.join` and returns sorted glob output.
 
     Parameters
     ----------
@@ -88,13 +84,12 @@ def globpath(*args):
     files : list
         Sorted list of files
     """
-
     return sorted(glob.glob(os.path.join(*args)))
 
 
 def rescale(data, low=0, high=1):
     """
-    Rescales `data` so it is within [`low`, `high`]
+    Rescale `data` so it is within [`low`, `high`].
 
     Parameters
     ----------
@@ -110,7 +105,6 @@ def rescale(data, low=0, high=1):
     rescaled : np.ndarray
         Rescaled data
     """
-
     data = np.asarray(data)
     rescaled = np.interp(data, (data.min(), data.max()), (low, high))
 
@@ -119,7 +113,7 @@ def rescale(data, low=0, high=1):
 
 def run(cmd, env=None, return_proc=False, quiet=False):
     """
-    Runs `cmd` via shell subprocess with provided environment `env`
+    Run `cmd` via shell subprocess with provided environment `env`.
 
     Parameters
     ----------
@@ -151,8 +145,7 @@ def run(cmd, env=None, return_proc=False, quiet=False):
     0
     >>> p.stdout  # doctest: +SKIP
     'hello world\\n'
-    """
-
+    """  # noqa: D301
     merged_env = os.environ.copy()
     if env is not None:
         if not isinstance(env, dict):
@@ -173,7 +166,7 @@ def run(cmd, env=None, return_proc=False, quiet=False):
 
 def check_fs_subjid(subject_id, subjects_dir=None):
     """
-    Checks that `subject_id` exists in provided FreeSurfer `subjects_dir`
+    Check that `subject_id` exists in provided FreeSurfer `subjects_dir`.
 
     Parameters
     ----------
@@ -194,7 +187,6 @@ def check_fs_subjid(subject_id, subjects_dir=None):
     ------
     FileNotFoundError
     """
-
     # check inputs for subjects_dir and subject_id
     if subjects_dir is None or not os.path.isdir(subjects_dir):
         try:
@@ -215,7 +207,7 @@ def check_fs_subjid(subject_id, subjects_dir=None):
 
 def get_centroids(img, labels=None, image_space=False):
     """
-    Finds centroids of `labels` in `img`
+    Find centroids of `labels` in `img`.
 
     Parameters
     ----------
@@ -234,7 +226,6 @@ def get_centroids(img, labels=None, image_space=False):
     centroids : (N, 3) np.ndarray
         Coordinates of centroids for ROIs in input data
     """
-
     from nilearn._utils import check_niimg_3d
 
     img = check_niimg_3d(img)

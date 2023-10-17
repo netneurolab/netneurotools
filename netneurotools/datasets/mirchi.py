@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Code for re-generating results from Mirchi et al., 2018 (SCAN)
-"""
+"""Code for re-generating results from Mirchi et al., 2018 (SCAN)."""
 
 import os
 from urllib.request import HTTPError, urlopen
@@ -75,14 +73,13 @@ PANAS = {  # specification for creation of PANAS subscales for item scores
 
 def _get_fc(data_dir=None, resume=True, verbose=1):
     """
-    Gets functional connections from MyConnectome parcelled time series data
+    Get functional connections from MyConnectome parcelled time series data.
 
     Returns
     -------
     fc : (73, 198135) numpy.ndarray
         Functional connections (lower triangle)
     """
-
     # download time series data for all sessions
     ts = []
     for ses in SESSIONS:
@@ -104,7 +101,7 @@ def _get_fc(data_dir=None, resume=True, verbose=1):
 
 def _get_panas(data_dir=None, resume=True, verbose=1):
     """
-    Gets PANAS subscales from MyConnectome behavioral data
+    Get PANAS subscales from MyConnectome behavioral data.
 
     Returns
     -------
@@ -112,7 +109,6 @@ def _get_panas(data_dir=None, resume=True, verbose=1):
         Where keys are PANAS subscales names and values are session-level
         composite measures
     """
-
     from numpy.lib.recfunctions import structured_to_unstructured as stu
 
     # download behavioral data
@@ -140,7 +136,7 @@ def _get_panas(data_dir=None, resume=True, verbose=1):
 
 def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
     """
-    Downloads (and creates) dataset for replicating Mirchi et al., 2018, SCAN
+    Download (and creates) dataset for replicating Mirchi et al., 2018, SCAN.
 
     Parameters
     ----------
@@ -157,7 +153,6 @@ def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
     Y : (73, 13) numpy.ndarray
         PANAS subscales from MyConnectome behavioral data
     """
-
     data_dir = os.path.join(_get_data_dir(data_dir=data_dir), 'ds-mirchi2018')
     os.makedirs(data_dir, exist_ok=True)
 
