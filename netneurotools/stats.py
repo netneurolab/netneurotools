@@ -1387,6 +1387,9 @@ def network_variance(vec, D):
     Network variance is a measure of variance taken into account the network
     structure.
 
+    .. warning::
+       Test before use.
+
     Parameters
     ----------
     vec : (N,) array_like
@@ -1441,6 +1444,9 @@ def network_variance_numba(vec, D):
     Network variance is a measure of variance taken into account the network
     structure.
 
+    .. warning::
+       Test before use.
+
     Parameters
     ----------
     vec : (N,) array_like
@@ -1465,6 +1471,9 @@ if use_numba:
 def network_covariance(joint_pmat, D, calc_marginal=True):
     r"""
     Calculate covariance of a joint probability matrix on a graph.
+
+    .. warning::
+       Test before use.
 
     Parameters
     ----------
@@ -1525,6 +1534,9 @@ def network_covariance(joint_pmat, D, calc_marginal=True):
 def network_covariance_numba(joint_pmat, D, calc_marginal=True):
     """
     Numba version of :meth:`netneurotools.stats.network_covariance`.
+
+    .. warning::
+       Test before use.
 
     Parameters
     ----------
