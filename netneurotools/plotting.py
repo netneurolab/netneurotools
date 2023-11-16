@@ -251,6 +251,7 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Default: (0, 0, 0)
     kwargs : key-value mapping
         Keyword arguments for `mayavi.mlab.triangular_mesh()`
+
     Returns
     -------
     scene : mayavi.Scene

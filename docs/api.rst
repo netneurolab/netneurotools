@@ -117,6 +117,15 @@ Python Reference API
    permtest_rel
    permtest_pearsonr
    get_dominance_stats
+   network_pearsonr
+   network_pearsonr_numba
+   network_pearsonr_pairwise
+   effective_resistance
+   network_polarisation
+   network_variance
+   network_variance_numba
+   network_covariance
+   network_covariance_numba
 
 .. _ref_metrics:
 
@@ -150,6 +159,7 @@ Python Reference API
    diffusion_efficiency
    resource_efficiency_bin
    matching_ind_und
+   _graph_laplacian
 
 .. _ref_datasets:
 
