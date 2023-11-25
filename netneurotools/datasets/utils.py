@@ -3,7 +3,12 @@
 
 import json
 import os
-from pkg_resources import resource_filename
+try:
+    import importlib.resources
+    _importlib_avail = True
+except ImportError:
+    from pkg_resources import resource_filename
+    _importlib_avail = False
 
 
 def _osfify_urls(data):
@@ -36,8 +41,12 @@ def _osfify_urls(data):
 
     return data
 
+if _importlib_avail:
+    osf = importlib.resources.files("netneurotools") / "data/osf.json"
+else:
+    osf = resource_filename('netneurotools', 'data/osf.json')
 
-with open(resource_filename('netneurotools', 'data/osf.json')) as src:
+with open(osf) as src:
     OSF_RESOURCES = _osfify_urls(json.load(src))
 
 
