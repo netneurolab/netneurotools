@@ -42,6 +42,7 @@ def _osfify_urls(data):
 
     return data
 
+
 if _importlib_avail:
     osf = importlib.resources.files("netneurotools") / "data/osf.json"
 else:
