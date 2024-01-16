@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
     # map (via surf2surf) fsaverage to fsaverage5/6 so we can provide those
     for trg in ['fsaverage5', 'fsaverage6']:
-        for scale, (lh, rh) in annotations.items():
+        for _, (lh, rh) in annotations.items():
             for annot, hemi in [(lh, 'lh'), (rh, 'rh')]:
                 tval = annot.replace('space-fsaverage', 'space-{}'.format(trg))
                 tval = tval.replace('/fsaverage/', '/{}/'.format(trg))
@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
     hcp = datasets.fetch_hcp_standards()
     fsaverage = datasets.fetch_fsaverage()
-    for scale, (lh, rh) in annotations.items():
+    for _, (lh, rh) in annotations.items():
         for annot, hemi in [(lh, 'lh'), (rh, 'rh')]:
             outdir = op.join(op.dirname(op.dirname(annot)), 'fslr32k')
             gii = annot.replace('.annot', '.label.gii')

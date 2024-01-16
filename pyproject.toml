@@ -1,26 +1,112 @@
+[project]
+name = "netneurotools"
+description = "A toolbox for network neuroscience"
+readme = "README.rst"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+keywords = ["network neuroscience", "connectomics"]
+authors = [
+  {name = "Network Neuroscience Lab", email = "netneurotools-aaaaba25hq3jdluwb2z5h2yr3e@netneurolab.slack.com"},
+]
+maintainers = [
+  {name = "Network Neuroscience Lab", email = "netneurotools-aaaaba25hq3jdluwb2z5h2yr3e@netneurolab.slack.com"},
+]
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3 :: Only"
+]
+
+dependencies = [
+  "bctpy",
+  "numpy >=1.16",
+  "scipy >=1.4.0",
+  "matplotlib",
+  "scikit-learn",
+  "nibabel >=3.0.0",
+  "nilearn"
+]
+
+dynamic=["version"]
+
+[project.optional-dependencies]
+doc = [
+  "sphinx >=2.0, <7.0.0",
+  "sphinx_rtd_theme",
+  "sphinx-gallery"
+]
+plotting = [
+  "mayavi",
+  "pysurfer"
+]
+numba = [
+  "numba"
+]
+style = [
+  "flake8",
+  "ruff"
+]
+test = [
+  "coverage",
+  "pytest >=3.6",
+  "pytest-cov",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/netneurolab/netneurotools"
+
 [build-system]
-requires = ["setuptools >= 38.3.0", "wheel", "versioneer-518"]
+requires = ["setuptools", "versioneer[toml]"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages]
+find = {}
+
+[tool.setuptools.dynamic]
+version = {attr = "netneurotools.__version__"}
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "netneurotools/_version.py"
+versionfile_build = "netneurotools/_version.py"
+tag_prefix = ""
+parentdir_prefix = ""
+
 [tool.ruff]
-select = ["E", "F", "W", "D", "NPY"]
+select = ["E", "F", "B", "W", "D", "NPY"]
 ignore = [
     "B905", # zip() without an explicit strict= parameter
     # "W605", # Invalid escape sequence: latex
     "NPY002", # Replace legacy `np.random` call with `np.random.Generator`
 ]
-exclude = [
-    "./netneurotools/_version.py",
-    "./docs/conf.py",
-    "setup.py"
-
-]
 line-length = 88
+exclude = [
+  "setup.py",
+  "versioneer.py",
+  "netneurotools/_version.py",
+  "docs/conf.py",
+  "examples/*",
+]
+target-version = "py38"
 
 [tool.ruff.pydocstyle]
 convention = "numpy"
 
 [tool.ruff.per-file-ignores]
-"./netneurotools/tests/*.py" = ["D103"]
-"./examples/*.py" = ["E402", "D"]
-"*/__init__.py" = ["D104", "F401"]
+"__init__.py" = ["D104", "F401"]
+"netneurotools/tests/*" = ["B011", "D103"]
+"examples/*" = ["E402", "D"]
+
+[tool.coverage.run]
+source = ["netneurotools"]
+omit = [
+  "netneurotools/tests/*",
+  "netneurotools/_version.py",
+]
+
+[tool.codespell]
+skip = '.git,*.pdf,*.svg,versioneer.py'
+# ignore-words-list = ''

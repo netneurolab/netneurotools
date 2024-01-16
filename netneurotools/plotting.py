@@ -324,7 +324,7 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
         from mayavi import mlab
     except ImportError:
         raise ImportError('Cannot use plot_fslr() if mayavi is not '
-                          'installed. Please install mayavi and try again.')
+                          'installed. Please install mayavi and try again.') from None
 
     opts = dict()
     opts.update(**kwargs)
@@ -338,7 +338,7 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
     except KeyError:
         raise ValueError('Provided surf "{}" is not valid. Must be one of '
                          '[\'midthickness\', \'inflated\', \'vinflated\']'
-                         .format(surf_type))
+                         .format(surf_type)) from None
 
     lhsurface, rhsurface = [nib.load(s) for s in surface]
 
@@ -416,7 +416,7 @@ def _get_fs_subjid(subject_id, subjects_dir=None):
         if 'fsaverage' not in subject_id:
             raise ValueError('Provided subject {} does not exist in provided '
                              'subjects_dir {}'
-                             .format(subject_id, subjects_dir))
+                             .format(subject_id, subjects_dir)) from None
         from netneurotools.datasets import fetch_fsaverage
         from netneurotools.datasets.utils import _get_data_dir
         fetch_fsaverage(subject_id)
@@ -635,7 +635,7 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
         from surfer import Brain
     except ImportError:
         raise ImportError('Cannot use plot_fsaverage() if pysurfer is not '
-                          'installed. Please install pysurfer and try again.')
+                          'installed. Please install pysurfer and try again.') from None
 
     subject_id, subjects_dir = _get_fs_subjid(subject_id, subjects_dir)
 
@@ -691,7 +691,7 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
 
         if alpha != 1.0:
             surf = brain.data_dict[hemi]['surfaces']
-            for n, s in enumerate(surf):
+            for _, s in enumerate(surf):
                 s.actor.property.opacity = alpha
                 s.render()
 
