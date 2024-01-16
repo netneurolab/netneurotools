@@ -1,4 +1,4 @@
-name: netneurotools tests
+name: netneurotools-tests
 
 on: 
   workflow_dispatch:
