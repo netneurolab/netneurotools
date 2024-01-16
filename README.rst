@@ -1,19 +1,34 @@
 netneurotools: Tools for network neuroscience
 =============================================
 
+|
+
+.. .. image:: https://zenodo.org/badge/375755159.svg
+..    :target: https://zenodo.org/badge/latestdoi/375755159
+..    :alt: Zenodo record
+
+.. image:: https://img.shields.io/pypi/v/netneurotools
+   :target: https://pypi.python.org/pypi/netneurotools/
+   :alt: Latest PyPI version
+
+.. image:: https://img.shields.io/badge/docker-netneurolab/netneurotools-brightgreen.svg?logo=docker&style=flat
+  :target: https://hub.docker.com/r/netneurolab/netneurotools/tags/
+  :alt: Latest Docker image
+
+.. image:: https://github.com/netneurolab/netneurotools/actions/workflows/tests.yml/badge.svg
+  :target: https://github.com/netneurolab/netneurotools/actions/workflows/tests.yml
+  :alt: run-tests status
+
+.. image:: https://github.com/netneurolab/netneurotools/actions/workflows/docs.yml/badge.svg
+  :target: https://netneurolab.github.io/netneurotools/
+  :alt: deploy-docs status
+
+|
+
 This toolbox is a collection of functions written in Python that get frequent
 usage in the `Network Neuroscience Lab <netneurolab.github.io/>`_, housed in
 the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
-
-.. image:: https://github.com/netneurolab/netneurotools/actions/workflows/tests.yml/badge.svg
-   :target: https://github.com/netneurolab/netneurotools/actions
-.. image:: https://codecov.io/gh/netneurolab/netneurotools/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/netneurolab/netneurotools
-.. image:: https://readthedocs.org/projects/netneurotools/badge/?version=latest
-   :target: https://netneurotools.readthedocs.io/en/latest
-.. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
-   :target: https://opensource.org/licenses/BSD-3-Clause
 
 .. _installation:
 
