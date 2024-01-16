@@ -235,7 +235,7 @@ def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
     # this for loop is not _the fastest_ but is memory efficient
     # the broadcasting alt. would mean storing zeroed.size * n_perm in memory
     permutations = np.ones(true_mean.shape)
-    for perm in range(n_perm):
+    for _ in range(n_perm):
         flipped = zeroed * rs.choice([-1, 1], size=zeroed.shape)  # sign flip
         permutations += np.abs(flipped.mean(axis=axis)) >= abs_mean
 
@@ -314,7 +314,7 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
     reidx = np.meshgrid(*[range(f) for f in ab.shape], indexing='ij')
 
     permutations = np.ones(true_diff.shape)
-    for perm in range(n_perm):
+    for _ in range(n_perm):
         # use this to re-index (i.e., swap along) the first axis of `ab`
         swap = rs.random_sample(ab.shape[:-1]).argsort(axis=axis)
         reidx[0] = np.repeat(swap[..., np.newaxis], ab.shape[-1], axis=-1)
@@ -735,7 +735,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
                     dist = spatial.distance_matrix(coor, coor @ rot)
                     # min of max a la Vasa et al., 2018
                     col = np.zeros(len(coor), dtype='int32')
-                    for r in range(len(dist)):
+                    for _ in range(len(dist)):
                         # find parcel whose closest neighbor is farthest away
                         # overall; assign to that
                         row = dist.min(axis=1).argmax()
@@ -775,8 +775,9 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
         # a new one, warn that we're using duplicate rotations and give up.
         # this should only be triggered if check_duplicates is set to True
         if count == 500 and not warned:
-            warnings.warn('Duplicate rotations used. Check resampling array '
-                          'to determine real number of unique permutations.')
+            warnings.warn(
+                'Duplicate rotations used. Check resampling array '
+                'to determine real number of unique permutations.', stacklevel=2)
             warned = True
 
         spinsamples[:, n] = resampled

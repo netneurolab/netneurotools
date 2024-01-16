@@ -416,7 +416,7 @@ def navigation_wu(nav_dist_mat, sc_mat):
     nav_sr = len([_ for _ in nav_paths if _[3] != -1]) / len(nav_paths)
 
     nav_sr_node = []
-    for k, g in itertools.groupby(
+    for _, g in itertools.groupby(
         sorted(nav_paths, key=lambda x: x[0]), key=lambda x: x[0]
     ):
         curr_path = list(g)

@@ -201,7 +201,7 @@ def struct_consensus(data, distance, hemiid, weighted=False):
         hemiid = check_array(hemiid, ensure_2d=True)
     except ValueError:
         raise ValueError('Provided hemiid must be a 2D array. Reshape your '
-                         'data using array.reshape(-1, 1) and try again.')
+                         'data using array.reshape(-1, 1) and try again.') from None
 
     num_node, _, num_sub = data.shape      # info on connectivity matrices
     pos_data = data > 0                    # location of + values in matrix
