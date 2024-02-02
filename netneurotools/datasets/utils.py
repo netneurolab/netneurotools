@@ -48,12 +48,6 @@ if _importlib_avail:
 else:
     osf = resource_filename('netneurotools', 'data/osf.json')
 
-
-if _importlib_avail:
-    osf = importlib.resources.files("netneurotools") / "data/osf.json"
-else:
-    osf = resource_filename('netneurotools', 'data/osf.json')
-
 with open(osf) as src:
     OSF_RESOURCES = _osfify_urls(json.load(src))
 
