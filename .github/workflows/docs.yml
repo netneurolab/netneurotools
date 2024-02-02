@@ -1,0 +1,39 @@
+name: netneurotools-docs
+
+on: 
+  workflow_dispatch:
+  push:
+      branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy_page:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          pip install -r docs/requirements.txt
+      - name: Install netneurotools
+        run: |
+          pip install .
+      - name: Build the docs
+        run: |
+          cd docs && make clean html
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+            path: 'docs/_build/html'
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2

@@ -72,7 +72,7 @@ def _get_dataset_info(name):
         return OSF_RESOURCES[name]
     except KeyError:
         raise KeyError("Provided dataset '{}' is not valid. Must be one of: {}"
-                       .format(name, sorted(OSF_RESOURCES.keys())))
+                       .format(name, sorted(OSF_RESOURCES.keys()))) from None
 
 
 def _get_data_dir(data_dir=None):

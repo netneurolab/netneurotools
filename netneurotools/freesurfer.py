@@ -465,7 +465,7 @@ def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
         warnings.warn('Shape of provided `spins` array does not match '
                       'number of rotations requested with `n_rotate`. '
                       'Ignoring specified `n_rotate` parameter and using '
-                      'all provided `spins`.')
+                      'all provided `spins`.', stacklevel=2)
         n_rotate = spins.shape[-1]
 
     return spins, None

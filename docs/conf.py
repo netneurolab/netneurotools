@@ -15,7 +15,7 @@ import sys
 
 # Add project name, copyright holder, and author(s)
 project = 'netneurotools'
-copyright = '2018-2022, netneurotools developers'
+copyright = '2018-2024, netneurotools developers'
 author = 'Network Neuroscience Lab'
 
 # Import project to get version info
