@@ -7,7 +7,12 @@ import json
 import os.path as op
 import warnings
 
-from nilearn.datasets.utils import _fetch_files
+try:
+    # nilearn 0.10.3
+    from nilearn.datasets._utils import fetch_files as _fetch_files
+except ImportError:
+    from nilearn.datasets.utils import _fetch_files
+
 import numpy as np
 from sklearn.utils import Bunch
 
