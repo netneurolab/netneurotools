@@ -885,15 +885,10 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False, n_jobs=1):
               {len([v for i in predictor_combs for v in i])} combinations")
     
     model_r_sq = dict()
-    results = Parallel(n_jobs=n_jobs)
-                    (delayed(compute_r_sq)
-                    (idx_tuple) 
-                    for len_group in tqdm(predictor_combs,
-                                           desc='num-of-predictor loop',
-                                           disable=not verbose) 
-                    for idx_tuple in tqdm(len_group, 
-                                          desc='insider loop', 
-                                          disable=not verbose))
+    results = Parallel(n_jobs=n_jobs)(
+        delayed(compute_r_sq)(idx_tuple) 
+        for len_group in tqdm(predictor_combs, desc='num-of-predictor loop', disable=not verbose) 
+        for idx_tuple in tqdm(len_group, desc='insider loop', disable=not verbose))
 
     # extract r_sq from results
     for idx_tuple, r_sq in results:
