@@ -874,8 +874,8 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False, n_jobs=1):
 
     # helper function to compute r_sq for a given idx_tuple
     def compute_r_sq(idx_tuple):
-        return idx_tuple, get_reg_r_sq(X[:, idx_tuple], 
-                                       y, 
+        return idx_tuple, get_reg_r_sq(X[:, idx_tuple],
+                                       y,
                                        use_adjusted_r_sq=use_adjusted_r_sq)
 
     # generate all predictor combinations in list (num of predictors) of lists
@@ -889,12 +889,12 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False, n_jobs=1):
 
     model_r_sq = dict()
     results = Parallel(n_jobs=n_jobs)(
-        delayed(compute_r_sq)(idx_tuple) 
-        for len_group in tqdm(predictor_combs, 
-                              desc='num-of-predictor loop', 
-                              disable=not verbose) 
-        for idx_tuple in tqdm(len_group, 
-                              desc='insider loop', 
+        delayed(compute_r_sq)(idx_tuple)
+        for len_group in tqdm(predictor_combs,
+                              desc='num-of-predictor loop',
+                              disable=not verbose)
+        for idx_tuple in tqdm(len_group,
+                              desc='insider loop',
                               disable=not verbose))
 
     # extract r_sq from results
