@@ -13,6 +13,7 @@ except ImportError:  # scipy < 1.8.0
     from scipy.stats.stats import _chk2_asarray
 from sklearn.utils.validation import check_random_state
 from sklearn.linear_model import LinearRegression
+from joblib import Parallel, delayed
 
 
 from . import utils
@@ -873,7 +874,9 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False, n_jobs=1):
 
     # helper function to compute r_sq for a given idx_tuple
     def compute_r_sq(idx_tuple):
-        return idx_tuple, get_reg_r_sq(X[:, idx_tuple], y, use_adjusted_r_sq=use_adjusted_r_sq)
+        return idx_tuple, get_reg_r_sq(X[:, idx_tuple], 
+                                       y, 
+                                       use_adjusted_r_sq=use_adjusted_r_sq)
 
     # generate all predictor combinations in list (num of predictors) of lists
     n_predictor = X.shape[-1]
@@ -883,17 +886,21 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False, n_jobs=1):
     if verbose:
         print(f"[Dominance analysis] Generated \
               {len([v for i in predictor_combs for v in i])} combinations")
-    
+
     model_r_sq = dict()
     results = Parallel(n_jobs=n_jobs)(
         delayed(compute_r_sq)(idx_tuple) 
-        for len_group in tqdm(predictor_combs, desc='num-of-predictor loop', disable=not verbose) 
-        for idx_tuple in tqdm(len_group, desc='insider loop', disable=not verbose))
+        for len_group in tqdm(predictor_combs, 
+                              desc='num-of-predictor loop', 
+                              disable=not verbose) 
+        for idx_tuple in tqdm(len_group, 
+                              desc='insider loop', 
+                              disable=not verbose))
 
     # extract r_sq from results
     for idx_tuple, r_sq in results:
         model_r_sq[idx_tuple] = r_sq
-        
+
     if verbose:
         print(f"[Dominance analysis] Acquired {len(model_r_sq)} r^2's")
 
