@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for working with FreeSurfer data and parcellations
-"""
+"""Functions for working with FreeSurfer data and parcellations."""
 
 import os
 import os.path as op
@@ -30,7 +28,7 @@ def apply_prob_atlas(subject_id, gcs, hemi, *, orig='white', annot=None,
                      ctab=None, subjects_dir=None, use_cache=True,
                      quiet=False):
     """
-    Creates an annotation file for `subject_id` by applying atlas in `gcs`
+    Create an annotation file for `subject_id` by applying atlas in `gcs`.
 
     Runs subprocess calling FreeSurfer's "mris_ca_label" function; as such,
     FreeSurfer must be installed and accesible on the local system path.
@@ -67,7 +65,6 @@ def apply_prob_atlas(subject_id, gcs, hemi, *, orig='white', annot=None,
     annot : str
         Path to generated annotation file
     """
-
     cmd = 'mris_ca_label {opts}{subject_id} {hemi} {hemi}.sphere.reg ' \
           '{gcs} {annot}'
 
@@ -109,16 +106,14 @@ def apply_prob_atlas(subject_id, gcs, hemi, *, orig='white', annot=None,
 
 
 def _decode_list(vals):
-    """ List decoder
-    """
-
+    """List decoder."""
     return [val.decode() if hasattr(val, 'decode') else val for val in vals]
 
 
 def find_parcel_centroids(*, lhannot, rhannot, method='surface',
                           version='fsaverage', surf='sphere', drop=None):
     """
-    Returns vertex coords corresponding to centroids of parcels in annotations
+    Return vertex coords corresponding to centroids of parcels in annotations.
 
     Note that using any other `surf` besides the default of 'sphere' may result
     in centroids that are not directly within the parcels themselves due to
@@ -177,7 +172,6 @@ def find_parcel_centroids(*, lhannot, rhannot, method='surface',
        more time-consuming than the other two methods, especially for
        high-resolution meshes.
     """
-
     methods = ['average', 'surface', 'geodesic']
     if method not in methods:
         raise ValueError('Provided method for centroid calculation {} is '
@@ -213,7 +207,7 @@ def find_parcel_centroids(*, lhannot, rhannot, method='surface',
 
 def _geodesic_parcel_centroid(vertices, faces, inds):
     """
-    Calculates parcel centroids based on surface distance
+    Calculate parcel centroids based on surface distance.
 
     Parameters
     ----------
@@ -225,11 +219,10 @@ def _geodesic_parcel_centroid(vertices, faces, inds):
         Indices of `vertices` that belong to parcel
 
     Returns
-    --------
+    -------
     roi : (3,) numpy.ndarray
         Vertex corresponding to centroid of parcel
     """
-
     mask = np.ones(len(vertices), dtype=bool)
     mask[inds] = False
     mat = make_surf_graph(vertices, faces, mask=mask)
@@ -244,7 +237,7 @@ def _geodesic_parcel_centroid(vertices, faces, inds):
 
 def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
     """
-    Projects parcellated `data` to vertices defined in annotation files
+    Project parcellated `data` to vertices defined in annotation files.
 
     Assigns np.nan to all ROIs in `drop`
 
@@ -264,12 +257,11 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
         not specified, parcels defined in `netneurotools.freesurfer.FSIGNORE`
         are assumed to not be present. Default: None
 
-    Reurns
-    ------
+    Returns
+    -------
     projected : numpy.ndarray
         Vertex-level data
     """
-
     if drop is None:
         drop = FSIGNORE
     drop = _decode_list(drop)
@@ -314,7 +306,7 @@ def parcels_to_vertices(data, *, lhannot, rhannot, drop=None):
 
 def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
     """
-    Reduces vertex-level `data` to parcels defined in annotation files
+    Reduce vertex-level `data` to parcels defined in annotation files.
 
     Takes average of vertices within each parcel, excluding np.nan values
     (i.e., np.nanmean). Assigns np.nan to parcels for which all vertices are
@@ -333,12 +325,11 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
         to parcels defined in `netneurotools.freesurfer.FSIGNORE` will be
         removed. Default: None
 
-    Reurns
-    ------
+    Returns
+    -------
     reduced : numpy.ndarray
         Parcellated `data`, without regions specified in `drop`
     """
-
     if drop is None:
         drop = FSIGNORE
     drop = _decode_list(drop)
@@ -403,7 +394,7 @@ def vertices_to_parcels(data, *, lhannot, rhannot, drop=None):
 
 def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
     """
-    Gets vertex coordinates for specified `surface` of fsaverage `version`
+    Get vertex coordinates for specified `surface` of fsaverage `version`.
 
     Parameters
     ----------
@@ -421,7 +412,6 @@ def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
         Array denoting hemisphere designation of entries in `coords`, where
         `hemiid=0` denotes the left and `hemiid=1` the right hemisphere
     """
-
     # get coordinates and hemisphere designation for spin generation
     lhsphere, rhsphere = fetch_fsaverage(version)[surface]
     coords, hemi = [], []
@@ -435,7 +425,7 @@ def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
 def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
                          **kwargs):
     """
-    Generates spatial permutation resamples for fsaverage `version`
+    Generate spatial permutation resamples for fsaverage `version`.
 
     If `spins` are provided then performs checks to confirm they are valid
 
@@ -459,11 +449,10 @@ def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
         Keyword arguments passed to `netneurotools.stats.gen_spinsamples`
 
     Returns
-    --------
+    -------
     spins : (N, S) numpy.ndarray
         Resampling array
     """
-
     if spins is None:
         coords, hemiid = _get_fsaverage_coords(version, 'sphere')
         spins = gen_spinsamples(coords, hemiid, n_rotate=n_rotate,
@@ -476,7 +465,7 @@ def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
         warnings.warn('Shape of provided `spins` array does not match '
                       'number of rotations requested with `n_rotate`. '
                       'Ignoring specified `n_rotate` parameter and using '
-                      'all provided `spins`.')
+                      'all provided `spins`.', stacklevel=2)
         n_rotate = spins.shape[-1]
 
     return spins, None
@@ -485,7 +474,7 @@ def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,
 def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
               spins=None, drop=None, verbose=False, **kwargs):
     """
-    Projects parcellated `data` to surface, rotates, and re-parcellates
+    Project parcellated `data` to surface, rotates, and re-parcellates.
 
     Projection to the surface uses `{lh,rh}annot` files. Rotation uses vertex
     coordinates from the specified fsaverage `version` and relies on
@@ -531,7 +520,6 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
         for every rotation in `spinsamples`. Only provided if `return_cost` is
         True.
     """
-
     if drop is None:
         drop = FSIGNORE
 
@@ -571,7 +559,7 @@ def spin_data(data, *, lhannot, rhannot, version='fsaverage', n_rotate=1000,
 def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
                  spins=None, drop=None, verbose=False, **kwargs):
     """
-    Rotates parcels in `{lh,rh}annot` and re-assigns based on maximum overlap
+    Rotate parcels in `{lh,rh}annot` and re-assigns based on maximum overlap.
 
     Vertex labels are rotated with :func:`netneurotools.stats.gen_spinsamples`
     and a new label is assigned to each *parcel* based on the region maximally
@@ -621,8 +609,7 @@ def spin_parcels(*, lhannot, rhannot, version='fsaverage', n_rotate=1000,
     """
 
     def overlap(vals):
-        """ Returns most common non-negative value in `vals`; -1 if all neg
-        """
+        """Return most common non-negative value in `vals`; -1 if all neg."""
         vals = np.asarray(vals)
         vals, counts = np.unique(vals[vals > 0], return_counts=True)
         try:

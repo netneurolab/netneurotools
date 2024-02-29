@@ -27,6 +27,8 @@ Python Reference API
    struct_consensus
    threshold_network
    binarize_network
+   match_length_degree_distribution
+   randmio_und
 
 .. _ref_modularity:
 
@@ -84,10 +86,13 @@ Python Reference API
    :template: function.rst
    :toctree: generated/
 
+   sort_communities
    plot_mod_heatmap
    plot_conte69
-   plot_point_brain
+   plot_fslr
    plot_fsaverage
+   plot_fsvertex
+   plot_point_brain
 
 .. _ref_stats:
 
@@ -112,6 +117,15 @@ Python Reference API
    permtest_rel
    permtest_pearsonr
    get_dominance_stats
+   network_pearsonr
+   network_pearsonr_numba
+   network_pearsonr_pairwise
+   effective_resistance
+   network_polarisation
+   network_variance
+   network_variance_numba
+   network_covariance
+   network_covariance_numba
 
 .. _ref_metrics:
 
@@ -128,8 +142,24 @@ Python Reference API
    :template: function.rst
    :toctree: generated/
 
+   _binarize
+   degrees_und
+   degrees_dir
+   distance_wei_floyd
+   retrieve_shortest_path
    communicability_bin
    communicability_wei
+   rich_feeder_peripheral
+   navigation_wu
+   get_navigation_path_length
+   search_information
+   path_transitivity
+   flow_graph
+   mean_first_passage_time
+   diffusion_efficiency
+   resource_efficiency_bin
+   matching_ind_und
+   _graph_laplacian
 
 .. _ref_datasets:
 
@@ -234,3 +264,20 @@ Functions to generate (pseudo-random) datasets
    add_constant
    get_triu
    get_centroids
+
+.. _ref_colors:
+
+:mod:`netneurotools.colors` - Useful colormaps
+--------------------------------------------------------------
+
+.. automodule:: netneurotools.colors
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.colors
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   available_cmaps

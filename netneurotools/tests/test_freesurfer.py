@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-For testing netneurotools.freesurfer functionality
-"""
+"""For testing netneurotools.freesurfer functionality."""
 
 import numpy as np
 import pytest

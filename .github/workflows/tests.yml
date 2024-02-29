@@ -1,98 +1,70 @@
-name: netneurotools tests
+name: netneurotools-tests
 
-on: [push, pull_request]
-
-defaults:
-  run:
-    shell: bash
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
-  check_skip:
+  check_style:
     runs-on: ubuntu-latest
-    outputs:
-      skip: ${{ steps.result_step.outputs.ci-skip }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - id: result_step
-        uses: mstachniuk/ci-skip@master
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
         with:
-          commit-filter: '[skip ci];[ci skip];[skip github]'
-          commit-filter-separator: ';'
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            python -m pip install ruff
+      - name: Run style checks
+        run: ruff .
 
-  checks:
-    needs: check_skip
-    if: ${{ needs.check_skip.outputs.skip == 'false' }}
+  run_tests:
+    needs: check_style
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
-        python-version: ['3.6', '3.7', '3.8', '3.9']
-        architecture: ['x64', 'x86']
-        install: ['setup']
-        check: ['test']
-        optional-depends: ['']
-        include:
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: setup
-            check: style
-            optional-depends: ''
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: setup
-            check: doc
-            optional-depends: ''
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: setup
-            check: test
-            optional-depends: 'numba pyqt5 mayavi pysurfer'
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: sdist
-            check: test
-            optional-depends: ''
-          - os: ubuntu-latest
-            python-version: 3.8
-            install: wheel
-            check: test
-            optional-depends: ''
-        exclude:
-          - os: ubuntu-latest
-            architecture: x86
-          - os: macos-latest
-            architecture: x86
-    env:
-      INSTALL_TYPE: ${{ matrix.install }}
-      CHECK_TYPE: ${{ matrix.check }}
-      OPTIONAL_DEPENDS: ${{ matrix.optional-depends }}
+        os: ['ubuntu-latest']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          submodules: recursive
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
-        run: ./tools/install_dependencies.sh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pytest-cov
+          python -m pip install -r requirements.txt
       - name: Install netneurotools
-        run: ./tools/install_package.sh
+        run: python -m pip install .
+      - name: Print netneurotools version
+        run: python -c "import netneurotools; print(netneurotools.__version__)" 
+      - name: Test submodule import
+        run: |
+          cd ..
+          python -c "from netneurotools import metrics; from netneurotools.datasets import fetch_cammoun2012"
       - name: Run tests
-        run: ./tools/run_checks.sh
-      - uses: codecov/codecov-action@v1
+        run: pytest --doctest-modules --cov=netneurotools --cov-report=xml --junitxml=junit/test-results.xml --verbose --pyargs netneurotools
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
         with:
-          file: for_testing/coverage.xml
-        if: ${{ always() }}
+          file: coverage.xml
       - name: Upload pytest test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
-          path: for_testing/test-results.xml
-        if: ${{ always() && matrix.check == 'test' }}
+          path: junit/test-results.xml

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-For testing netneurotools.stats functionality
-"""
+"""For testing netneurotools.stats functionality."""
 
 import itertools
 import numpy as np
@@ -106,14 +104,13 @@ def test_gen_rotation():
     # confirm reflection across L/R hemispheres as expected
     # also confirm min/max never exceeds -1/1
     reflected = np.array([[1, -1, -1], [-1, 1, 1], [-1, 1, 1]])
-    for r, l in zip([rout1, rout3], [lout1, lout3]):
+    for r, l in zip([rout1, rout3], [lout1, lout3]):  # noqa: E741
         assert np.allclose(r / l, reflected)
         assert r.max() < 1 and r.min() > -1 and l.max() < 1 and l.min() > -1
 
 
 def _get_sphere_coords(s, t, r=1):
-    """ Gets coordinates at angles `s` and `t` a sphere of radius `r`
-    """
+    """Get coordinates at angles `s` and `t` a sphere of radius `r`."""
     # convert to radians
     rad = np.pi / 180
     s, t = s * rad, t * rad

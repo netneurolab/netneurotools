@@ -1,6 +1,4 @@
-"""
-Functions for fetching and generating datasets
-"""
+"""Functions for fetching and generating datasets."""
 
 __all__ = [
     'fetch_cammoun2012', 'fetch_pauli2018', 'fetch_fsaverage', 'fetch_conte69',

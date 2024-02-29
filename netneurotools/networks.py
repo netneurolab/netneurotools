@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for generating group-level networks from individual measurements
-"""
+"""Functions for generating group-level networks from individual measurements."""
 
 import bct
 import numpy as np
@@ -12,10 +10,16 @@ from sklearn.utils.validation import (check_random_state, check_array,
 
 from . import utils
 
+try:
+    from numba import njit
+    use_numba = True
+except ImportError:
+    use_numba = False
+
 
 def func_consensus(data, n_boot=1000, ci=95, seed=None):
     """
-    Calculates thresholded group consensus functional connectivity graph
+    Calculate thresholded group consensus functional connectivity graph.
 
     This function concatenates all time series in `data` and computes a group
     correlation matrix based on this extended time series. It then generates
@@ -53,7 +57,6 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
     competitive spreading dynamics on the human connectome. Neuron, 86(6),
     1518-1529.
     """
-
     # check inputs
     rs = check_random_state(seed)
     if ci > 100 or ci < 0:
@@ -108,7 +111,7 @@ def func_consensus(data, n_boot=1000, ci=95, seed=None):
 
 def _ecdf(data):
     """
-    Estimates empirical cumulative distribution function of `data`
+    Estimate empirical cumulative distribution function of `data`.
 
     Taken directly from StackOverflow. See original answer at
     https://stackoverflow.com/questions/33345780.
@@ -124,7 +127,6 @@ def _ecdf(data):
     quantiles : numpy.darray
         Quantiles
     """
-
     sample = np.atleast_1d(data)
 
     # find the unique values and their corresponding counts
@@ -142,7 +144,7 @@ def _ecdf(data):
 
 def struct_consensus(data, distance, hemiid, weighted=False):
     """
-    Calculates distance-dependent group consensus structural connectivity graph
+    Calculate distance-dependent group consensus structural connectivity graph.
 
     Takes as input a weighted stack of connectivity matrices with dimensions
     (N, N, S) where `N` is the number of nodes and `S` is the number of
@@ -195,14 +197,13 @@ def struct_consensus(data, distance, hemiid, weighted=False):
     dependent consensus thresholds for generating group-representative
     structural brain networks. Network Neuroscience, 1-22.
     """
-
     # confirm input shapes are as expected
     check_consistent_length(data, distance, hemiid)
     try:
         hemiid = check_array(hemiid, ensure_2d=True)
     except ValueError:
         raise ValueError('Provided hemiid must be a 2D array. Reshape your '
-                         'data using array.reshape(-1, 1) and try again.')
+                         'data using array.reshape(-1, 1) and try again.') from None
 
     num_node, _, num_sub = data.shape      # info on connectivity matrices
     pos_data = data > 0                    # location of + values in matrix
@@ -284,7 +285,7 @@ def struct_consensus(data, distance, hemiid, weighted=False):
 
 def binarize_network(network, retain=10, keep_diag=False):
     """
-    Keeps top `retain` % of connections in `network` and binarizes
+    Keep top `retain` % of connections in `network` and binarizes.
 
     Uses the upper triangle for determining connection percentage, which may
     result in disconnected nodes. If this behavior is not desired see
@@ -308,7 +309,6 @@ def binarize_network(network, retain=10, keep_diag=False):
     --------
     netneurotools.networks.threshold_network
     """
-
     if retain < 0 or retain > 100:
         raise ValueError('Value provided for `retain` is outside [0, 100]: {}'
                          .format(retain))
@@ -326,7 +326,7 @@ def binarize_network(network, retain=10, keep_diag=False):
 
 def threshold_network(network, retain=10):
     """
-    Keeps top `retain` % of connections in `network` and binarizes
+    Keep top `retain` % of connections in `network` and binarizes.
 
     Uses a minimum spanning tree to ensure that no nodes are disconnected from
     the resulting thresholded graph
@@ -347,7 +347,6 @@ def threshold_network(network, retain=10):
     --------
     netneurotools.networks.binarize_network
     """
-
     if retain < 0 or retain > 100:
         raise ValueError('Value provided for `retain` must be a percent '
                          'in range [0, 100]. Provided: {}'.format(retain))
@@ -379,139 +378,266 @@ def threshold_network(network, retain=10):
 
     return mst
 
-def strength_preserving_rand(A, rewiring_iter = 10, nstage = 100,
-                             niter = 10000, temp = 1000, frac = 0.5,
-                             energy_type = 'euclidean', connected = None,
-                             verbose = False, seed = None):
 
+def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
+                                     replacement=False, weighted=True,
+                                     seed=None):
     """
-    Degree- and strength-preserving randomization of
-    unidrected, weighted adjacency matrix A
-
-    Algorithm: Uses Maslov & Sneppen rewiring model to produce a
-               surrogate adjacency matrix, B, with the same degree sequence and
-               weight distribution as A. The weights are then permuted
-               to optimize the match between the strength sequences of A and B
-               using simulated annealing.
-
-    Adapted from a function written in MATLAB by Richard Betzel.
+    Generate degree- and edge length-preserving surrogate connectomes.
 
     Parameters
     ----------
-    A : (N, N) array-like
-        Undirected symmetric weighted adjacency matrix
-    rewiring_iter : int, optional
-        Rewiring parameter (each edge is rewired approximately maxswap times).
-        Default = 10.
-    nstage : int, optional
-        Number of annealing stages. Default = 100.
-    niter : int, optional
-        Number of iterations per stage. Default = 10000.
-    temp : float, optional
-        Initial temperature. Default = 1000.
-    frac : float, optional
-        Fractional decrease in temperature per stage. Default = 0.5.
-    energy_type: str, optional
-        Energy function to minimize. Can be either:
-            'euclidean': Euclidean distance between strength sequence vectors
-                         of the original network and the randomized network
-            'max': The single largest value
-                   by which the strength sequences deviate
-        Default = 'euclidean'.
-    connected: bool, optional
-        Maintain connectedness of randomized network.
-        By default, this is inferred from data.
-    verbose: bool, optional
-        Print status to screen at the end of every stage. Default = False.
-    seed: float, optional
-        Random seed. Default = None.
+    W : (N, N) array-like
+        weighted or binary symmetric connectivity matrix.
+    D : (N, N) array-like
+        symmetric distance matrix.
+    nbins : int
+        number of distance bins (edge length matrix is performed by swapping
+        connections in the same bin). Default = 10.
+    nswap : int
+        total number of edge swaps to perform. Recommended = nnodes * 20
+        Default = 1000.
+    replacement : bool, optional
+        if True all the edges are available for swapping. Default= False
+    weighted : bool, optional
+        Whether to return weighted rewired connectivity matrix. Default = True
+    seed : float, optional
+        Random seed. Default = None
 
     Returns
     -------
-    B : (N, N) array-like
-        Randomized adjacency matrix
-    min_energy : float
-        Minimum energy obtained by annealing
+    newB : (N, N) array-like
+        binary rewired matrix
+    newW: (N, N) array-like
+        weighted rewired matrix. Returns matrix of zeros if weighted=False.
+    nr : int
+        number of successful rewires
+
+    Notes
+    -----
+    Takes a weighted, symmetric connectivity matrix `data` and Euclidean/fiber
+    length matrix `distance` and generates a randomized network with:
+        1. exactly the same degree sequence
+        2. approximately the same edge length distribution
+        3. exactly the same edge weight distribution
+        4. approximately the same weight-length relationship
+
+    Reference
+    ---------
+    Betzel, R. F., Bassett, D. S. (2018) Specificity and robustness of
+    long-distance connections in weighted, interareal connectomes. PNAS.
+
     """
-
-    try:
-        A = np.array(A)
-    except ValueError as err:
-        msg = ('A must be array_like. Received: {}'.format(type(A)))
-        raise TypeError(msg) from err
-
     rs = check_random_state(seed)
+    N = len(W)
+    # divide the distances by lengths
+    bins = np.linspace(D[D.nonzero()].min(), D[D.nonzero()].max(), nbins + 1)
+    bins[-1] += 1
+    L = np.zeros((N, N))
+    for n in range(nbins):
+        i, j = np.where(np.logical_and(bins[n] <= D, D < bins[n + 1]))
+        L[i, j] = n + 1
 
-    n = A.shape[0]
-    s = np.sum(A, axis = 1) #strengths of A
+    # binarized connectivity
+    B = (W != 0).astype(np.int_)
 
-    if connected is None:
-        connected = False if bct.number_of_components(A) > 1 else True
+    # existing edges (only upper triangular cause it's symmetric)
+    cn_x, cn_y = np.where(np.triu((B != 0) * B, k=1))
 
-    #Maslov & Sneppen rewiring
-    if connected:
-        B = bct.randmio_und_connected(A, rewiring_iter, seed = seed)[0]
-    else:
-        B = bct.randmio_und(A, rewiring_iter, seed = seed)[0]
+    tries = 0
+    nr = 0
+    newB = np.copy(B)
 
-    u, v = np.triu(B, k = 1).nonzero() #upper triangle indices
-    wts = np.triu(B, k = 1)[(u, v)] #upper triangle values
-    m = len(wts)
-    sb = np.sum(B, axis = 1) #strengths of B
+    while ((len(cn_x) >= 2) & (nr < nswap)):
+        # choose randomly the edge to be rewired
+        r = rs.randint(len(cn_x))
+        n_x, n_y = cn_x[r], cn_y[r]
+        tries += 1
 
-    if energy_type == 'max':
-        energy = np.max(np.abs(s - sb))
-    else: #euclidean
-        energy = np.sum((s - sb)**2)
+        # options to rewire with
+        # connected nodes that doesn't involve (n_x, n_y)
+        index = (cn_x != n_x) & (cn_y != n_y) & (cn_y != n_x) & (cn_x != n_y)
+        if len(np.where(index)[0]) == 0:
+            cn_x = np.delete(cn_x, r)
+            cn_y = np.delete(cn_y, r)
 
-    energymin = energy
-    wtsmin = wts
+        else:
+            ops1_x, ops1_y = cn_x[index], cn_y[index]
+            # options that will preserve the distances
+            # (ops1_x, ops1_y) such that
+            # L(n_x,n_y) = L(n_x, ops1_x) & L(ops1_x,ops1_y) = L(n_y, ops1_y)
+            index = (L[n_x, n_y] == L[n_x, ops1_x]) & (
+                L[ops1_x, ops1_y] == L[n_y, ops1_y])
+            if len(np.where(index)[0]) == 0:
+                cn_x = np.delete(cn_x, r)
+                cn_y = np.delete(cn_y, r)
 
-    if verbose:
-        print('\ninitial energy {:.5f}'.format(energy))
+            else:
+                ops2_x, ops2_y = ops1_x[index], ops1_y[index]
+                # options of edges that didn't exist before
+                index = [(newB[min(n_x, ops2_x[i])][max(n_x, ops2_x[i])] == 0)
+                         & (newB[min(n_y, ops2_y[i])][max(n_y,
+                                                          ops2_y[i])] == 0)
+                         for i in range(len(ops2_x))]
+                if (len(np.where(index)[0]) == 0):
+                    cn_x = np.delete(cn_x, r)
+                    cn_y = np.delete(cn_y, r)
 
-    for istage in tqdm(range(nstage), desc = 'annealing progress'):
+                else:
+                    ops3_x, ops3_y = ops2_x[index], ops2_y[index]
 
-        naccept = 0
-        for i in range(niter):
+                    # choose randomly one edge from the final options
+                    r1 = rs.randint(len(ops3_x))
+                    nn_x, nn_y = ops3_x[r1], ops3_y[r1]
 
-            #permutation
-            e1 = rs.randint(m)
-            e2 = rs.randint(m)
+                    # Disconnect the existing edges
+                    newB[n_x, n_y] = 0
+                    newB[nn_x, nn_y] = 0
+                    # Connect the new edges
+                    newB[min(n_x, nn_x), max(n_x, nn_x)] = 1
+                    newB[min(n_y, nn_y), max(n_y, nn_y)] = 1
+                    # one successfull rewire!
+                    nr += 1
 
-            a, b = u[e1], v[e1]
-            c, d = u[e2], v[e2]
+                    # rewire with replacement
+                    if replacement:
+                        cn_x[r], cn_y[r] = min(n_x, nn_x), max(n_x, nn_x)
+                        index = np.where((cn_x == nn_x) & (cn_y == nn_y))[0]
+                        cn_x[index], cn_y[index] = min(
+                            n_y, nn_y), max(n_y, nn_y)
+                    # rewire without replacement
+                    else:
+                        cn_x = np.delete(cn_x, r)
+                        cn_y = np.delete(cn_y, r)
+                        index = np.where((cn_x == nn_x) & (cn_y == nn_y))[0]
+                        cn_x = np.delete(cn_x, index)
+                        cn_y = np.delete(cn_y, index)
 
-            sb_prime = sb.copy()
-            sb_prime[[a, b]] = sb_prime[[a, b]] - wts[e1] + wts[e2]
-            sb_prime[[c, d]] = sb_prime[[c, d]] + wts[e1] - wts[e2]
+    if nr < nswap:
+        print(f"I didn't finish, out of rewirable edges: {len(cn_x)}")
 
-            if energy_type == 'max':
-                energy_prime = np.max(np.abs(sb_prime - s))
-            else: #euclidean
-                energy_prime = np.sum((sb_prime - s)**2)
+    i, j = np.triu_indices(N, k=1)
+    # Make the connectivity matrix symmetric
+    newB[j, i] = newB[i, j]
 
-            #permutation acceptance criterion
-            if (energy_prime < energy or
-               rs.rand() < np.exp(-(energy_prime - energy)/temp)):
-                sb = sb_prime.copy()
-                wts[[e1, e2]] = wts[[e2, e1]]
-                energy = energy_prime
-                if energy < energymin:
-                    energymin = energy
-                    wtsmin = wts
-                naccept = naccept + 1
+    # check the number of edges is preserved
+    if len(np.where(B != 0)[0]) != len(np.where(newB != 0)[0]):
+        print(
+            f"ERROR --- number of edges changed, \
+            B:{len(np.where(B!=0)[0])}, newB:{len(np.where(newB!=0)[0])}")
+    # check that the degree of the nodes it's the same
+    for i in range(N):
+        if np.sum(B[i]) != np.sum(newB[i]):
+            print(
+                f"ERROR --- node {i} changed k by: \
+                {np.sum(B[i]) - np.sum(newB[i])}")
 
-        #temperature update
-        temp = temp*frac
-        if verbose:
-            print('\nstage {:d}, temp {:.5f}, best energy {:.5f}, '
-                  'frac of accepted moves {:.3f}'.format(istage, temp,
-                                                         energymin,
-                                                         naccept/niter))
+    newW = np.zeros((N, N))
+    if weighted:
+        # Reassign the weights
+        mask = np.triu(B != 0, k=1)
+        inids = D[mask]
+        iniws = W[mask]
+        inids_index = np.argsort(inids)
+        # Weights from the shortest to largest edges
+        iniws = iniws[inids_index]
+        mask = np.triu(newB != 0, k=1)
+        finds = D[mask]
+        i, j = np.where(mask)
+        # Sort the new edges from the shortest to the largest
+        finds_index = np.argsort(finds)
+        i_sort = i[finds_index]
+        j_sort = j[finds_index]
+        # Assign the initial sorted weights
+        newW[i_sort, j_sort] = iniws
+        # Make it symmetrical
+        newW[j_sort, i_sort] = iniws
 
-    B = np.zeros((n, n))
-    B[(u, v)] = wtsmin
-    B = B + B.T
+    return newB, newW, nr
 
-    return B, energymin
+
+def randmio_und(W, itr):
+    """
+    Optimized version of randmio_und.
+
+    This function randomizes an undirected network, while preserving the
+    degree distribution. The function does not preserve the strength
+    distribution in weighted networks.
+
+    This function is significantly faster if numba is enabled, because
+    the main overhead is `np.random.randint`, see `here <https://stackoverflow.com/questions/58124646/why-in-python-is-random-randint-so-much-slower-than-random-random>`_
+
+    Parameters
+    ----------
+    W : (N, N) array-like
+        Undirected binary/weighted connection matrix
+    itr : int
+        rewiring parameter. Each edge is rewired approximately itr times.
+
+    Returns
+    -------
+    W : (N, N) array-like
+        Randomized network
+    eff : int
+        number of actual rewirings carried out
+    """  # noqa: E501
+    W = W.copy()
+    n = len(W)
+    i, j = np.where(np.triu(W > 0, 1))
+    k = len(i)
+    itr *= k
+
+    # maximum number of rewiring attempts per iteration
+    max_attempts = np.round(n * k / (n * (n - 1)))
+    # actual number of successful rewirings
+    eff = 0
+
+    for _ in range(int(itr)):
+        att = 0
+        while att <= max_attempts:  # while not rewired
+            while True:
+                e1, e2 = np.random.randint(k), np.random.randint(k)
+                while e1 == e2:
+                    e2 = np.random.randint(k)
+                a, b = i[e1], j[e1]
+                c, d = i[e2], j[e2]
+
+                if a != c and a != d and b != c and b != d:
+                    break  # all 4 vertices must be different
+
+            # flip edge c-d with 50% probability
+            # to explore all potential rewirings
+            if np.random.random() > .5:
+                i[e2], j[e2] = d, c
+                c, d = d, c
+
+            # rewiring condition
+            # not flipped
+            # a--b    a  b
+            #      TO  X
+            # c--d    c  d
+            # if flipped
+            # a--b    a--b    a  b
+            #      TO      TO  X
+            # c--d    d--c    d  c
+            if not (W[a, d] or W[c, b]):
+                W[a, d] = W[a, b]
+                W[a, b] = 0
+                W[d, a] = W[b, a]
+                W[b, a] = 0
+                W[c, b] = W[c, d]
+                W[c, d] = 0
+                W[b, c] = W[d, c]
+                W[d, c] = 0
+
+                j[e1] = d
+                j[e2] = b  # reassign edge indices
+                eff += 1
+                break
+            att += 1
+
+    return W, eff
+
+
+if use_numba:
+    randmio_und = njit(randmio_und)

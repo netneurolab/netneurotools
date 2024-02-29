@@ -1,6 +1,4 @@
-"""
-Functions for constructing graphs from surface meshes
-"""
+"""Functions for constructing graphs from surface meshes."""
 
 import numpy as np
 from scipy import sparse
@@ -8,7 +6,7 @@ from scipy import sparse
 
 def _get_edges(faces):
     """
-    Gets set of edges from `faces`
+    Get set of edges from `faces`.
 
     Parameters
     ----------
@@ -20,7 +18,6 @@ def _get_edges(faces):
     edges : (F*3, 2) array_like
         All edges in `faces`
     """
-
     faces = np.asarray(faces)
     edges = np.sort(faces[:, [0, 1, 1, 2, 2, 0]].reshape((-1, 2)), axis=1)
 
@@ -29,7 +26,7 @@ def _get_edges(faces):
 
 def get_direct_edges(vertices, faces):
     """
-    Gets (unique) direct edges and weights in mesh describes by inputs.
+    Get (unique) direct edges and weights in mesh describes by inputs.
 
     Parameters
     ----------
@@ -53,7 +50,7 @@ def get_direct_edges(vertices, faces):
 
 def get_indirect_edges(vertices, faces):
     """
-    Gets indirect edges and weights in mesh described by inputs
+    Get indirect edges and weights in mesh described by inputs.
 
     Indirect edges are between two vertices that participate in faces sharing
     an edge
@@ -150,7 +147,7 @@ def get_indirect_edges(vertices, faces):
 
 def make_surf_graph(vertices, faces, mask=None):
     """
-    Constructs adjacency graph from `surf`.
+    Construct adjacency graph from `surf`.
 
     Parameters
     ----------
@@ -171,7 +168,6 @@ def make_surf_graph(vertices, faces, mask=None):
     ------
     ValueError : inconsistent number of vertices in `mask` and `vertices`
     """
-
     if mask is not None and len(mask) != len(vertices):
         raise ValueError('Supplied `mask` array has different number of '
                          'vertices than supplied `vertices`.')

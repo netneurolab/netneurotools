@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Functions for making pretty plots and whatnot
-"""
+"""Functions for making pretty plots and whatnot."""
 
 import os
 from typing import Iterable
@@ -17,7 +15,7 @@ from .freesurfer import FSIGNORE, _decode_list
 
 def _grid_communities(communities):
     """
-    Generates boundaries of `communities`
+    Generate boundaries of `communities`.
 
     Parameters
     ----------
@@ -29,7 +27,6 @@ def _grid_communities(communities):
     bounds : list
         Boundaries of communities
     """
-
     communities = np.asarray(communities)
     if 0 in communities:
         communities = communities + 1
@@ -48,7 +45,7 @@ def _grid_communities(communities):
 
 def sort_communities(consensus, communities):
     """
-    Sorts `communities` in `consensus` according to strength
+    Sort `communities` in `consensus` according to strength.
 
     Parameters
     ----------
@@ -62,7 +59,6 @@ def sort_communities(consensus, communities):
     inds : np.ndarray
         Index array for sorting `consensus`
     """
-
     communities = np.asarray(communities)
     if 0 in communities:
         communities = communities + 1
@@ -84,7 +80,7 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
                      square=True, xticklabels=None, yticklabels=None,
                      mask_diagonal=True, **kwargs):
     """
-    Plots `data` as heatmap with borders drawn around `communities`
+    Plot `data` as heatmap with borders drawn around `communities`.
 
     Parameters
     ----------
@@ -126,9 +122,8 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
     ax : matplotlib.axes.Axes
         Axis object containing plot
     """
-
-    for t, l in zip([xticklabels, yticklabels], [xlabels, ylabels]):
-        if t is not None and l is not None:
+    for t, label in zip([xticklabels, yticklabels], [xlabels, ylabels]):
+        if t is not None and label is not None:
             raise ValueError('Cannot set both {x,y}labels and {x,y}ticklabels')
 
     # get indices for sorting consensus
@@ -216,9 +211,8 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
                  colorbar=True, num_labels=4, orientation='horizontal',
                  colorbartitle=None, backgroundcolor=(1, 1, 1),
                  foregroundcolor=(0, 0, 0), **kwargs):
-
     """
-    Plots surface `data` on Conte69 Atlas
+    Plot surface `data` on Conte69 Atlas.
 
     Parameters
     ----------
@@ -257,12 +251,12 @@ def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
         Default: (0, 0, 0)
     kwargs : key-value mapping
         Keyword arguments for `mayavi.mlab.triangular_mesh()`
+
     Returns
     -------
     scene : mayavi.Scene
         Scene object containing plot
     """
-
     return plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
                      surf_type=surf, vmin=vmin, vmax=vmax, colormap=colormap,
                      colorbar=colorbar, num_labels=num_labels,
@@ -277,9 +271,8 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
               orientation='horizontal', colorbartitle=None,
               backgroundcolor=(1, 1, 1), foregroundcolor=(0, 0, 0),
               **kwargs):
-
     """
-    Plots surface `data` on a given fsLR32k atlas
+    Plot surface `data` on a given fsLR32k atlas.
 
     Parameters
     ----------
@@ -326,13 +319,12 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
     scene : mayavi.Scene
         Scene object containing plot
     """
-
     from .datasets import fetch_conte69, fetch_yerkes19
     try:
         from mayavi import mlab
     except ImportError:
         raise ImportError('Cannot use plot_fslr() if mayavi is not '
-                          'installed. Please install mayavi and try again.')
+                          'installed. Please install mayavi and try again.') from None
 
     opts = dict()
     opts.update(**kwargs)
@@ -346,7 +338,7 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
     except KeyError:
         raise ValueError('Provided surf "{}" is not valid. Must be one of '
                          '[\'midthickness\', \'inflated\', \'vinflated\']'
-                         .format(surf_type))
+                         .format(surf_type)) from None
 
     lhsurface, rhsurface = [nib.load(s) for s in surface]
 
@@ -398,7 +390,7 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
 
 def _get_fs_subjid(subject_id, subjects_dir=None):
     """
-    Gets fsaverage version `subject_id`, fetching if required
+    Get fsaverage version `subject_id`, fetching if required.
 
     Parameters
     ----------
@@ -415,7 +407,6 @@ def _get_fs_subjid(subject_id, subjects_dir=None):
     subjects_dir : str
         Path to subject directory with `subject_id`
     """
-
     from netneurotools.utils import check_fs_subjid
 
     # check for FreeSurfer install w/fsaverage; otherwise, fetch required
@@ -425,7 +416,7 @@ def _get_fs_subjid(subject_id, subjects_dir=None):
         if 'fsaverage' not in subject_id:
             raise ValueError('Provided subject {} does not exist in provided '
                              'subjects_dir {}'
-                             .format(subject_id, subjects_dir))
+                             .format(subject_id, subjects_dir)) from None
         from netneurotools.datasets import fetch_fsaverage
         from netneurotools.datasets.utils import _get_data_dir
         fetch_fsaverage(subject_id)
@@ -439,7 +430,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
                    noplot=None, subject_id='fsaverage', subjects_dir=None,
                    vmin=None, vmax=None, **kwargs):
     """
-    Plots `data` to fsaverage brain using `annot` as parcellation
+    Plot `data` to fsaverage brain using `annot` as parcellation.
 
     Parameters
     ----------
@@ -512,7 +503,6 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     ...                rhannot=schaefer.rh)  # doctest: +SKIP
 
     """
-
     subject_id, subjects_dir = _get_fs_subjid(subject_id, subjects_dir)
 
     # cast data to float (required for NaNs)
@@ -591,7 +581,7 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
                   subject_id='fsaverage', subjects_dir=None, data_kws=None,
                   **kwargs):
     """
-    Plots vertex-wise `data` to fsaverage brain.
+    Plot vertex-wise `data` to fsaverage brain.
 
     Parameters
     ----------
@@ -640,13 +630,12 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
     brain : surfer.Brain
         Plotted PySurfer brain
     """
-
     # hold off on imports until
     try:
         from surfer import Brain
     except ImportError:
         raise ImportError('Cannot use plot_fsaverage() if pysurfer is not '
-                          'installed. Please install pysurfer and try again.')
+                          'installed. Please install pysurfer and try again.') from None
 
     subject_id, subjects_dir = _get_fs_subjid(subject_id, subjects_dir)
 
@@ -702,7 +691,7 @@ def plot_fsvertex(data, *, order='lr', surf='pial', views='lat',
 
         if alpha != 1.0:
             surf = brain.data_dict[hemi]['surfaces']
-            for n, s in enumerate(surf):
+            for _, s in enumerate(surf):
                 s.actor.property.opacity = alpha
                 s.render()
 
@@ -729,7 +718,7 @@ def plot_point_brain(data, coords, views=None, views_orientation='vertical',
                      views_size=(4, 2.4), cbar=False, robust=True, size=50,
                      **kwargs):
     """
-    Plots `data` as a cloud of points in 3D space based on specified `coords`
+    Plot `data` as a cloud of points in 3D space based on specified `coords`.
 
     Parameters
     ----------
@@ -759,7 +748,6 @@ def plot_point_brain(data, coords, views=None, views_orientation='vertical',
     -------
     fig : :class:`matplotlib.figure.Figure`
     """
-
     _views = dict(sagittal=(0, 180), sag=(0, 180),
                   axial=(90, 180), ax=(90, 180),
                   coronal=(0, 90), cor=(0, 90))

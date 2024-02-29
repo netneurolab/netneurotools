@@ -1,27 +1,77 @@
 netneurotools: Tools for network neuroscience
 =============================================
 
+|
+
+.. .. image:: https://zenodo.org/badge/375755159.svg
+..    :target: https://zenodo.org/badge/latestdoi/375755159
+..    :alt: Zenodo record
+
+.. image:: https://img.shields.io/pypi/v/netneurotools
+   :target: https://pypi.python.org/pypi/netneurotools/
+   :alt: Latest PyPI version
+
+.. image:: https://img.shields.io/badge/docker-netneurolab/netneurotools-brightgreen.svg?logo=docker&style=flat
+  :target: https://hub.docker.com/r/netneurolab/netneurotools/tags/
+  :alt: Latest Docker image
+
+.. image:: https://github.com/netneurolab/netneurotools/actions/workflows/tests.yml/badge.svg
+  :target: https://github.com/netneurolab/netneurotools/actions/workflows/tests.yml
+  :alt: run-tests status
+
+.. image:: https://github.com/netneurolab/netneurotools/actions/workflows/docs.yml/badge.svg
+  :target: https://netneurolab.github.io/netneurotools/
+  :alt: deploy-docs status
+
+|
+
 This toolbox is a collection of functions written in Python that get frequent
 usage in the `Network Neuroscience Lab <netneurolab.github.io/>`_, housed in
 the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
 
-.. image:: https://travis-ci.org/netneurolab/netneurotools.svg?branch=master
-   :target: https://travis-ci.org/netneurolab/netneurotools
-.. image:: https://codecov.io/gh/netneurolab/netneurotools/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/netneurolab/netneurotools
-.. image:: https://readthedocs.org/projects/netneurotools/badge/?version=latest
-   :target: https://netneurotools.readthedocs.io/en/latest
-.. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
-   :target: https://opensource.org/licenses/BSD-3-Clause
+.. _installation:
 
-.. _usage:
+Installation
+------------
 
-Usage
------
+Install directly from PyPi with :code:`pip install netneurotools` or install the main branch with
+
+.. code-block:: bash
+
+    git clone https://github.com/netneurolab/netneurotools.git
+    cd netneurotools
+    pip install .
+
+.. _features:
+
+Features
+--------
+
+*  Network neuroscience metrics: up-to-date and optimized
+
+   *  Network communication
+   *  Null networks
+
+*  Brain plotting functions: easy to use and customize
+
+   *  Surface visualization 
+      `plot_fsaverage <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_fsaverage.html>`_ 
+      and `plot_fslr <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_fslr.html>`_
+   *  3D point brain `plot_point_brain <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_point_brain.html>`_
+   *  Sorted communities `plot_mod_heatmap <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_mod_heatmap.html>`_
+
+*  Statistics functions
+
+   *  Dominance analysis `get_dominance_stats <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.stats.get_dominance_stats.html>`_
+
+*  Fetchers for common datasets
+
+*  Utilities for working with FreeSurfer and CIVET
+
 
 Check out our `documentation <https://netneurotools.readthedocs.io/en/latest>`_
-for information on how to install and use ``netneurotools``!
+for more information!
 
 .. _development:
 
