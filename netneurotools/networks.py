@@ -643,18 +643,18 @@ if use_numba:
     randmio_und = njit(randmio_und)
 
 
-def strength_preserving_rand_sa(A, rewiring_iter=10, 
+def strength_preserving_rand_sa(A, rewiring_iter=10,
                                 nstage=100, niter=10000,
                                 temp=1000, frac=0.5,
                                 energy_type='sse', energy_func=None,
-                                R=None, connected=None, 
+                                R=None, connected=None,
                                 verbose=False, seed=None):
     """
-    This function randomizes an undirected weighted network, while preserving
+    Randomize an undirected weighted network, while preserving
     the degree and strength sequences using simulated annealing.
 
     This function allows for a flexible choice of energy function.
-    
+
     Parameters
     ----------
     A : (N, N) array-like
@@ -693,7 +693,7 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
         Whether to ensure connectedness of the randomized network.
         By default, this is inferred from data.
     verbose: bool, optional
-        Whether to print status to screen at the end of every stage. 
+        Whether to print status to screen at the end of every stage.
         Default = False.
     seed: float, optional
         Random seed. Default = None.
@@ -708,30 +708,28 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
     Notes
     -----
     Uses Maslov & Sneppen rewiring model to produce a
-    surrogate connectivity matrix, B, with the same 
-    size, density, and degree sequence as A. 
+    surrogate connectivity matrix, B, with the same
+    size, density, and degree sequence as A.
     The weights are then permuted to optimize the
-    match between the strength sequences of A and B 
+    match between the strength sequences of A and B
     using simulated annealing.
-    
-    This function is adapted from a function written in MATLAB 
+
+    This function is adapted from a function written in MATLAB
     by Richard Betzel.
 
     References
     ----------
     Misic, B. et al. (2015) Cooperative and Competitive Spreading Dynamics
     on the Human Connectome. Neuron.
-    Milisav, F. et al. (2024) A simulated annealing algorithm for 
+    Milisav, F. et al. (2024) A simulated annealing algorithm for
     randomizing weighted networks.
-
     """
-
     try:
         A = np.asarray(A)
     except TypeError as err:
         msg = ('A must be array_like. Received: {}.'.format(type(A)))
         raise TypeError(msg) from err
-    
+
     if frac > 1 or frac <= 0:
         msg = ('frac must be between 0 and 1. '
                'Received: {}.'.format(frac))
@@ -785,7 +783,7 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
     for istage in tqdm(range(nstage), desc='annealing progress'):
 
         naccept = 0
-        for i in range(niter):
+        for _ in range(niter):
 
             #permutation
             e1 = rs.randint(m)
@@ -842,13 +840,13 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
     return B, energymin
 
 
-def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10, 
+def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
                                         nstage=100, niter=10000,
-                                        temp=1000, frac=0.5, 
-                                        R=None, connected=None, 
+                                        temp=1000, frac=0.5,
+                                        R=None, connected=None,
                                         verbose=False, seed=None):
     """
-    This function randomizes an undirected weighted network, while preserving
+    Randomize an undirected weighted network, while preserving
     the degree and strength sequences using simulated annealing.
 
     This function has been optimized for speed but only allows the
@@ -878,7 +876,7 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
         Whether to ensure connectedness of the randomized network.
         By default, this is inferred from data.
     verbose: bool, optional
-        Whether to print status to screen at the end of every stage. 
+        Whether to print status to screen at the end of every stage.
         Default = False.
     seed: float, optional
         Random seed. Default = None.
@@ -893,29 +891,28 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
     Notes
     -----
     Uses Maslov & Sneppen rewiring model to produce a
-    surrogate connectivity matrix, B, with the same 
-    size, density, and degree sequence as A. 
+    surrogate connectivity matrix, B, with the same
+    size, density, and degree sequence as A.
     The weights are then permuted to optimize the
-    match between the strength sequences of A and B 
+    match between the strength sequences of A and B
     using simulated annealing.
-    
-    This function is adapted from a function written in MATLAB 
+
+    This function is adapted from a function written in MATLAB
     by Richard Betzel and was optimized by Vincent Bazinet.
 
     References
     ----------
     Misic, B. et al. (2015) Cooperative and Competitive Spreading Dynamics
     on the Human Connectome. Neuron.
-    Milisav, F. et al. (2024) A simulated annealing algorithm for 
+    Milisav, F. et al. (2024) A simulated annealing algorithm for
     randomizing weighted networks.
     """
-
     try:
         A = np.asarray(A)
     except TypeError as err:
         msg = ('A must be array_like. Received: {}.'.format(type(A)))
         raise TypeError(msg) from err
-    
+
     if frac > 1 or frac <= 0:
         msg = ('frac must be between 0 and 1. '
                'Received: {}.'.format(frac))
@@ -998,16 +995,16 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
     return B, energymin
 
 
-def strength_preserving_rand_sa_dir(A, rewiring_iter=10, 
+def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
                                     nstage=100, niter=10000,
                                     temp=1000, frac=0.5,
                                     energy_type='sse', energy_func=None,
-                                    connected=True, verbose=False, 
+                                    connected=True, verbose=False,
                                     seed=None):
     """
-    This function randomizes a directed weighted network, while preserving
+    Randomize a directed weighted network, while preserving
     the in- and out-degree and strength sequences using simulated annealing.
-    
+
     Parameters
     ----------
     A : (N, N) array-like
@@ -1041,7 +1038,7 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
         Whether to ensure connectedness of the randomized network.
         Default = True.
     verbose: bool, optional
-        Whether to print status to screen at the end of every stage. 
+        Whether to print status to screen at the end of every stage.
         Default = False.
     seed: float, optional
         Random seed. Default = None.
@@ -1056,14 +1053,14 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
     Notes
     -----
     Uses Maslov & Sneppen rewiring model to produce a
-    surrogate connectivity matrix, B, with the same 
-    size, density, and in- and out-degree sequences as A. 
+    surrogate connectivity matrix, B, with the same
+    size, density, and in- and out-degree sequences as A.
     The weights are then permuted to optimize the
-    match between the strength sequences of A and B 
-    using simulated annealing. 
+    match between the strength sequences of A and B
+    using simulated annealing.
     Both in- and out-strengths are preserved.
-    
-    This function is adapted from a function written in MATLAB 
+
+    This function is adapted from a function written in MATLAB
     by Richard Betzel.
 
     References
@@ -1072,16 +1069,15 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
     on the Human Connectome. Neuron.
     Rubinov, M. (2016) Constraints and spandrels of interareal connectomes.
     Nature Communications.
-    Milisav, F. et al. (2024) A simulated annealing algorithm for 
+    Milisav, F. et al. (2024) A simulated annealing algorithm for
     randomizing weighted networks.
     """
-
     try:
         A = np.asarray(A)
     except TypeError as err:
         msg = ('A must be array_like. Received: {}.'.format(type(A)))
         raise TypeError(msg) from err
-    
+
     if frac > 1 or frac <= 0:
         msg = ('frac must be between 0 and 1. '
                'Received: {}.'.format(frac))
@@ -1130,9 +1126,9 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
         print('\ninitial energy {:.5f}'.format(energy))
 
     for istage in tqdm(range(nstage), desc='annealing progress'):
-        
+
         naccept = 0
-        for i in range(niter):
+        for _ in range(niter):
 
             #permutation
             e1 = rs.randint(m)
