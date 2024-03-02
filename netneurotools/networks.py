@@ -650,6 +650,8 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
                                 R=None, connected=None,
                                 verbose=False, seed=None):
     """
+    Strength-preserving network randomization using simulated annealing.
+
     Randomize an undirected weighted network, while preserving
     the degree and strength sequences using simulated annealing.
 
@@ -846,6 +848,8 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
                                         R=None, connected=None,
                                         verbose=False, seed=None):
     """
+    Strength-preserving network randomization using simulated annealing.
+
     Randomize an undirected weighted network, while preserving
     the degree and strength sequences using simulated annealing.
 
@@ -1002,6 +1006,8 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
                                     connected=True, verbose=False,
                                     seed=None):
     """
+    Strength-preserving network randomization using simulated annealing.
+
     Randomize a directed weighted network, while preserving
     the in- and out-degree and strength sequences using simulated annealing.
 
