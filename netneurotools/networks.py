@@ -249,13 +249,15 @@ def struct_consensus(data, distance, hemiid,
         # determine average # of positive edges across subs
         # we will use this to bin the edge weights
         if conn_type == 0:
-            if conn_num_inter == None:
+            if conn_num_inter is None:
                 avg_conn_num = len(pos_dist) / num_sub
-            else: avg_conn_num = conn_num_inter
+            else:
+                avg_conn_num = conn_num_inter
         else:
-            if conn_num_intra == None:
+            if conn_num_intra is None:
                 avg_conn_num = len(pos_dist) / num_sub
-            else: avg_conn_num = conn_num_intra
+            else:
+                avg_conn_num = conn_num_intra
 
         # estimate empirical CDF of weighted, positive edges across subs
         cumprob, quantiles = _ecdf(pos_dist)
