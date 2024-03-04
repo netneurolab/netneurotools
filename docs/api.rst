@@ -29,6 +29,9 @@ Python Reference API
    binarize_network
    match_length_degree_distribution
    randmio_und
+   strength_preserving_rand_sa
+   strength_preserving_rand_sa_mse_opt
+   strength_preserving_rand_sa_dir
 
 .. _ref_modularity:
 
