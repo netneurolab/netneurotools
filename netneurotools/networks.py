@@ -142,7 +142,10 @@ def _ecdf(data):
     return prob, quantiles
 
 
-def struct_consensus(data, distance, hemiid, weighted=False):
+def struct_consensus(data, distance, hemiid,
+                     conn_num_inter=None,
+                     conn_num_intra=None,
+                     weighted=False):
     """
     Calculate distance-dependent group consensus structural connectivity graph.
 
@@ -170,6 +173,8 @@ def struct_consensus(data, distance, hemiid, weighted=False):
        weight (which is why the input matrix `data` must be weighted).
 
     The algorithm works separately on within/between hemisphere links.
+    M is the sum of `conn_num_inter` and `conn_num_intra`, if provided.
+    Otherwise, M is estimated from the data.
 
     Parameters
     ----------
@@ -182,6 +187,14 @@ def struct_consensus(data, distance, hemiid, weighted=False):
     hemiid : (N, 1) array_like
         Hemisphere designation for `N` nodes where a value of 0/1 indicates
         node `N_{i}` is in the right/left hemisphere, respectively
+    conn_num_inter : int, optional
+        Number of inter-hemispheric connections to include in the consensus
+        matrix. If `None`, the number of inter-hemispheric connections will be
+        estimated from the data. Default = `None`.
+    conn_num_intra : int, optional
+        Number of intra-hemispheric connections to include in the consensus
+        matrix. If `None`, the number of intra-hemispheric connections will be
+        estimated from the data. Default = `None`.
     weighted : bool
         Flag indicating whether or not to return a weighted consensus map. If
         `True`, the consensus will be multiplied by the mean of `data`.
@@ -235,7 +248,16 @@ def struct_consensus(data, distance, hemiid, weighted=False):
 
         # determine average # of positive edges across subs
         # we will use this to bin the edge weights
-        avg_conn_num = len(pos_dist) / num_sub
+        if conn_type == 0:
+            if conn_num_inter is None:
+                avg_conn_num = len(pos_dist) / num_sub
+            else:
+                avg_conn_num = conn_num_inter
+        else:
+            if conn_num_intra is None:
+                avg_conn_num = len(pos_dist) / num_sub
+            else:
+                avg_conn_num = conn_num_intra
 
         # estimate empirical CDF of weighted, positive edges across subs
         cumprob, quantiles = _ecdf(pos_dist)
