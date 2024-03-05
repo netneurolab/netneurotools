@@ -123,7 +123,7 @@ def distance_wei_floyd(D):
     netneurotools.metrics.retrieve_shortest_path
     """
     spl_mat, p_mat = shortest_path(
-        D, method="FW", directed=False, return_predecessors=True,
+        D, method="FW", directed=True, return_predecessors=True,
         unweighted=False, overwrite=False
     )
     return spl_mat, p_mat
@@ -560,6 +560,7 @@ def search_information(W, D, has_memory=False):
             for j in range(N):
                 if i == j:  # skip self connection
                     continue
+                path = retrieve_shortest_path(i, j, p_mat)
                 if path[0] != -1:  # no path, depends on retrieve_shortest_path
                     if has_memory:
                         pr_step_ff = \
