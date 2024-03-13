@@ -13,6 +13,7 @@ except ImportError:  # scipy < 1.8.0
     from scipy.stats.stats import _chk2_asarray
 from sklearn.utils.validation import check_random_state
 from sklearn.linear_model import LinearRegression
+from joblib import Parallel, delayed
 
 
 from . import utils
@@ -791,7 +792,7 @@ def gen_spinsamples(coords, hemiid, n_rotate=1000, check_duplicates=True,
     return spinsamples
 
 
-def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
+def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False, n_jobs=1):
     """
     Return the dominance analysis statistics for multilinear regression.
 
@@ -811,6 +812,8 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
         Whether to use adjusted r squares. Default: True
     verbose : bool, optional
         Whether to print debug messages. Default: False
+    n_jobs : int, optional
+        The number of jobs to run in parallel. Default: 1
 
     Returns
     -------
@@ -855,7 +858,7 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
         return tuple(lst)
 
     # sklearn linear regression wrapper
-    def get_reg_r_sq(X, y):
+    def get_reg_r_sq(X, y, use_adjusted_r_sq=True):
         lin_reg = LinearRegression()
         lin_reg.fit(X, y)
         yhat = lin_reg.predict(X)
@@ -869,6 +872,12 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
         else:
             return r_squared
 
+    # helper function to compute r_sq for a given idx_tuple
+    def compute_r_sq(idx_tuple):
+        return idx_tuple, get_reg_r_sq(X[:, idx_tuple],
+                                       y,
+                                       use_adjusted_r_sq=use_adjusted_r_sq)
+
     # generate all predictor combinations in list (num of predictors) of lists
     n_predictor = X.shape[-1]
     # n_comb_len_group = n_predictor - 1
@@ -878,14 +887,20 @@ def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False):
         print(f"[Dominance analysis] Generated \
               {len([v for i in predictor_combs for v in i])} combinations")
 
-    # get all r_sq's
     model_r_sq = dict()
-    for len_group in tqdm(predictor_combs, desc='num-of-predictor loop',
-                          disable=not verbose):
-        for idx_tuple in tqdm(len_group, desc='insider loop',
-                              disable=not verbose):
-            r_sq = get_reg_r_sq(X[:, idx_tuple], y)
-            model_r_sq[idx_tuple] = r_sq
+    results = Parallel(n_jobs=n_jobs)(
+        delayed(compute_r_sq)(idx_tuple)
+        for len_group in tqdm(predictor_combs,
+                              desc='num-of-predictor loop',
+                              disable=not verbose)
+        for idx_tuple in tqdm(len_group,
+                              desc='insider loop',
+                              disable=not verbose))
+
+    # extract r_sq from results
+    for idx_tuple, r_sq in results:
+        model_r_sq[idx_tuple] = r_sq
+
     if verbose:
         print(f"[Dominance analysis] Acquired {len(model_r_sq)} r^2's")
 
