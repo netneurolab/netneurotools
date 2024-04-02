@@ -3,7 +3,7 @@
 
 import bct
 import numpy as np
-import tqdm
+from tqdm import tqdm
 from scipy.sparse import csgraph
 from sklearn.utils.validation import (check_random_state, check_array,
                                       check_consistent_length)
