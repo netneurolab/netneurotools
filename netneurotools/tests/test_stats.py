@@ -128,7 +128,7 @@ def test_gen_spinsamples():
     # "other hemisphere"
     coords = [_get_sphere_coords(s, t, r=1) for s, t in
               itertools.product(range(0, 360, 45), range(0, 360, 45))]
-    coords = np.row_stack([coords, coords])
+    coords = np.vstack([coords, coords])
     hemi = np.hstack([np.zeros(len(coords) // 2), np.ones(len(coords) // 2)])
 
     # generate "normal" test spins

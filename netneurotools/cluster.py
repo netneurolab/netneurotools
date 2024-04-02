@@ -296,7 +296,7 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
                 idx = list(cl[_reorder_rows(assignments[cl])])
                 reordered += [assignments[idx]]
                 row_idx += idx
-            assignments = np.row_stack(reordered)
+            assignments = np.vstack(reordered)
 
         # otherwise, just do a massive reordering of all the rows
         else:

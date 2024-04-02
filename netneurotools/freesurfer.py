@@ -202,7 +202,7 @@ def find_parcel_centroids(*, lhannot, rhannot, method='surface',
             centroids.append(roi)
             hemiid.append(n)
 
-    return np.row_stack(centroids), np.asarray(hemiid)
+    return np.vstack(centroids), np.asarray(hemiid)
 
 
 def _geodesic_parcel_centroid(vertices, faces, inds):
@@ -419,7 +419,7 @@ def _get_fsaverage_coords(version='fsaverage', surface='sphere'):
         coords.append(read_geometry(sphere)[0])
         hemi.append(np.ones(len(coords[-1])) * n)
 
-    return np.row_stack(coords), np.hstack(hemi)
+    return np.vstack(coords), np.hstack(hemi)
 
 
 def _get_fsaverage_spins(version='fsaverage', spins=None, n_rotate=1000,

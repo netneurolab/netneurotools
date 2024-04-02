@@ -96,7 +96,7 @@ def _get_fc(data_dir=None, resume=True, verbose=1):
     fc = [np.corrcoef(ses.T)[np.tril_indices(len(ses.T), k=-1)] for ses in ts]
 
     # return stacked sessions
-    return np.row_stack(fc)
+    return np.vstack(fc)
 
 
 def _get_panas(data_dir=None, resume=True, verbose=1):

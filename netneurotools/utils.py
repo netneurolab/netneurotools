@@ -234,7 +234,7 @@ def get_centroids(img, labels=None, image_space=False):
     if labels is None:
         labels = np.trim_zeros(np.unique(data))
 
-    centroids = np.row_stack(ndimage.center_of_mass(data, labels=data,
+    centroids = np.vstack(ndimage.center_of_mass(data, labels=data,
                                                     index=labels))
 
     if image_space:
