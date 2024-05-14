@@ -66,8 +66,14 @@ test = [
 requires = ["setuptools", "versioneer[toml]"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages]
 find = {}
+
+[tool.setuptools.package-data]
+"*" = ["*.json"]
 
 [tool.setuptools.dynamic]
 version = {attr = "netneurotools.__version__"}
