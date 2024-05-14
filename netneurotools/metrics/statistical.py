@@ -10,6 +10,7 @@ except ImportError:
 
 from .metrics_utils import _graph_laplacian
 
+
 def network_pearsonr(annot1, annot2, weight):
     r"""
     Calculate pearson correlation between two annotation vectors.

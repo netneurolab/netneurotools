@@ -28,7 +28,7 @@ __all__ = [
     'pv_plot_surface',
     # mpl_plotters
     '_grid_communities', '_sort_communities',
-    'plot_point_brain', 'plot_mod_heatmap' , 
+    'plot_point_brain', 'plot_mod_heatmap',
     # color_utils
     'available_cmaps'
 ]

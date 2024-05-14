@@ -9,6 +9,7 @@ from joblib import Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils.validation import check_array
 
+
 def _add_constant(data):
     """
     Add a constant (i.e., intercept) term to `data`.
@@ -87,7 +88,7 @@ def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
     # add intercept to regressors if requested and calculate fit
     if add_intercept:
         X, Xc = _add_constant(X), _add_constant(Xc)
-    betas, *rest = np.linalg.lstsq(Xc, Yc, rcond=None)
+    betas, *_ = np.linalg.lstsq(Xc, Yc, rcond=None)
 
     # remove intercept from regressors and betas for calculation of residuals
     if add_intercept:
@@ -102,8 +103,6 @@ def residualize(X, Y, Xc=None, Yc=None, normalize=True, add_intercept=True):
         Yr = sstats.zmap(Yr, compare=Ycr)
 
     return Yr
-
-
 
 
 def get_dominance_stats(X, y, use_adjusted_r_sq=True, verbose=False, n_jobs=1):

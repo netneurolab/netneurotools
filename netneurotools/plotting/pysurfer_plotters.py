@@ -6,6 +6,7 @@ import nibabel as nib
 
 from ..datasets import FREESURFER_IGNORE, _get_freesurfer_subjid
 
+
 def plot_conte69(data, lhlabel, rhlabel, surf='midthickness',
                  vmin=None, vmax=None, colormap='viridis',
                  colorbar=True, num_labels=4, orientation='horizontal',
@@ -188,9 +189,6 @@ def plot_fslr(data, lhlabel, rhlabel, surf_atlas='conte69',
     return lhplot, rhplot
 
 
-
-
-
 def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
                    noplot=None, subject_id='fsaverage', subjects_dir=None,
                    vmin=None, vmax=None, **kwargs):
@@ -302,7 +300,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
         # loads annotation data for hemisphere, including vertex `labels`!
         if not annot.startswith(os.path.abspath(os.sep)):
             annot = os.path.join(subjects_dir, subject_id, 'label', annot)
-        labels, ctab, names = nib.freesurfer.read_annot(annot)
+        labels, _, names = nib.freesurfer.read_annot(annot)
         names = _decode_list(names)
 
         # get appropriate data, accounting for hemispheric asymmetry

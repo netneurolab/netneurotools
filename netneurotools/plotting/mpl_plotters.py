@@ -124,7 +124,7 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         inds = _sort_communities(data, communities)
 
     if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=figsize)
+        _, ax = plt.subplots(1, 1, figsize=figsize)
 
     # plot data re-ordered based on community and node strength
     if mask_diagonal:
@@ -197,8 +197,6 @@ def plot_mod_heatmap(data, communities, *, inds=None, edgecolor='black',
         ax.set_yticklabels(labels_ind)
 
     return ax
-
-
 
 
 def plot_point_brain(data, coords, views=None, views_orientation='vertical',

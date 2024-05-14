@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from netneurotools import stats
 
+
 @pytest.mark.xfail
 def test_permtest_1samp():
     """Test permutation test for one-sample t-test."""
@@ -62,4 +63,3 @@ def test_permtest_pearsonr():
                                    np.column_stack([y, b]))
     assert np.allclose(r, np.array([0.50004037, 0.89927523]))
     assert np.allclose(p, np.array([0.000999, 0.000999]))
-

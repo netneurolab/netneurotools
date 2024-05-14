@@ -34,4 +34,3 @@ __all__ = [
     '_add_constant', 'residualize', 'get_dominance_stats',
     # stats_utils
 ]
-

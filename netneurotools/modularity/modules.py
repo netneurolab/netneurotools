@@ -14,7 +14,6 @@ except ImportError:
     use_numba = False
 
 
-
 def _get_relabels(c1, c2):
     """
     Find mapping of labels from `c1` to `c2`.

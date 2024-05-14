@@ -10,6 +10,7 @@ try:  # scipy >= 1.8.0
 except ImportError:  # scipy < 1.8.0
     from scipy.stats.stats import _chk2_asarray
 
+
 def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
     """
     Compute correlation of matching columns in `a` and `b`.
@@ -54,7 +55,7 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
     >>> stats.efficient_pearsonr(np.c_[x1, x2], np.c_[y1, y2])
     (array([0.10032565, 0.79961189]), array([3.20636135e-01, 1.97429944e-23]))
     """
-    a, b, axis = _chk2_asarray(a, b, 0)
+    a, b, _ = _chk2_asarray(a, b, 0)
     if len(a) != len(b):
         raise ValueError('Provided arrays do not have same length')
 
@@ -91,7 +92,7 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
 
     # taken from scipy.stats
     ab = (n_obs / 2) - 1
-    prob = 2 * sspecial.btdtr(ab, ab, 0.5 * (1 - np.abs(corr)))
+    prob = 2 * sspecial.betainc(ab, ab, 0.5 * (1 - np.abs(corr)))
 
     return corr, prob
 

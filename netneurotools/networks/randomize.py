@@ -4,7 +4,7 @@ import bct
 import numpy as np
 from tqdm import tqdm
 from sklearn.utils.validation import (
-    check_random_state, check_array, check_consistent_length
+    check_random_state
 )
 
 try:
@@ -95,6 +95,7 @@ def randmio_und(W, itr):
             att += 1
 
     return W, eff
+
 
 if use_numba:
     randmio_und = njit(randmio_und)
@@ -245,7 +246,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     if len(np.where(B != 0)[0]) != len(np.where(newB != 0)[0]):
         print(
             f"ERROR --- number of edges changed, \
-            B:{len(np.where(B!=0)[0])}, newB:{len(np.where(newB!=0)[0])}")
+            B:{len(np.where(B != 0)[0])}, newB:{len(np.where(newB != 0)[0])}")
     # check that the degree of the nodes it's the same
     for i in range(N):
         if np.sum(B[i]) != np.sum(newB[i]):
@@ -275,8 +276,6 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
         newW[j_sort, i_sort] = iniws
 
     return newB, newW, nr
-
-
 
 
 def strength_preserving_rand_sa(A, rewiring_iter=10,
@@ -376,11 +375,11 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
     rs = check_random_state(seed)
 
     n = A.shape[0]
-    s = np.sum(A, axis=1) #strengths of A
+    s = np.sum(A, axis=1)  # strengths of A
 
-    #Maslov & Sneppen rewiring
+    # Maslov & Sneppen rewiring
     if R is None:
-        #ensuring connectedness if the original network is connected
+        # ensuring connectedness if the original network is connected
         if connected is None:
             connected = False if bct.number_of_components(A) > 1 else True
         if connected:
@@ -390,10 +389,10 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
     else:
         B = R.copy()
 
-    u, v = np.triu(B, k=1).nonzero() #upper triangle indices
-    wts = np.triu(B, k=1)[(u, v)] #upper triangle values
+    u, v = np.triu(B, k=1).nonzero()  # upper triangle indices
+    wts = np.triu(B, k=1)[(u, v)]  # upper triangle values
     m = len(wts)
-    sb = np.sum(B, axis=1) #strengths of B
+    sb = np.sum(B, axis=1)  # strengths of B
 
     if energy_func is not None:
         energy = energy_func(s, sb)
@@ -423,7 +422,7 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
         naccept = 0
         for _ in range(niter):
 
-            #permutation
+            # permutation
             e1 = rs.randint(m)
             e2 = rs.randint(m)
 
@@ -452,9 +451,9 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
                        "Received: {}.".format(energy_type))
                 raise ValueError(msg)
 
-            #permutation acceptance criterion
+            # permutation acceptance criterion
             if (energy_prime < energy or
-               rs.rand() < np.exp(-(energy_prime - energy)/temp)):
+               rs.rand() < np.exp(-(energy_prime - energy) / temp)):
                 sb = sb_prime.copy()
                 wts[[e1, e2]] = wts[[e2, e1]]
                 energy = energy_prime
@@ -463,13 +462,13 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
                     wtsmin = wts.copy()
                 naccept = naccept + 1
 
-        #temperature update
-        temp = temp*frac
+        # temperature update
+        temp = temp * frac
         if verbose:
             print('\nstage {:d}, temp {:.5f}, best energy {:.5f}, '
                   'frac of accepted moves {:.3f}'.format(istage, temp,
                                                          energymin,
-                                                         naccept/niter))
+                                                         naccept / niter))
 
     B = np.zeros((n, n))
     B[(u, v)] = wtsmin
@@ -561,11 +560,11 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
     rs = check_random_state(seed)
 
     n = A.shape[0]
-    s = np.sum(A, axis=1) #strengths of A
+    s = np.sum(A, axis=1)  # strengths of A
 
-    #Maslov & Sneppen rewiring
+    # Maslov & Sneppen rewiring
     if R is None:
-        #ensuring connectedness if the original network is connected
+        # ensuring connectedness if the original network is connected
         if connected is None:
             connected = False if bct.number_of_components(A) > 1 else True
         if connected:
@@ -575,10 +574,10 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
     else:
         B = R.copy()
 
-    u, v = np.triu(B, k=1).nonzero() #upper triangle indices
-    wts = np.triu(B, k=1)[(u, v)] #upper triangle values
+    u, v = np.triu(B, k=1).nonzero()  # upper triangle indices
+    wts = np.triu(B, k=1)[(u, v)]  # upper triangle values
     m = len(wts)
-    sb = np.sum(B, axis=1) #strengths of B
+    sb = np.sum(B, axis=1)  # strengths of B
 
     energy = np.mean((s - sb)**2)
 
@@ -594,7 +593,7 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
                                   rs.rand(niter)
                                   ):
 
-            #permutation
+            # permutation
             a, b, c, d = u[e1], v[e1], u[e2], v[e2]
             wts_change = wts[e1] - wts[e2]
             delta_energy = (2 * wts_change *
@@ -604,10 +603,10 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
                              (s[c] - sb[c]) -
                              (s[d] - sb[d])
                              )
-                            )/n
+                            ) / n
 
-            #permutation acceptance criterion
-            if (delta_energy < 0 or prob < np.e**(-(delta_energy)/temp)):
+            # permutation acceptance criterion
+            if (delta_energy < 0 or prob < np.e**(-(delta_energy) / temp)):
 
                 sb[[a, b]] -= wts_change
                 sb[[c, d]] += wts_change
@@ -620,13 +619,13 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
                     wtsmin = wts.copy()
                 naccept = naccept + 1
 
-        #temperature update
-        temp = temp*frac
+        # temperature update
+        temp = temp * frac
         if verbose:
             print('\nstage {:d}, temp {:.5f}, best energy {:.5f}, '
                   'frac of accepted moves {:.3f}'.format(istage, temp,
                                                          energymin,
-                                                         naccept/niter))
+                                                         naccept / niter))
 
     B = np.zeros((n, n))
     B[(u, v)] = wtsmin
@@ -728,20 +727,20 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
     rs = check_random_state(seed)
 
     n = A.shape[0]
-    s_in = np.sum(A, axis=0) #in-strengths of A
-    s_out = np.sum(A, axis=1) #out-strengths of A
+    s_in = np.sum(A, axis=0)  # in-strengths of A
+    s_out = np.sum(A, axis=1)  # out-strengths of A
 
-    #Maslov & Sneppen rewiring
+    # Maslov & Sneppen rewiring
     if connected:
         B = bct.randmio_dir_connected(A, rewiring_iter, seed=seed)[0]
     else:
         B = bct.randmio_dir(A, rewiring_iter, seed=seed)[0]
 
-    u, v = B.nonzero() #nonzero indices of B
-    wts = B[(u, v)] #nonzero values of B
+    u, v = B.nonzero()  # nonzero indices of B
+    wts = B[(u, v)]  # nonzero values of B
     m = len(wts)
-    sb_in = np.sum(B, axis=0) #in-strengths of B
-    sb_out = np.sum(B, axis=1) #out-strengths of B
+    sb_in = np.sum(B, axis=0)  # in-strengths of B
+    sb_out = np.sum(B, axis=1)  # out-strengths of B
 
     if energy_func is not None:
         energy = energy_func(s_in, sb_in) + energy_func(s_out, sb_out)
@@ -750,7 +749,7 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
     elif energy_type == 'max':
         energy = np.max(np.abs(s_in - sb_in)) + np.max(np.abs(s_out - sb_out))
     elif energy_type == 'mae':
-        energy= np.mean(np.abs(s_in - sb_in)) + np.mean(np.abs(s_out - sb_out))
+        energy = np.mean(np.abs(s_in - sb_in)) + np.mean(np.abs(s_out - sb_out))
     elif energy_type == 'mse':
         energy = np.mean((s_in - sb_in)**2) + np.mean((s_out - sb_out)**2)
     elif energy_type == 'rmse':
@@ -772,7 +771,7 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
         naccept = 0
         for _ in range(niter):
 
-            #permutation
+            # permutation
             e1 = rs.randint(m)
             e2 = rs.randint(m)
 
@@ -810,9 +809,9 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
                        "Received: {}.".format(energy_type))
                 raise ValueError(msg)
 
-            #permutation acceptance criterion
+            # permutation acceptance criterion
             if (energy_prime < energy or
-               rs.rand() < np.exp(-(energy_prime - energy)/temp)):
+               rs.rand() < np.exp(-(energy_prime - energy) / temp)):
                 sb_in = sb_prime_in.copy()
                 sb_out = sb_prime_out.copy()
                 wts[[e1, e2]] = wts[[e2, e1]]
@@ -822,13 +821,13 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
                     wtsmin = wts.copy()
                 naccept = naccept + 1
 
-        #temperature update
-        temp = temp*frac
+        # temperature update
+        temp = temp * frac
         if verbose:
             print('\nstage {:d}, temp {:.5f}, best energy {:.5f}, '
                   'frac of accepted moves {:.3f}'.format(istage, temp,
                                                          energymin,
-                                                         naccept/niter))
+                                                         naccept / niter))
 
     B = np.zeros((n, n))
     B[(u, v)] = wtsmin

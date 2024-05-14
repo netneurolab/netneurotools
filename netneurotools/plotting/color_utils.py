@@ -1,5 +1,6 @@
 """Functions for working with colors and colormaps."""
 
+import matplotlib
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 
 __all__ = ['parula', 'justine', 'dinosaur']
@@ -93,10 +94,9 @@ def available_cmaps():
 
 def _register_cmaps():
     """Register all colormaps in module so they are accessible via matplotlib."""
-    from matplotlib.cm import register_cmap
 
     for cmap in __all__:
-        register_cmap(cmap, globals()[cmap])
+        matplotlib.colormaps.register(globals()[cmap], name=cmap)
 
 
 _register_cmaps()

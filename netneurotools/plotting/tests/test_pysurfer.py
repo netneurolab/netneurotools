@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from netneurotools import datasets, plotting
 
+
 @pytest.mark.filterwarnings('ignore')
 def test_plot_fsvertex():
     """Test plotting on a freesurfer vertex."""

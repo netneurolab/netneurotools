@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from netneurotools import plotting
 
+
 def test_grid_communities():
     """Test _grid_communities function."""
     comms = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 2, 2])
@@ -27,6 +28,7 @@ def test_plot_mod_heatmap():
     comms = np.random.choice(4, size=(100,))
     ax = plotting.plot_mod_heatmap(data, comms)
     assert isinstance(ax, plt.Axes)
+
 
 def test_plot_point_brain():
     """Test plot_point_brain function."""

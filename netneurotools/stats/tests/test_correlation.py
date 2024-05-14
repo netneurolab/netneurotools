@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from netneurotools import stats
 
+
 @pytest.mark.parametrize('x, y, expected', [
     # basic one-dimensional input
     (range(5), range(5), (1.0, 0.0)),

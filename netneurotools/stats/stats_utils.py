@@ -1,3 +1,1 @@
 """Functions for supporting statistics."""
-
-

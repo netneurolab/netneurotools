@@ -19,6 +19,7 @@ except ImportError:
 
 from .metrics_utils import _fast_binarize
 
+
 def degrees_und(W):
     """
     Compute the degree of each node in `W`.
@@ -62,8 +63,6 @@ def degrees_dir(W):
     deg_out = np.sum(W_bin, axis=1)
     deg = deg_in + deg_out
     return deg_in, deg_out, deg
-
-
 
 
 def distance_wei_floyd(D):
@@ -144,7 +143,6 @@ def retrieve_shortest_path(s, t, p_mat):
 
 if use_numba:
     retrieve_shortest_path = njit(retrieve_shortest_path)
-
 
 
 def navigation_wu(nav_dist_mat, sc_mat):
@@ -286,7 +284,6 @@ def get_navigation_path_length(nav_paths, alt_dist_mat):
     return nav_path_len
 
 
-
 def communicability_bin(adjacency, normalize=False):
     """
     Compute the communicability of pairs of nodes in `adjacency`.
@@ -376,7 +373,6 @@ def communicability_wei(adjacency):
     cmc[np.diag_indices_from(cmc)] = 0
 
     return cmc
-
 
 
 def path_transitivity(D):
@@ -541,7 +537,6 @@ def search_information(W, D, has_memory=False):
     return SI
 
 
-
 def mean_first_passage_time(W, tol=1e-3):
     """
     Calculate mean first passage time.
@@ -634,8 +629,6 @@ def diffusion_efficiency(W):
     np.fill_diagonal(E_diff, 0.0)
     GE_diff = np.sum(E_diff) / (n * (n - 1))
     return GE_diff, E_diff
-
-
 
 
 def resource_efficiency_bin(W_bin, lambda_prob=0.5):
@@ -776,11 +769,9 @@ def flow_graph(W, r=None, t=1):
     return dyn
 
 
-
 def assortativity(W, r=None):
     """Calculate assortativity."""
     pass
-
 
 
 def matching_ind_und(W):

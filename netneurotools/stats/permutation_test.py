@@ -10,6 +10,7 @@ except ImportError:  # scipy < 1.8.0
 
 from .correlation import efficient_pearsonr
 
+
 def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
     """
     Non-parametric equivalent of :py:func:`scipy.stats.ttest_1samp`.

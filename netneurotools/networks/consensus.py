@@ -5,6 +5,7 @@ from sklearn.utils.validation import (
     check_random_state, check_array, check_consistent_length
 )
 
+
 def func_consensus(data, n_boot=1000, ci=95, seed=None):
     """
     Calculate thresholded group consensus functional connectivity graph.
@@ -291,5 +292,3 @@ def struct_consensus(data, distance, hemiid,
     if weighted:
         consensus = consensus * np.mean(data, axis=2)
     return consensus
-
-

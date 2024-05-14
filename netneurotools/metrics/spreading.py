@@ -2,5 +2,5 @@
 
 
 def simulate_atrophy():
-    """Function to simulate atrophy in a network."""
+    """Simulate atrophy in a network."""
     pass

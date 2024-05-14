@@ -8,6 +8,7 @@ try:
 except ImportError:
     use_numba = False
 
+
 def _fast_binarize(W):
     """
     Binarize a matrix.

@@ -3,6 +3,7 @@
 import numpy as np
 from scipy.sparse import csgraph
 
+
 def get_triu(data, k=1):
     """
     Return vectorized version of upper triangle from `data`.

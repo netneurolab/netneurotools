@@ -9,6 +9,7 @@ from netneurotools import modularity
 
 rs = np.random.RandomState(1234)
 
+
 @pytest.mark.parametrize('c1, c2, out', [
     # uniform communities
     (np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
