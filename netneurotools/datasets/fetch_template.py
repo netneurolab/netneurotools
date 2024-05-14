@@ -6,9 +6,9 @@ import os.path as op
 
 try:
     # nilearn 0.10.3
-    from nilearn.datasets._utils import fetch_files as _fetch_files
+    from nilearn.datasets._utils import fetch_files
 except ImportError:
-    from nilearn.datasets.utils import _fetch_files
+    from nilearn.datasets.utils import _fetch_files as fetch_files
 
 from sklearn.utils import Bunch
 
@@ -78,15 +78,13 @@ def fetch_fsaverage(version='fsaverage', data_dir=None, url=None, resume=True,
         data_dir = _check_freesurfer_subjid(version)[1]
         data = [op.join(data_dir, f) for f in filenames]
     except FileNotFoundError:
-        data = _fetch_files(data_dir, resume=resume, verbose=verbose,
+        data = fetch_files(data_dir, resume=resume, verbose=verbose,
                             files=[(op.join(dataset_name, f), url, opts)
                                    for f in filenames])
 
     data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
-
-
 
 
 def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
@@ -112,23 +110,33 @@ def fetch_hcp_standards(data_dir=None, url=None, resume=True, verbose=1):
     -------
     standards : str
         Filepath to standard_mesh_atlases directory
+
+    Notes
+    -----
+    Original file from: http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip
+    Archived file from: https://web.archive.org/web/20220121035833/http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip
     """
-    if url is None:
-        url = 'https://web.archive.org/web/20220121035833/' + \
-              'http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip'
-    dataset_name = 'standard_mesh_atlases'
+    dataset_name = 'tpl-hcp_standards'
     data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)["standard_mesh_atlases"]
+    if url is None:
+        url = info['url']
+
     opts = {
         'uncompress': True,
-        'move': '{}.zip'.format(dataset_name)
+        'md5sum': info['md5'],
+        'move': '{}.tar.gz'.format(dataset_name)
     }
     filenames = [
         'L.sphere.32k_fs_LR.surf.gii', 'R.sphere.32k_fs_LR.surf.gii'
     ]
-    files = [(op.join(dataset_name, f), url, opts) for f in filenames]
-    _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+    files = [(op.join(dataset_name, "standard_mesh_atlases", f), url, opts)
+             for f in filenames]
+
+    fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     return op.join(data_dir, dataset_name)
+
 
 def fetch_civet(density='41k', version='v1', data_dir=None, url=None,
                 resume=True, verbose=1):
@@ -207,7 +215,7 @@ def fetch_civet(density='41k', version='v1', data_dir=None, url=None,
         for surf in keys for hemi in ['L', 'R']
     ]
 
-    data = _fetch_files(data_dir, resume=resume, verbose=verbose,
+    data = fetch_files(data_dir, resume=resume, verbose=verbose,
                         files=[(f, url, opts) for f in filenames])
 
     data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
@@ -273,7 +281,7 @@ def fetch_conte69(data_dir=None, url=None, resume=True, verbose=1):
         .format(res, hemi) for res in keys for hemi in ['L', 'R']
     ] + ['tpl-conte69/template_description.json']
 
-    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+    data = fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
                         resume=resume, verbose=verbose)
 
     with open(data[-1], 'r') as src:
@@ -344,7 +352,7 @@ def fetch_yerkes19(data_dir=None, url=None, resume=None, verbose=1):
         .format(res, hemi) for res in keys for hemi in ['L', 'R']
     ]
 
-    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+    data = fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
                         resume=resume, verbose=verbose)
 
     # bundle hemispheres together

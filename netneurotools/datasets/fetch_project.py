@@ -5,9 +5,9 @@ import numpy as np
 
 try:
     # nilearn 0.10.3
-    from nilearn.datasets._utils import fetch_files as _fetch_files
+    from nilearn.datasets._utils import fetch_files
 except ImportError:
-    from nilearn.datasets.utils import _fetch_files
+    from nilearn.datasets.utils import _fetch_files as fetch_files
 
 from sklearn.utils import Bunch
 
@@ -63,7 +63,7 @@ def fetch_vazquez_rodriguez2019(data_dir=None, url=None, resume=True,
     filenames = [
         op.join(dataset_name, 'rsquared_gradient.csv')
     ]
-    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+    data = fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
                         resume=resume, verbose=verbose)
 
     # load data
@@ -120,26 +120,30 @@ def fetch_hansen_manynetworks():
     """Download files from Hansen et al., 2023, PLOS Biology."""
     pass
 
+
 def fetch_hansen_receptors():
     """Download files from Hansen et al., 2022, Nature Neuroscience."""
     pass
+
 
 def fetch_hansen_genecognition():
     """Download files from Hansen et al., 2021, Nature Human Behaviour."""
     pass
 
+
 def fetch_hansen_brainstem():
     """Download files from Hansen et al., 2024."""
     pass
+
 
 def fetch_shafiei_hcpmeg():
     """Download files from Shafiei et al., 2022 & Shafiei et al., 2023."""
     pass
 
+
 def fetch_suarez_mami():
     """Download files from Suarez et al., 2022, eLife."""
     pass
-
 
 
 def fetch_famous_gmat(dataset, data_dir=None, url=None, resume=True,
@@ -201,7 +205,7 @@ def fetch_famous_gmat(dataset, data_dir=None, url=None, resume=True,
     filenames = [
         op.join(dataset, '{}.csv'.format(fn)) for fn in info['keys']
     ] + [op.join(dataset, 'ref.txt')]
-    data = _fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
+    data = fetch_files(data_dir, files=[(f, url, opts) for f in filenames],
                         resume=resume, verbose=verbose)
 
     # load data

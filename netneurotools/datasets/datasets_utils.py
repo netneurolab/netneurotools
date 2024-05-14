@@ -19,6 +19,7 @@ FREESURFER_IGNORE = [
     'unknown', 'corpuscallosum', 'Background+FreeSurfer_Defined_Medial_Wall'
 ]
 
+
 def _osfify_urls(data):
     """
     Format `data` object with OSF API URL.
@@ -167,7 +168,6 @@ def _get_freesurfer_subjid(subject_id, subjects_dir=None):
     subjects_dir : str
         Path to subject directory with `subject_id`
     """
-
     # check for FreeSurfer install w/fsaverage; otherwise, fetch required
     try:
         subject_id, subjects_dir = _check_freesurfer_subjid(subject_id, subjects_dir)

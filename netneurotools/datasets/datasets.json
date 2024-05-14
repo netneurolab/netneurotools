@@ -401,5 +401,14 @@
             "5ed80005fabc45000d639900"
         ],
         "md5": "67085e2577d21dc3a742f4fcde6e3b18"
+    },
+    "tpl-hcp_standards": {
+        "standard_mesh_atlases": {
+            "url": [
+                "mb37e",
+                "6643d2ab2eacc48a57097091"
+            ],
+            "md5": "806abac71f76b8dba8af467ef313c3f7"
+        }
     }
 }

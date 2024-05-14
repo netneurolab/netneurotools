@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from netneurotools import datasets
 
+
 @pytest.mark.parametrize('version', [
     'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'
 ])
@@ -20,7 +21,7 @@ def test_fetch_fsaverage(tmpdir, version):
 
 def test_fetch_hcp_standards(tmpdir):
     """Test fetching of HCP standard meshes."""
-    hcp = datasets.fetch_hcp_standards(data_dir=tmpdir, verbose=0)
+    hcp = datasets.fetch_hcp_standards(data_dir=tmpdir, verbose=1)
     assert os.path.isdir(hcp)
 
 
@@ -49,7 +50,6 @@ def test_fetch_yerkes19(tmpdir):
     conte = datasets.fetch_yerkes19(data_dir=tmpdir, verbose=0)
     assert all(hasattr(conte, k) for k in
                ['midthickness', 'inflated', 'vinflated'])
-
 
 
 @pytest.mark.parametrize('version, expected', [
@@ -121,7 +121,6 @@ def test_fetch_ye2020(tmpdir):
     pass
 
 
-
 def test_fetch_voneconomo(tmpdir):
     """Test fetching of von Economo parcellations."""
     vek = datasets.fetch_voneconomo(data_dir=tmpdir, verbose=0)
@@ -154,7 +153,3 @@ def test_fetch_famous_gmat(tmpdir, dataset, expected):
     for key in expected:
         assert (key in connectome)
         assert isinstance(connectome[key], str if key == 'ref' else np.ndarray)
-
-
-
-

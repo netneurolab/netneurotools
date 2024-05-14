@@ -5,9 +5,9 @@ import warnings
 
 try:
     # nilearn 0.10.3
-    from nilearn.datasets._utils import fetch_files as _fetch_files
+    from nilearn.datasets._utils import fetch_files
 except ImportError:
-    from nilearn.datasets.utils import _fetch_files
+    from nilearn.datasets.utils import _fetch_files as fetch_files
 
 from sklearn.utils import Bunch
 
@@ -15,6 +15,7 @@ from .datasets_utils import (
     SURFACE,
     _get_data_dir, _get_dataset_info
 )
+
 
 def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
                       resume=True, verbose=1):
@@ -128,7 +129,7 @@ def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
     files = [
         (op.join(dataset_name, version, f), url, opts) for f in filenames
     ]
-    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+    data = fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     if version == 'MNI152NLin2009aSym':
         keys += ['info']
@@ -140,7 +141,6 @@ def fetch_cammoun2012(version='MNI152NLin2009aSym', data_dir=None, url=None,
         data = data[:-3] + [list(itertools.chain.from_iterable(data[-3:]))]
 
     return Bunch(**dict(zip(keys, data)))
-
 
 
 def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
@@ -218,13 +218,12 @@ def fetch_schaefer2018(version='fsaverage', data_dir=None, url=None,
 
     files = [(op.join(dataset_name, version, f), url, opts)
              for f in filenames]
-    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+    data = fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     if suffix == 'annot':
         data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
 
     return Bunch(**dict(zip(keys, data)))
-
 
 
 def fetch_mmpall(version='fslr32k', data_dir=None, url=None, resume=True,
@@ -292,10 +291,9 @@ def fetch_mmpall(version='fslr32k', data_dir=None, url=None, resume=True,
     ]
 
     files = [(op.join(dataset_name, version, f), url, opts) for f in filenames]
-    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+    data = fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     return SURFACE(*data)
-
 
 
 def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
@@ -339,13 +337,13 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_data_dir(data_dir=data_dir)
     info = _get_dataset_info(dataset_name)
 
-    # format the query how _fetch_files() wants things and then download data
+    # format the query how fetch_files() wants things and then download data
     files = [
         (i['name'], i['url'], dict(md5sum=i['md5'], move=i['name']))
         for i in info
     ]
 
-    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+    data = fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
 
     return Bunch(**dict(zip(keys, data)))
 
@@ -353,7 +351,6 @@ def fetch_pauli2018(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_ye2020():
     """Fetch Ye et al., 2020 subcortical parcellation."""
     pass
-
 
 
 def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
@@ -407,7 +404,7 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
         for hemi in ['L', 'R'] for suff in ['gcs', 'ctab']
     ] + ['atl-vonEconomoKoskinas_info.csv']
     files = [(op.join(dataset_name, f), url, opts) for f in filenames]
-    data = _fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
+    data = fetch_files(data_dir, files=files, resume=resume, verbose=verbose)
     data = [SURFACE(*data[:-1:2])] + [SURFACE(*data[1:-1:2])] + [data[-1]]
 
     return Bunch(**dict(zip(keys, data)))

@@ -5,7 +5,6 @@ from urllib.request import HTTPError, urlopen
 import numpy as np
 
 
-
 TIMESERIES = ("https://s3.amazonaws.com/openneuro/ds000031/ds000031_R1.0.2"
               "/uncompressed/derivatives/sub-01/ses-{0}/"
               "sub-01_ses-{0}_task-rest_run-001_parcel-timeseries.txt")
@@ -129,6 +128,3 @@ def _get_panas(data_dir=None, resume=True, verbose=1):
         measures[subscale] = measure.sum(axis=-1)
 
     return measures
-
-
-
