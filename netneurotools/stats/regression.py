@@ -26,10 +26,10 @@ def _add_constant(data):
 
     Examples
     --------
-    >>> from netneurotools import utils
+    >>> from netneurotools import stats
 
     >>> A = np.zeros((5, 5))
-    >>> Ac = utils.add_constant(A)
+    >>> Ac = stats._add_constant(A)
     >>> Ac
     array([[0., 0., 0., 0., 0., 1.],
            [0., 0., 0., 0., 0., 1.],

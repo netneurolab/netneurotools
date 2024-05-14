@@ -22,10 +22,10 @@ def get_triu(data, k=1):
 
     Examples
     --------
-    >>> from netneurotools import utils
+    >>> from netneurotools import networks
 
     >>> X = np.array([[1, 0.5, 0.25], [0.5, 1, 0.33], [0.25, 0.33, 1]])
-    >>> tri = utils.get_triu(X)
+    >>> tri = networks.get_triu(X)
     >>> tri
     array([0.5 , 0.25, 0.33])
     """

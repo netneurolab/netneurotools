@@ -70,14 +70,14 @@ def match_cluster_labels(source, target):
 
     Examples
     --------
-    >>> from netneurotools import cluster
+    >>> from netneurotools import modularity
 
     When cluster labels are perfectly matched but e.g., inverted the function
     will find a perfect mapping:
 
     >>> a = np.array([1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
     >>> b = np.array([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
-    >>> cluster.match_cluster_labels(a, b)
+    >>> modularity.match_cluster_labels(a, b)
     array([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
 
     However, the mapping will work even when cluster assignments between the
@@ -86,13 +86,13 @@ def match_cluster_labels(source, target):
 
     >>> a = np.array([0, 0, 0, 2, 2, 2, 2, 1, 1, 1])
     >>> b = np.array([1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
-    >>> cluster.match_cluster_labels(a, b)
+    >>> modularity.match_cluster_labels(a, b)
     array([1, 1, 1, 0, 0, 0, 0, 2, 2, 2])
 
     If the source assignment has fewer clusters than the target the returned
     values may be discontinuous:
 
-    >>> cluster.match_cluster_labels(b, a)
+    >>> modularity.match_cluster_labels(b, a)
     array([0, 0, 0, 2, 2, 2, 2, 2, 2, 2])
     """
     # try and match the source to target
@@ -143,7 +143,7 @@ def match_assignments(assignments, target=None, seed=None):
 
     Examples
     --------
-    >>> from netneurotools import cluster
+    >>> from netneurotools import modularity
 
     First we can construct a matrix of `N` samples clustered `M` times (in this
     case, `M` is three) . Since cluster labels are generally arbitrary we can
@@ -163,7 +163,7 @@ def match_assignments(assignments, target=None, seed=None):
     of the columns will be randomly picked as the "target" solution, we provide
     a `seed` to ensure reproducibility in the selection:
 
-    >>> cluster.match_assignments(assignments, seed=1234)
+    >>> modularity.match_assignments(assignments, seed=1234)
     array([[1, 1, 1],
            [1, 1, 1],
            [1, 1, 1],
@@ -185,7 +185,7 @@ def match_assignments(assignments, target=None, seed=None):
     ...                         [1, 2, 0],
     ...                         [1, 1, 2],
     ...                         [1, 1, 2]])
-    >>> cluster.match_assignments(assignments)
+    >>> modularity.match_assignments(assignments)
     array([[0, 0, 0],
            [0, 0, 0],
            [0, 0, 0],

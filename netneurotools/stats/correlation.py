@@ -42,13 +42,13 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
 
     Examples
     --------
-    >>> from netneurotools import datasets, stats
+    >>> from netneurotools import stats
 
     Generate some not-very-correlated and some highly-correlated data:
 
     >>> np.random.seed(12345678)  # set random seed for reproducible results
-    >>> x1, y1 = datasets.make_correlated_xy(corr=0.1, size=100)
-    >>> x2, y2 = datasets.make_correlated_xy(corr=0.8, size=100)
+    >>> x1, y1 = stats.make_correlated_xy(corr=0.1, size=100)
+    >>> x2, y2 = stats.make_correlated_xy(corr=0.8, size=100)
 
     Calculate both correlations simultaneously:
 
@@ -129,15 +129,15 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
 
     Examples
     --------
-    >>> from netneurotools import datasets
+    >>> from netneurotools import stats
 
     By default two vectors are generated with specified correlation
 
-    >>> x, y = datasets.make_correlated_xy()
+    >>> x, y = stats.make_correlated_xy()
     >>> np.corrcoef(x, y)  # doctest: +SKIP
     array([[1.        , 0.85083661],
            [0.85083661, 1.        ]])
-    >>> x, y = datasets.make_correlated_xy(corr=0.2)
+    >>> x, y = stats.make_correlated_xy(corr=0.2)
     >>> np.corrcoef(x, y)  # doctest: +SKIP
     array([[1.        , 0.20069953],
            [0.20069953, 1.        ]])
@@ -147,7 +147,7 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     correlations are close to the desired values:
 
     >>> corr = [[1, 0.5, 0.3], [0.5, 1, 0], [0.3, 0, 1]]
-    >>> out = datasets.make_correlated_xy(corr=corr)
+    >>> out = stats.make_correlated_xy(corr=corr)
     >>> out.shape
     (3, 10000)
     >>> np.corrcoef(out)  # doctest: +SKIP
