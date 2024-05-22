@@ -101,7 +101,6 @@ class TestFetchAtlas:
                 assert len(schaefer[k]) == 2
                 assert all(os.path.isfile(hemi) for hemi in schaefer[k])
 
-
     def test_fetch_mmpall(self, tmpdir):
         """Test fetching of MMPAll parcellations."""
         mmp = datasets.fetch_mmpall(data_dir=tmpdir, verbose=0)
