@@ -88,7 +88,7 @@ class TestFetchAtlas:
     def test_fetch_schaefer2018(self, tmpdir, version):
         """Test fetching of Schaefer2018 parcellations."""
         keys = [
-            '{p}Parcels{n}Networks'
+            f'{p}Parcels{n}Networks'
             for p in range(100, 1001, 100) for n in [7, 17]
         ]
         schaefer = datasets.fetch_schaefer2018(version, data_dir=tmpdir, verbose=0)
@@ -96,10 +96,11 @@ class TestFetchAtlas:
         if version == 'fslr32k':
             assert all(k in schaefer and os.path.isfile(schaefer[k]) for k in keys)
         else:
-            assert all(k in schaefer
-                    and len(schaefer[k]) == 2
-                    and all(os.path.isfile(hemi) for hemi in schaefer[k])
-                    for k in keys)
+            for k in keys:
+                assert k in schaefer
+                assert len(schaefer[k]) == 2
+                assert all(os.path.isfile(hemi) for hemi in schaefer[k])
+
 
     def test_fetch_mmpall(self, tmpdir):
         """Test fetching of MMPAll parcellations."""
