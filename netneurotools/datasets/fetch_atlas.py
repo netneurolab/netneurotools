@@ -88,9 +88,10 @@ def fetch_cammoun2012(
         'MNI152NLin2009aSym'
     ]
     if version not in versions:
-        raise ValueError('The version of Cammoun et al., 2012 parcellation '
-                         'requested "{}" does not exist. Must be one of {}'
-                         .format(version, versions))
+        raise ValueError(
+            f'The version of Cammoun et al., 2012 parcellation '
+            f'requested {version} does not exist. Must be one of {versions}'
+        )
 
     dataset_name = 'atl-cammoun2012'
     _get_reference_info(dataset_name, verbose=verbose)
@@ -102,7 +103,7 @@ def fetch_cammoun2012(
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
 
     # filenames differ based on selected version of dataset
@@ -202,15 +203,16 @@ def fetch_schaefer2018(
     """
     versions = ['fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k']
     if version not in versions:
-        raise ValueError('The version of Schaefer et al., 2018 parcellation '
-                         'requested "{}" does not exist. Must be one of {}'
-                         .format(version, versions))
+        raise ValueError(
+            f'The version of Schaefer et al., 2018 parcellation '
+            f'requested "{version}" does not exist. Must be one of {versions}'
+        )
 
     dataset_name = 'atl-schaefer2018'
     _get_reference_info(dataset_name, verbose=verbose)
 
     keys = [
-        '{}Parcels{}Networks'.format(p, n)
+        f'{p}Parcels{n}Networks'
         for p in range(100, 1001, 100) for n in [7, 17]
     ]
 
@@ -219,7 +221,7 @@ def fetch_schaefer2018(
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
 
     if version == 'fslr32k':
@@ -292,9 +294,10 @@ def fetch_mmpall(
     """
     versions = ['fslr32k']
     if version not in versions:
-        raise ValueError('The version of Glasser et al., 2016 parcellation '
-                         'requested "{}" does not exist. Must be one of {}'
-                         .format(version, versions))
+        raise ValueError(
+            f'The version of Glasser et al., 2016 parcellation '
+            f'requested "{version}" does not exist. Must be one of {versions}'
+        )
 
     dataset_name = 'atl-mmpall'
     _get_reference_info(dataset_name, verbose=verbose)
@@ -304,7 +307,7 @@ def fetch_mmpall(
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
 
     _filenames = [
@@ -430,7 +433,7 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
 
     _filenames = [

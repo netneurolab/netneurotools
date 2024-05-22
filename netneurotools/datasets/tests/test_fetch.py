@@ -88,7 +88,7 @@ class TestFetchAtlas:
     def test_fetch_schaefer2018(self, tmpdir, version):
         """Test fetching of Schaefer2018 parcellations."""
         keys = [
-            '{}Parcels{}Networks'.format(p, n)
+            '{p}Parcels{n}Networks'
             for p in range(100, 1001, 100) for n in [7, 17]
         ]
         schaefer = datasets.fetch_schaefer2018(version, data_dir=tmpdir, verbose=0)

@@ -71,8 +71,10 @@ def fetch_fsaverage(
         'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'
     ]
     if version not in versions:
-        raise ValueError('The version of fsaverage requested "{}" does not '
-                         'exist. Must be one of {}'.format(version, versions))
+        raise ValueError(
+            f'The version of fsaverage requested {version} does not '
+            f'exist. Must be one of {versions}'
+        )
 
     dataset_name = 'tpl-fsaverage'
     _get_reference_info(dataset_name, verbose=verbose)
@@ -84,7 +86,7 @@ def fetch_fsaverage(
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
 
     _filenames = [
@@ -158,7 +160,7 @@ def fetch_hcp_standards(data_dir=None, resume=True, verbose=1):
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
     fetched = fetch_files(
         data_dir,
@@ -229,12 +231,16 @@ def fetch_civet(
     """
     densities = ['41k', '164k']
     if density not in densities:
-        raise ValueError('The density of CIVET requested "{}" does not exist. '
-                         'Must be one of {}'.format(density, densities))
+        raise ValueError(
+            f'The density of CIVET requested "{density}" does not exist. '
+            f'Must be one of {densities}'
+        )
     versions = ['v1', 'v2']
     if version not in versions:
-        raise ValueError('The version of CIVET requested "{}" does not exist. '
-                         'Must be one of {}'.format(version, versions))
+        raise ValueError(
+            f'The version of CIVET requested "{version}" does not exist. '
+            f'Must be one of {versions}'
+        )
 
     if version == 'v1' and density == '164k':
         raise ValueError('The "164k" density CIVET surface only exists for '
@@ -251,7 +257,7 @@ def fetch_civet(
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
 
     _filenames = [
@@ -317,7 +323,7 @@ def fetch_conte69(data_dir=None, resume=True, verbose=1):
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
 
     _filenames = [
@@ -386,7 +392,7 @@ def fetch_yerkes19(data_dir=None, resume=None, verbose=1):
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
     _filenames = [
         f"{dataset_name}/tpl-yerkes19_space-fsLR32k_{res}.{hemi}.surf.gii"

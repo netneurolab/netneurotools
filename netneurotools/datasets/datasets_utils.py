@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Utilites for loading / creating datasets."""
 
 import json
@@ -122,8 +121,10 @@ def _get_dataset_info(name):
     try:
         return NNT_DATASETS[name]
     except KeyError:
-        raise KeyError("Provided dataset '{}' is not valid. Must be one of: {}"
-                       .format(name, sorted(NNT_DATASETS.keys()))) from None
+        raise KeyError(
+            f"Provided dataset {name} is not valid. "
+            f"Must be one of: {sorted(NNT_DATASETS.keys())}"
+        ) from None
 
 
 NNT_REFERENCES = _load_resource_json('datasets/references.json')
@@ -154,10 +155,11 @@ def _get_reference_info(name, verbose=1, return_dict=False):
 
         if return_dict:
             return curr_refs
-
     except KeyError:
-        raise KeyError("Provided dataset '{}' is not valid. Must be one of: {}"
-                       .format(name, sorted(NNT_REFERENCES.keys()))) from None
+        raise KeyError(
+            f"Provided dataset {name} is not valid. "
+            f"Must be one of: {sorted(NNT_REFERENCES.keys())}"
+        ) from None
 
 
 def _fill_reference_json(bib_file, json_file, overwrite=False, use_defaults=False):
@@ -245,9 +247,10 @@ def _check_freesurfer_subjid(subject_id, subjects_dir=None):
 
     subjdir = os.path.join(subjects_dir, subject_id)
     if not os.path.isdir(subjdir):
-        raise FileNotFoundError('Cannot find specified subject id {} in '
-                                'provided subject directory {}.'
-                                .format(subject_id, subjects_dir))
+        raise FileNotFoundError(
+            f'Cannot find specified subject id {subject_id} in '
+            f'provided subject directory {subjects_dir}.'
+        )
 
     return subject_id, subjects_dir
 
@@ -276,11 +279,11 @@ def _get_freesurfer_subjid(subject_id, subjects_dir=None):
         subject_id, subjects_dir = _check_freesurfer_subjid(subject_id, subjects_dir)
     except FileNotFoundError:
         if 'fsaverage' not in subject_id:
-            raise ValueError('Provided subject {} does not exist in provided '
-                             'subjects_dir {}'
-                             .format(subject_id, subjects_dir)) from None
-        from ..datasets import fetch_fsaverage
-        from ..datasets import _get_data_dir
+            raise ValueError(
+                f'Provided subject {subject_id} does not exist in provided '
+                f'subjects_dir {subjects_dir}'
+            ) from None
+        from .fetch_template import fetch_fsaverage
         fetch_fsaverage(subject_id)
         subjects_dir = os.path.join(_get_data_dir(), 'tpl-fsaverage')
         subject_id, subjects_dir = _check_freesurfer_subjid(subject_id, subjects_dir)

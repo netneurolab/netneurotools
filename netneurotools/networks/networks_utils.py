@@ -59,8 +59,9 @@ def binarize_network(network, retain=10, keep_diag=False):
     netneurotools.networks.threshold_network
     """
     if retain < 0 or retain > 100:
-        raise ValueError('Value provided for `retain` is outside [0, 100]: {}'
-                         .format(retain))
+        raise ValueError(
+            f'Value provided for `retain` is outside [0, 100]: {retain}'
+        )
 
     prctile = 100 - retain
     triu = get_triu(network)
@@ -97,8 +98,10 @@ def threshold_network(network, retain=10):
     netneurotools.networks.binarize_network
     """
     if retain < 0 or retain > 100:
-        raise ValueError('Value provided for `retain` must be a percent '
-                         'in range [0, 100]. Provided: {}'.format(retain))
+        raise ValueError(
+            f'Value provided for `retain` must be a percent '
+            f'in range [0, 100]. Provided: {retain}'
+        )
 
     # get number of nodes in graph and invert weights (MINIMUM spanning tree)
     nodes = len(network)
@@ -111,10 +114,11 @@ def threshold_network(network, retain=10):
     # determine # of remaining edges and ensure we're not over the limit
     remain = int((retain / 100) * ((nodes * (nodes - 1)) / 2)) - mst_edges
     if remain < 0:
-        raise ValueError('Minimum spanning tree with {} edges exceeds desired '
-                         'connection density of {}% ({} edges). Cannot '
-                         'proceed with graph creation.'
-                         .format(mst_edges, retain, remain + mst_edges))
+        raise ValueError(
+            f'Minimum spanning tree with {mst_edges} edges exceeds desired '
+            f'connection density of {retain}% ({remain + mst_edges} edges). Cannot '
+            f'proceed with graph creation.'
+        )
 
     # zero out edges already in MST and then get indices of next best edges
     graph -= mst

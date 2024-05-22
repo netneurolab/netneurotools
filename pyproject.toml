@@ -105,7 +105,6 @@ ignore = [
     # "W605", # Invalid escape sequence: latex
     "NPY002", # Replace legacy `np.random` call with `np.random.Generator`
 ]
-extend-select = ["E302"]
 preview = true
 
 [tool.ruff.lint.pydocstyle]

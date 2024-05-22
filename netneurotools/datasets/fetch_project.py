@@ -61,7 +61,7 @@ def fetch_vazquez_rodriguez2019(data_dir=None, resume=True, verbose=1):
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(dataset_name)
+        'move': f'{dataset_name}.tar.gz'
     }
     fetched = fetch_files(
         data_dir,
@@ -309,8 +309,10 @@ def fetch_famous_gmat(
     ]
 
     if dataset not in available_connectomes:
-        raise ValueError('Provided dataset {} not available; must be one of {}'
-                         .format(dataset, available_connectomes))
+        raise ValueError(
+            f'Provided dataset {dataset} not available; '
+            f'must be one of {available_connectomes}'
+        )
 
     base_dataset_name = 'ds-famous_gmat'
     _get_reference_info(base_dataset_name, verbose=verbose)
@@ -320,7 +322,7 @@ def fetch_famous_gmat(
     opts = {
         'uncompress': True,
         'md5sum': info['md5'],
-        'move': '{}.tar.gz'.format(base_dataset_name)
+        'move': f'{base_dataset_name}.tar.gz'
     }
     fetched = fetch_files(
         data_dir,
