@@ -73,7 +73,7 @@ include-package-data = true
 find = {}
 
 [tool.setuptools.package-data]
-"*" = ["*.json"]
+"*" = ["*.json", "*.bib"]
 
 [tool.setuptools.dynamic]
 version = {attr = "netneurotools.__version__"}

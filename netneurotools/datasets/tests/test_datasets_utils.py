@@ -10,7 +10,7 @@ from netneurotools.datasets import datasets_utils as utils
     ('atl-cammoun2012', ['fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k',
                          'MNI152NLin2009aSym', 'gcs']),
     ('tpl-conte69', ['url', 'md5']),
-    ('atl-pauli2018', ['url', 'md5', 'name']),
+    ('atl-pauli2018', ['probabilistic', 'deterministic', 'info']),
     ('tpl-fsaverage', ['fsaverage' + f for f in ['', '3', '4', '5', '6']]),
     ('atl-schaefer2018', ['fsaverage', 'fsaverage6', 'fsaverage6'])
 ])
