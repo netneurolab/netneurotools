@@ -1,6 +1,7 @@
 {
     "atl-cammoun2012": {
         "gcs": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5ce6bb4423fec40017e82c5e"
@@ -8,6 +9,7 @@
             "md5": "266c4520af768e766328fb8e6648005d"
         },
         "fsaverage": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5ce6c30523fec40017e83439"
@@ -15,6 +17,7 @@
             "md5": "2a19eb4744c0ce6c243f721bd43ecff0"
         },
         "fsaverage5": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5e189a1c57341903868036dd"
@@ -22,6 +25,7 @@
             "md5": "2afb22e1887d47f1ca81c340fff7692b"
         },
         "fsaverage6": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5e189a1b5734190380804072"
@@ -29,6 +33,7 @@
             "md5": "1df743bff13316f67bd41d13ec691c97"
         },
         "MNI152NLin2009aSym": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5e2f4bf0e71ef800301880c2"
@@ -36,6 +41,7 @@
             "md5": "9da30bad22d732aa5f00a6d178d087c4"
         },
         "fslr32k": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5e2f4bf1e71ef80027189c56"
@@ -43,33 +49,40 @@
             "md5": "a5177319d5e0b8825a91d503ded1a59e"
         }
     },
-    "atl-pauli2018": [
-        {
+    "atl-pauli2018": {
+        "probabilistic": {
+            "url-type": "osf",
             "url": [
                 "jkzwp",
                 "5b11fa3364f25a001973dce0"
             ],
             "md5": "62dd6ff405d3a8b89ee188cafa3a7f6a",
-            "name": "atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_probabilistic.nii.gz"
+            "folder-name": "atl-pauli2018",
+            "file-name": "atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_probabilistic.nii.gz"
         },
-        {
+        "deterministic": {
+            "url-type": "osf",
             "url": [
                 "jkzwp",
                 "5b11fa2ff1f288000e625a7f"
             ],
             "md5": "5a5b6246921be08456304875447c68ed",
-            "name": "atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_deterministic.nii.gz"
+            "folder-name": "atl-pauli2018",
+            "file-name": "atl-Pauli2018_space-MNI152NLin2009cAsym_hemi-both_deterministic.nii.gz"
         },
-        {
+        "info": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5c93b4f034062c001b1ef50d"
             ],
             "md5": "390a693abeb1a583151f30aa8798bab5",
-            "name": "atl-pauli2018/atl-Pauli2018_space-MNI152NLin2009cAsym_info.csv"
+            "folder-name": "atl-pauli2018",
+            "file-name": "atl-Pauli2018_space-MNI152NLin2009cAsym_info.csv"
         }
-    ],
+    },
     "tpl-conte69": {
+        "url-type": "osf",
         "url": [
             "fvuh8",
             "5b198ec5ec24e20011b48548"
@@ -77,6 +90,7 @@
         "md5": "bd944e3f9f343e0e51e562b440960529"
     },
     "tpl-yerkes19": {
+        "url-type": "osf",
         "url": [
             "mb37e",
             "60ae93d504e91a005f1761ab"
@@ -85,6 +99,7 @@
     },
     "tpl-fsaverage": {
         "fsaverage": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5c82830a1d73810018bdacea"
@@ -92,6 +107,7 @@
             "md5": "1e82c52ed21d06d4e6e7341c725c5262"
         },
         "fsaverage3": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5d9f83b6f6b03e000e1ba285"
@@ -99,6 +115,7 @@
             "md5": "b4182495d341364e3f7c5b86284d8d20"
         },
         "fsaverage4": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5d9f83b7fcf91f00111c7473"
@@ -106,6 +123,7 @@
             "md5": "5a481421dc1286c7bd9b8a47db5fad0b"
         },
         "fsaverage5": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5d9f83b6f6b03e00101c932f"
@@ -113,6 +131,7 @@
             "md5": "cc75f7290c03970a8b8a06dfc215e925"
         },
         "fsaverage6": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5d9f83b7a7bc73000cea05f1"
@@ -123,6 +142,7 @@
     "tpl-civet": {
         "v1": {
             "civet41k": {
+                "url-type": "osf",
                 "url": [
                     "mb37e",
                     "601daffd84ecf800fe031868"
@@ -132,6 +152,7 @@
         },
         "v2": {
             "civet41k": {
+                "url-type": "osf",
                 "url": [
                     "mb37e",
                     "601dafe77ad0a80119d9483c"
@@ -139,6 +160,7 @@
                 "md5": "a47b015e471c6a800d236f107fda5b4a"
             },
             "civet164k": {
+                "url-type": "osf",
                 "url": [
                     "mb37e",
                     "601dafe87ad0a8011ad94938"
@@ -147,209 +169,16 @@
             }
         }
     },
-    "ds-famous-gmat": {
-        "celegans": {
-            "url": [
-                "mb37e",
-                "5d9b8e4aa7bc73000be65508"
-            ],
-            "md5": "f35cd893bc1aff4e8184a528fcda14b9",
-            "keys": [
-                "conn",
-                "dist",
-                "labels"
-            ]
-        },
-        "drosophila": {
-            "url": [
-                "mb37e",
-                "5d9b8e4aa7bc73000ce65d00"
-            ],
-            "md5": "6a67a4fc1b4f35b72c42cca4d0827249",
-            "keys": [
-                "conn",
-                "coords",
-                "labels",
-                "networks"
-            ]
-        },
-        "human_func_scale033": {
-            "url": [
-                "mb37e",
-                "5d9b8e4afcf91f000f18f57b"
-            ],
-            "md5": "1988ab427d9bc0de075bbe600ce0a27f",
-            "keys": [
-                "conn",
-                "coords",
-                "labels"
-            ]
-        },
-        "human_func_scale060": {
-            "url": [
-                "mb37e",
-                "5d9b8e4aa7bc73000de67117"
-            ],
-            "md5": "4191f5a2b0c5063dcba9935ea0ef0bfe",
-            "keys": [
-                "conn",
-                "coords",
-                "labels"
-            ]
-        },
-        "human_func_scale125": {
-            "url": [
-                "mb37e",
-                "5d9b8e4b26eb50000e78c987"
-            ],
-            "md5": "533e11cf9fea67d536648c9ef939a5f5",
-            "keys": [
-                "conn",
-                "coords",
-                "labels"
-            ]
-        },
-        "human_func_scale250": {
-            "url": [
-                "mb37e",
-                "5d9b8e4efcf91f0012190ba1"
-            ],
-            "md5": "4abc7324c2a9ae04ef6cf5555149b3f4",
-            "keys": [
-                "conn",
-                "coords",
-                "labels"
-            ]
-        },
-        "human_func_scale500": {
-            "url": [
-                "mb37e",
-                "5d9b8e4ff6b03e000d18b5a1"
-            ],
-            "md5": "637c6057476b2508f15f244d528e156d",
-            "keys": [
-                "conn",
-                "coords",
-                "labels"
-            ]
-        },
-        "human_struct_scale033": {
-            "url": [
-                "mb37e",
-                "5d9b8e4f26eb50000e78c993"
-            ],
-            "md5": "27a2101f2f04e0fc8de09a8248793235",
-            "keys": [
-                "conn",
-                "coords",
-                "dist",
-                "labels"
-            ]
-        },
-        "human_struct_scale060": {
-            "url": [
-                "mb37e",
-                "5d9b8e4da7bc73000be6550e"
-            ],
-            "md5": "9289265ab1bd0fa18611eeaf1afce745",
-            "keys": [
-                "conn",
-                "coords",
-                "dist",
-                "labels"
-            ]
-        },
-        "human_struct_scale125": {
-            "url": [
-                "mb37e",
-                "5d9b8e50f6b03e000e18aa37"
-            ],
-            "md5": "07e60b141809babe8c2645d93cd24984",
-            "keys": [
-                "conn",
-                "coords",
-                "dist",
-                "labels"
-            ]
-        },
-        "human_struct_scale250": {
-            "url": [
-                "mb37e",
-                "5d9b8e51fcf91f001118fdc2"
-            ],
-            "md5": "56f9ca8b4ecc63ef9aaf64a606755c09",
-            "keys": [
-                "conn",
-                "coords",
-                "dist",
-                "labels"
-            ]
-        },
-        "human_struct_scale500": {
-            "url": [
-                "mb37e",
-                "5d9b8e51a7bc73000ee65769"
-            ],
-            "md5": "94724e0446f8cb06207a4521ba1df20f",
-            "keys": [
-                "conn",
-                "coords",
-                "dist",
-                "labels"
-            ]
-        },
-        "macaque_markov": {
-            "url": [
-                "mb37e",
-                "5d9b8e56a7bc73000ce65d11"
-            ],
-            "md5": "5ce43182afc9c4f779db2c0306afb202",
-            "keys": [
-                "conn",
-                "dist",
-                "labels"
-            ]
-        },
-        "macaque_modha": {
-            "url": [
-                "mb37e",
-                "5d9b8e5626eb50000d78abd0"
-            ],
-            "md5": "f467c62b2670feaf75c93d90d5ed5de6",
-            "keys": [
-                "conn",
-                "coords",
-                "dist",
-                "labels"
-            ]
-        },
-        "mouse": {
-            "url": [
-                "mb37e",
-                "5d9b8e5626eb50000e78c9a0"
-            ],
-            "md5": "dba5cbbb9e72c1cacda945086d77a125",
-            "keys": [
-                "conn",
-                "coords",
-                "dist",
-                "labels",
-                "acronyms"
-            ]
-        },
-        "rat": {
-            "url": [
-                "mb37e",
-                "5d9b8e56f6b03e000f18d06f"
-            ],
-            "md5": "9e1f12ce4fa42082a76d62f89670f5d0",
-            "keys": [
-                "conn",
-                "labels"
-            ]
-        }
+    "ds-famous_gmat": {
+        "url-type": "osf",
+        "url": [
+            "mb37e",
+            "664683ca4664da9ebced6b70"
+        ],
+        "md5": "b803de1058579881a759f475704e9f35"
     },
     "ds-vazquez_rodriguez2019": {
+        "url-type": "osf",
         "url": [
             "mb37e",
             "5d9f5aa4f6b03e000e1b819e"
@@ -358,6 +187,7 @@
     },
     "atl-schaefer2018": {
         "fsaverage": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5dbc8d7dcfc96c000dc3581c"
@@ -365,6 +195,7 @@
             "md5": "74dfe4237efaccabf057897c49e8af94"
         },
         "fsaverage5": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5dbc8d7daf84c3000eebffb2"
@@ -372,6 +203,7 @@
             "md5": "45a8c784f1979eb33a119bdab912a51f"
         },
         "fsaverage6": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5dbc8d7bcfc96c000ec6dca2"
@@ -379,6 +211,7 @@
             "md5": "8738daccab4648c3e891a1c8d3a9ec1f"
         },
         "fslr32k": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "5e3086e4af75930094bdd507"
@@ -388,6 +221,7 @@
     },
     "atl-mmpall": {
         "fslr32k": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "6047bac259e910009b83114f"
@@ -396,6 +230,7 @@
         }
     },
     "atl-voneconomo_koskinas": {
+        "url-type": "osf",
         "url": [
             "mb37e",
             "5ed80005fabc45000d639900"
@@ -404,11 +239,29 @@
     },
     "tpl-hcp_standards": {
         "standard_mesh_atlases": {
+            "url-type": "osf",
             "url": [
                 "mb37e",
                 "6643d2ab2eacc48a57097091"
             ],
-            "md5": "806abac71f76b8dba8af467ef313c3f7"
+            "md5": "806abac71f76b8dba8af467ef313c3f7",
+            "keys": [
+                "fs_LR_32k",
+                "fsaverage",
+                "fsaverage5",
+                "fsaverage6",
+                "MNI152NLin2009cAsym"
+            ]
         }
+    },
+    "ds-hansen_manynetworks": {
+        "url-type": "github-release",
+        "url": [
+            "netneurolab",
+            "hansen_many_networks",
+            "v1.0.0"
+        ],
+        "folder-name": "hansen_many_networks-1.0.0",
+        "md5": "9e503c759506293aa441054cfd206ccc"
     }
 }
