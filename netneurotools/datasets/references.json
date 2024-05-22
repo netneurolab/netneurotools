@@ -1,0 +1,220 @@
+{
+    "atl-cammoun2012": {
+        "primary": [
+            {
+                "citation": "Leila Cammoun, Xavier Gigandet, Djalel Meskaldji, Jean Philippe Thiran, Olaf Sporns, Kim Q Do, Philippe Maeder, Reto Meuli, and Patric Hagmann. Mapping the human connectome at multiple scales with diffusion spectrum mri. Journal of neuroscience methods, 203(2):386\u2013397, 2012.",
+                "bibkey": "cammoun2012mapping"
+            }
+        ]
+    },
+    "atl-pauli2018": {
+        "primary": [
+            {
+                "citation": "Wolfgang M Pauli, Amanda N Nili, and J Michael Tyszka. A high-resolution probabilistic in vivo atlas of human subcortical brain nuclei. Scientific data, 5(1):1\u201313, 2018.",
+                "bibkey": "pauli2018high"
+            }
+        ]
+    },
+    "tpl-conte69": {
+        "primary": [
+            {
+                "citation": "David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna Barch, Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen, Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome project: a data acquisition perspective. Neuroimage, 62(4):2222\u20132231, 2012.",
+                "bibkey": "van2012human"
+            },
+            {
+                "citation": "David C Van Essen, Matthew F Glasser, Donna L Dierker, John Harwell, and Timothy Coalson. Parcellations and hemispheric asymmetries of human cerebral cortex analyzed on surface-based atlases. Cerebral cortex, 22(10):2241\u20132262, 2012.",
+                "bibkey": "van2012parcellations"
+            }
+        ]
+    },
+    "tpl-yerkes19": {
+        "primary": [
+            {
+                "citation": "Chad J Donahue, Stamatios N Sotiropoulos, Saad Jbabdi, Moises Hernandez-Fernandez, Timothy E Behrens, Tim B Dyrby, Timothy Coalson, Henry Kennedy, Kenneth Knoblauch, David C Van Essen, and others. Using diffusion tractography to predict cortical connection strength and distance: a quantitative comparison with tracers in the monkey. Journal of Neuroscience, 36(25):6758\u20136770, 2016.",
+                "bibkey": "donahue2016using"
+            }
+        ]
+    },
+    "tpl-fsaverage": {
+        "primary": [
+            {
+                "citation": "Anders M Dale, Bruce Fischl, and Martin I Sereno. Cortical surface-based analysis: i. segmentation and surface reconstruction. Neuroimage, 9(2):179\u2013194, 1999.",
+                "bibkey": "dale1999cortical"
+            },
+            {
+                "citation": "Bruce Fischl, Martin I Sereno, and Anders M Dale. Cortical surface-based analysis: ii: inflation, flattening, and a surface-based coordinate system. Neuroimage, 9(2):195\u2013207, 1999.",
+                "bibkey": "fischl1999cortical"
+            },
+            {
+                "citation": "Bruce Fischl, Martin I Sereno, Roger BH Tootell, and Anders M Dale. High-resolution intersubject averaging and a coordinate system for the cortical surface. Human brain mapping, 8(4):272\u2013284, 1999.",
+                "bibkey": "fischl1999high"
+            }
+        ]
+    },
+    "tpl-civet": {
+        "primary": [
+            {
+                "citation": "Oliver Lyttelton, Maxime Boucher, Steven Robbins, and Alan Evans. An unbiased iterative group registration template for cortical surface analysis. Neuroimage, 34(4):1535\u20131544, 2007.",
+                "bibkey": "lyttelton2007unbiased"
+            },
+            {
+                "citation": "Vladimir S Fonov, Alan C Evans, Robert C McKinstry, C Robert Almli, and DL Collins. Unbiased nonlinear average age-appropriate brain templates from birth to adulthood. NeuroImage, 47:S102, 2009.",
+                "bibkey": "fonov2009unbiased"
+            },
+            {
+                "citation": "Y Ad-Dab'bagh, O Lyttelton, J Muehlboeck, C Lepage, D Einarson, K Mok, O Ivanov, R Vincent, J Lerch, and E Fombonne. The civet image-processing environment: a fully automated comprehensive pipeline for anatomical neuroimaging research. proceedings of the 12th annual meeting of the organization for human brain mapping. Florence, Italy, pages 2266, 2006.",
+                "bibkey": "ad2006civet"
+            }
+        ]
+    },
+    "ds-famous_gmat": {
+        "primary": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ],
+        "celegans": [
+            {
+                "citation": "Lav R Varshney, Beth L Chen, Eric Paniagua, David H Hall, and Dmitri B Chklovskii. Structural properties of the caenorhabditis elegans neuronal network. PLoS computational biology, 7(2):e1001066, 2011.",
+                "bibkey": "varshney2011structural"
+            }
+        ],
+        "drosophila": [
+            {
+                "citation": "Ann-Shyn Chiang, Chih-Yung Lin, Chao-Chun Chuang, Hsiu-Ming Chang, Chang-Huain Hsieh, Chang-Wei Yeh, Chi-Tin Shih, Jian-Jheng Wu, Guo-Tzau Wang, Yung-Chang Chen, and others. Three-dimensional reconstruction of brain-wide wiring networks in drosophila at single-cell resolution. Current biology, 21(1):1\u201311, 2011.",
+                "bibkey": "chiang2011three"
+            }
+        ],
+        "human": [
+            {
+                "citation": "Alessandra Griffa, Yasser Alem\u00e1n-G\u00f3mez, and Patric Hagmann. Structural and functional connectome from 70 young healthy adults [data set]. Zenodo, 2019.",
+                "bibkey": "griffa2019lausanne"
+            }
+        ],
+        "macaque_markov": [
+            {
+                "citation": "Nikola T Markov, Maria Ercsey-Ravasz, Camille Lamy, Ana Rita Ribeiro Gomes, Lo\u00efc Magrou, Pierre Misery, Pascale Giroud, Pascal Barone, Colette Dehay, Zolt\u00e1n Toroczkai, and others. The role of long-range connections on the specificity of the macaque interareal cortical network. Proceedings of the National Academy of Sciences, 110(13):5187\u20135192, 2013.",
+                "bibkey": "markov2013role"
+            }
+        ],
+        "macaque_modha": [
+            {
+                "citation": "Dharmendra S Modha and Raghavendra Singh. Network architecture of the long-distance pathways in the macaque brain. Proceedings of the National Academy of Sciences, 107(30):13485\u201313490, 2010.",
+                "bibkey": "modha2010network"
+            }
+        ],
+        "mouse": [
+            {
+                "citation": "Mikail Rubinov, Rolf JF Ypma, Charles Watson, and Edward T Bullmore. Wiring cost and topological participation of the mouse brain connectome. Proceedings of the National Academy of Sciences, 112(32):10032\u201310037, 2015.",
+                "bibkey": "rubinov2015wiring"
+            }
+        ],
+        "rat": [
+            {
+                "citation": "Mihail Bota, Olaf Sporns, and Larry W Swanson. Architecture of the cerebral cortical association connectome underlying cognition. Proceedings of the National Academy of Sciences, 112(16):E2093\u2013E2101, 2015.",
+                "bibkey": "bota2015architecture"
+            }
+        ]
+    },
+    "ds-vazquez_rodriguez2019": {
+        "primary": [
+            {
+                "citation": "Bertha V\u00e1zquez-Rodr\u00edguez, Laura E Su\u00e1rez, Ross D Markello, Golia Shafiei, Casey Paquola, Patric Hagmann, Martijn P Van Den Heuvel, Boris C Bernhardt, R Nathan Spreng, and Bratislav Misic. Gradients of structure\u2013function tethering across neocortex. Proceedings of the National Academy of Sciences, 116(42):21219\u201321227, 2019.",
+                "bibkey": "vazquez2019gradients"
+            }
+        ]
+    },
+    "atl-schaefer2018": {
+        "primary": [
+            {
+                "citation": "Alexander Schaefer, Ru Kong, Evan M Gordon, Timothy O Laumann, Xi-Nian Zuo, Avram J Holmes, Simon B Eickhoff, and BT Thomas Yeo. Local-global parcellation of the human cerebral cortex from intrinsic functional connectivity mri. Cerebral cortex, 28(9):3095\u20133114, 2018.",
+                "bibkey": "schaefer2018local"
+            }
+        ]
+    },
+    "atl-mmpall": {
+        "primary": [
+            {
+                "citation": "Matthew F Glasser, Timothy S Coalson, Emma C Robinson, Carl D Hacker, John Harwell, Essa Yacoub, Kamil Ugurbil, Jesper Andersson, Christian F Beckmann, Mark Jenkinson, and others. A multi-modal parcellation of human cerebral cortex. Nature, 536(7615):171\u2013178, 2016.",
+                "bibkey": "glasser2016multi"
+            }
+        ]
+    },
+    "atl-voneconomo_koskinas": {
+        "primary": [
+            {
+                "citation": "Lianne H Scholtens, Marcel A de Reus, Siemon C de Lange, Ruben Schmidt, and Martijn P van den Heuvel. An mri von economo\u2013koskinas atlas. NeuroImage, 170:249\u2013256, 2018.",
+                "bibkey": "scholtens2018mri"
+            }
+        ]
+    },
+    "tpl-hcp_standards": {
+        "primary": [
+            {
+                "citation": "David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna Barch, Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen, Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome project: a data acquisition perspective. Neuroimage, 62(4):2222\u20132231, 2012.",
+                "bibkey": "van2012human"
+            },
+            {
+                "citation": "Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson, Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal preprocessing pipelines for the human connectome project. Neuroimage, 80:105\u2013124, 2013.",
+                "bibkey": "glasser2013minimal"
+            }
+        ]
+    },
+    "ds-hansen_manynetworks": {
+        "primary": [
+            {
+                "citation": "Justine Y Hansen, Golia Shafiei, Katharina Voigt, Emma X Liang, Sylvia ML Cox, Marco Leyton, Sharna D Jamadar, and Bratislav Misic. Integrating multimodal and multiscale connectivity blueprints of the human cerebral cortex in health and disease. PLoS biology, 21(9):e3002314, 2023.",
+                "bibkey": "hansen2023integrating"
+            }
+        ],
+        "gene": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ],
+        "receptor": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ],
+        "larminar": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ],
+        "metabolic": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ],
+        "haemodynamic": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ],
+        "electrophysiological": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ],
+        "temporal": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ],
+        "cognitive": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ]
+    }
+}

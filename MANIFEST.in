@@ -1,3 +1,5 @@
 include README.rst LICENSE environment.yml requirements.txt
-recursive-include netneurotools/data *
 include versioneer.py
+include netneurotools/datasets/datasets.json
+include netneurotools/datasets/references.json
+include netneurotools/datasets/netneurotools.bib
