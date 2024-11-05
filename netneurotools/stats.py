@@ -312,7 +312,7 @@ def permtest_rel(a, b, axis=0, n_perm=1000, seed=0):
     abs_true = np.abs(true_diff)
 
     # idx array
-    reidx = np.meshgrid(*[range(f) for f in ab.shape], indexing='ij')
+    reidx = list(np.meshgrid(*[range(f) for f in ab.shape], indexing='ij'))
 
     permutations = np.ones(true_diff.shape)
     for _ in range(n_perm):
