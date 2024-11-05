@@ -27,7 +27,7 @@ from .regression import (
 
 __all__ = [
     # correlation
-    'efficient_pearsonr', 'weighted_pearsonr', 'make_correlated_xy'
+    'efficient_pearsonr', 'weighted_pearsonr', 'make_correlated_xy',
     # permutation_test
     'permtest_1samp', 'permtest_rel', 'permtest_pearsonr',
     # regression
