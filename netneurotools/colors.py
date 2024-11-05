@@ -95,7 +95,6 @@ def available_cmaps():
 
 def _register_cmaps():
     """Register all colormaps in module so they are accessible via matplotlib."""
-
     for cmap in __all__:
         matplotlib.colormaps.register(globals()[cmap], name=cmap)
 
