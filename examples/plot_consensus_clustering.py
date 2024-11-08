@@ -81,9 +81,9 @@ ax.set(ylabel='Assignments', xlabel='ROIs', xticklabels=[], yticklabels=[])
 # We'll provide these different assignments to our consensus-finding algorithm
 # which will generate one final community assignment vector:
 
-from netneurotools import cluster
+from netneurotools import modularity
 
-consensus = cluster.find_consensus(np.column_stack(ci), seed=1234)
+consensus = modularity.find_consensus(np.column_stack(ci), seed=1234)
 plotting.plot_mod_heatmap(corr, consensus, cmap='viridis')
 
 ###############################################################################

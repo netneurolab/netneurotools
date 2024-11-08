@@ -28,8 +28,8 @@ rvs = np.random.normal(loc=5, scale=5, size=(100, 2))
 # We can use ``scipy.stats`` for a standard parametric test to assess whether
 # the array is different from zero:
 
-from scipy import stats
-print(stats.ttest_1samp(rvs, 0.0))
+import scipy.stats as sstats
+print(sstats.ttest_1samp(rvs, 0.0))
 
 ###############################################################################
 # And can do the same thing with permutations using ``netneurotools.stats``:
@@ -88,7 +88,7 @@ rvs2 = (np.random.normal(loc=5, scale=5, size=500)
 # These two arrays shouldn't be meaningfully different, and we can test that
 # with a standard parametric test:
 
-print(stats.ttest_rel(rvs1, rvs2))
+print(sstats.ttest_rel(rvs1, rvs2))
 
 ###############################################################################
 # Or with a non-parametric permutation test:
@@ -114,13 +114,12 @@ print(nnstats.permtest_rel(rvs1, rvs3))
 #
 # First, we'll generate two correlated variables:
 
-from netneurotools import datasets
-x, y = datasets.make_correlated_xy(corr=0.2, size=100)
+x, y = nnstats.make_correlated_xy(corr=0.2, size=100)
 
 ###############################################################################
 # We can generate the Pearson correlation with the standard parametric p-value:
 
-print(stats.pearsonr(x, y))
+print(sstats.pearsonr(x, y))
 
 ###############################################################################
 # Or use permutation testing to derive the p-value:
@@ -132,7 +131,7 @@ print(nnstats.permtest_pearsonr(x, y))
 # :func:`~.permtest_rel` apply here, so you can provide same-sized arrays and
 # correlations will only be calculated for paired columns:
 
-a, b = datasets.make_correlated_xy(corr=0.9, size=100)
+a, b = nnstats.make_correlated_xy(corr=0.9, size=100)
 arr1, arr2 = np.column_stack([x, a]), np.column_stack([y, b])
 print(nnstats.permtest_pearsonr(arr1, arr2))
 
