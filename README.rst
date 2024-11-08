@@ -30,48 +30,81 @@ usage in the `Network Neuroscience Lab <netneurolab.github.io/>`_, housed in
 the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
 
-.. _installation:
-
-Installation
-------------
-
-Install directly from PyPi with :code:`pip install netneurotools` or install the main branch with
-
-.. code-block:: bash
-
-    git clone https://github.com/netneurolab/netneurotools.git
-    cd netneurotools
-    pip install .
 
 .. _features:
 
 Features
 --------
 
-*  Network neuroscience metrics: up-to-date and optimized
+Netneurotools provides a wide range of tools for network neuroscience research.
 
-   *  Network communication
-   *  Null networks
+*  A range of useful datasets fetchers
 
-*  Brain plotting functions: easy to use and customize
+   *  Templates and atlases
+   *  Multimodal annotations
+   *  Data from our published papers
 
-   *  Surface visualization 
-      `plot_fsaverage <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_fsaverage.html>`_ 
-      and `plot_fslr <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_fslr.html>`_
-   *  3D point brain `plot_point_brain <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_point_brain.html>`_
-   *  Sorted communities `plot_mod_heatmap <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_mod_heatmap.html>`_
+*  Network construction: empirical and surrogate
 
-*  Statistics functions
+   *  Consensus networks
+   *  Randomized (null) networks
 
-   *  Dominance analysis `get_dominance_stats <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.stats.get_dominance_stats.html>`_
+*  Network (graph) metrics calculation
 
-*  Fetchers for common datasets
+   *  BCT-like metrics: up-to-date and optimized
+   *  Agent-based models
+   *  Statistical metrics
 
-*  Utilities for working with FreeSurfer and CIVET
+*  Brain and network visualization
 
+   *  Surface visualization
+   *  3D point brain
+   *  Sorted communities
+
+*  Network modularity workflows
+
+   *  Consensus modules
+
+*  Spatial statistics
+
+   *  Spatial autocorrelation
+
+*  Optimized statistics routines
+
+   *  Correlation estimation
+   *  Permutation testing
+
+*  Convenient interface for external tools
+
+*  A place for experimental procedures
 
 Check out our `documentation <https://netneurotools.readthedocs.io/en/latest>`_
 for more information!
+
+
+.. _installation:
+
+Installation
+------------
+
+This package is under active development. We recommend installing the latest version
+with 
+
+.. code-block:: bash
+
+    pip install git+https://github.com/netneurolab/netneurotools.git
+
+
+It is also possible to install directly from PyPi with :code:`pip install netneurotools`.
+
+If you are looking for the earlier version of the toolbox before the recent breaking changes,
+you can install it with
+
+.. code-block:: bash
+
+    pip install git+https://github.com/netneurolab/netneurotools.git@0.2.X
+
+
 
 .. _development:
 
