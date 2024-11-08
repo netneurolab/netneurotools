@@ -71,8 +71,8 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 include = [
-	"netneurotools",
-	"netneurotools.*"
+  "netneurotools",
+  "netneurotools.*"
 ]
 
 [tool.setuptools.package-data]
