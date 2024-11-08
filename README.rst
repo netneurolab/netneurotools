@@ -40,43 +40,18 @@ Netneurotools provides a wide range of tools for network neuroscience research.
 
 *  A range of useful datasets fetchers
 
-   *  Templates and atlases
-   *  Multimodal annotations
-   *  Data from our published papers
-
 *  Network construction: empirical and surrogate
 
-   *  Consensus networks
-   *  Randomized (null) networks
-
-*  Network (graph) metrics calculation
-
-   *  BCT-like metrics: up-to-date and optimized
-   *  Agent-based models
-   *  Statistical metrics
+*  Network (graph) metrics calculation: up-to-date and optimized
 
 *  Brain and network visualization
 
-   *  Surface visualization
-   *  3D point brain
-   *  Sorted communities
-
-*  Network modularity workflows
-
-   *  Consensus modules
-
-*  Spatial statistics
-
-   *  Spatial autocorrelation
-
 *  Optimized statistics routines
-
-   *  Correlation estimation
-   *  Permutation testing
 
 *  Convenient interface for external tools
 
-*  A place for experimental procedures
+*  And much more!
+
 
 Check out our `documentation <https://netneurotools.readthedocs.io/en/latest>`_
 for more information!
@@ -87,6 +62,8 @@ for more information!
 Installation
 ------------
 
+You can install directly from PyPi with :code:`pip install netneurotools`.
+
 This package is under active development. We recommend installing the latest version
 with 
 
@@ -95,15 +72,12 @@ with
     pip install git+https://github.com/netneurolab/netneurotools.git
 
 
-It is also possible to install directly from PyPi with :code:`pip install netneurotools`.
-
 If you are looking for the earlier version of the toolbox before the recent breaking changes,
 you can install it with
 
 .. code-block:: bash
 
     pip install git+https://github.com/netneurolab/netneurotools.git@0.2.X
-
 
 
 .. _development:
