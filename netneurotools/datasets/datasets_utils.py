@@ -63,11 +63,14 @@ def _decode_url(url_type, url):
     """
     OSF_API = "https://files.osf.io/v1/resources/{}/providers/osfstorage/{}"
     GITHUB_RELEASE_API = "https://github.com/{}/{}/archive/refs/tags/{}.tar.gz"
+    ZENODO_FILE_API = "https://zenodo.org/record/{}/files/{}?download=1"
 
     if url_type == "osf":
         out_url = OSF_API.format(*url)
     elif url_type == "github-release":
         out_url = GITHUB_RELEASE_API.format(*url)
+    elif url_type == "zenodo-file":
+        out_url = ZENODO_FILE_API.format(*url)
     else:
         raise ValueError("URL type {} not recognized".format(url_type))
 
@@ -128,7 +131,12 @@ def fetch_file(dataset_name, keys=None, force=False, data_dir=None, verbose=1):
         )
 
         # extract contents and remove compressed file
-        shutil.unpack_archive(dl_fname, targ_folder.parent, format="gztar")
+        if info["url-type"] == "zenodo-file":
+            archive_format = "zip"
+        else:
+            archive_format = "gztar"
+
+        shutil.unpack_archive(dl_fname, targ_folder.parent, format=archive_format)
         os.remove(dl_fname)
 
         # rename folder if necessary

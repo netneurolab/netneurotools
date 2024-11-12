@@ -163,9 +163,15 @@ class TestFetchProject:
         assert False
 
     @pytest.mark.xfail
-    def test_fetch_shafiei_hcpmeg(self, tmpdir):
+    def test_fetch_shafiei_megfmrimapping(self, tmpdir):
         """Test fetching of Shafiei et al., 2022 & 2023 HCP-MEG dataset."""
-        # shafiei = datasets.fetch_shafiei_hcpmeg(data_dir=tmpdir, verbose=0)
+        # shafiei = datasets.fetch_shafiei_megfmrimapping(data_dir=tmpdir, verbose=0)
+        assert False
+
+    @pytest.mark.xfail
+    def test_fetch_shafiei_megdynamics(self, tmpdir):
+        """Test fetching of Shafiei et al., 2022 & 2023 HCP-MEG dataset."""
+        # shafiei = datasets.fetch_shafiei_megdynamics(data_dir=tmpdir, verbose=0)
         assert False
 
     @pytest.mark.xfail

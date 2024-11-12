@@ -216,5 +216,53 @@
                 "bibkey": ""
             }
         ]
+    },
+    "ds-hansen_receptors": {
+        "primary": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ]
+    },
+    "ds-hansen_genecognition": {
+        "primary": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ]
+    },
+    "ds-hansen_brainstem": {
+        "primary": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ]
+    },
+    "ds-shafiei_megfmrimapping": {
+        "primary": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ]
+    },
+    "ds-shafiei_megdynamics": {
+        "primary": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ]
+    },
+    "ds-suarez_mami": {
+        "primary": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ]
     }
 }

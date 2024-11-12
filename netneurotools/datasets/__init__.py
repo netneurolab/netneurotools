@@ -21,8 +21,10 @@ from .fetch_project import (
     # old projects
     fetch_vazquez_rodriguez2019, fetch_mirchi2018,
     # new projects
-    fetch_hansen_manynetworks, fetch_hansen_receptors, fetch_hansen_genecognition,
-    fetch_hansen_brainstem, fetch_shafiei_hcpmeg, fetch_suarez_mami,
+    fetch_hansen_manynetworks, fetch_hansen_receptors,
+    fetch_hansen_genecognition, fetch_hansen_brainstem,
+    fetch_shafiei_megfmrimapping, fetch_shafiei_megdynamics,
+    fetch_suarez_mami,
     # example data
     fetch_famous_gmat,
     # resources
@@ -44,8 +46,10 @@ __all__ = [
     'fetch_voneconomo',
     # fetch_project
     'fetch_vazquez_rodriguez2019', 'fetch_mirchi2018',
-    'fetch_hansen_manynetworks', 'fetch_hansen_receptors', 'fetch_hansen_genecognition',
-    'fetch_hansen_brainstem', 'fetch_shafiei_hcpmeg', 'fetch_suarez_mami',
+    'fetch_hansen_manynetworks', 'fetch_hansen_receptors',
+    'fetch_hansen_genecognition', 'fetch_hansen_brainstem',
+    'fetch_shafiei_megfmrimapping', 'fetch_shafiei_megdynamics',
+    'fetch_suarez_mami',
     'fetch_famous_gmat',
     'fetch_neurosynth',
     # datasets_utils

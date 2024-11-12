@@ -287,5 +287,76 @@
         "uncompress": true,
         "rename-folder": "hansen_many_networks-1.0.0",
         "rel-path": "ds-hansen_manynetworks"
+    },
+    "ds-hansen_receptors": {
+        "url-type": "github-release",
+        "url": [
+            "netneurolab",
+            "hansen_receptors",
+            "v1.0.0"
+        ],
+        "md5": "",
+        "uncompress": true,
+        "rename-folder": "hansen_receptors-1.0.0",
+        "rel-path": "ds-hansen_receptors"
+    },
+    "ds-hansen_genecognition": {
+        "url-type": "github-release",
+        "url": [
+            "netneurolab",
+            "hansen_genecognition",
+            "v1.0.0"
+        ],
+        "md5": "",
+        "uncompress": true,
+        "rename-folder": "hansen_genecognition-1.0.0",
+        "rel-path": "ds-hansen_genecognition"
+    },
+    "ds-hansen_brainstem": {
+        "url-type": "github-release",
+        "url": [
+            "netneurolab",
+            "hansen_brainstem",
+            "v1.0.0"
+        ],
+        "md5": "",
+        "uncompress": true,
+        "rename-folder": "hansen_brainstem-1.0.0",
+        "rel-path": "ds-hansen_brainstem"
+    },
+    "ds-shafiei_megfmrimapping": {
+        "url-type": "github-release",
+        "url": [
+            "netneurolab",
+            "shafiei_megfmrimapping",
+            "v1.0.0"
+        ],
+        "md5": "",
+        "uncompress": true,
+        "rename-folder": "shafiei_megfmrimapping-1.0.0",
+        "rel-path": "ds-shafiei_megfmrimapping"
+    },
+    "ds-shafiei_megdynamics": {
+        "url-type": "github-release",
+        "url": [
+            "netneurolab",
+            "shafiei_megdynamics",
+            "v1.0.0"
+        ],
+        "md5": "",
+        "uncompress": true,
+        "rename-folder": "shafiei_megdynamics-1.0.0",
+        "rel-path": "ds-shafiei_megdynamics"
+    },
+    "ds-suarez_mami": {
+        "url-type": "zenodo-file",
+        "url": [
+            "7143143",
+            "data.zip"
+        ],
+        "md5": "bf52dfd87b20fc565dd2bca626a7f65a",
+        "uncompress": true,
+        "rename-folder": "data",
+        "rel-path": "ds-suarez_mami"
     }
 }

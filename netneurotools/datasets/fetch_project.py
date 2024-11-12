@@ -144,46 +144,258 @@ def fetch_hansen_manynetworks(force=False, data_dir=None, verbose=1):
 
     fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
 
-    # load data
-    data = {
-        "cammoun033": {
-            "gene": fetched / "data/Cammoun033/gene_coexpression.npy",
-            "func": fetched / "data/Cammoun033/func_coactivation.npy",
-        },
-        "schaefer100": {
-            "gene": fetched / "data/Schaefer100/gene_coexpression.npy",
-        },
-        "schaefer400": {
-            "gene": fetched / "data/Schaefer400/gene_coexpression.npy",
-        },
-    }
+    # _parc = {
+    #     "cammoun033": "Cammoun033",
+    #     "schaefer100": "Schaefer100",
+    #     "schaefer400": "Schaefer400",
+    # }
 
-    return Bunch(**data)
+    # data = {
+    #     parc: {
+    #         "bigbrain": fetched
+    #         / f"data/{_parc[parc]}/bigbrain_intensities.csv",
+    #         "cognitive": fetched
+    #         / f"data/{_parc[parc]}/cognitive_similarity.npy",
+    #         "sc": fetched / f"data/{_parc[parc]}/consensusSC.npy",
+    #         "sc_wei": fetched / f"data/{_parc[parc]}/consensusSC_wei.npy",
+    #         "ephys": fetched
+    #         / f"data/{_parc[parc]}/electrophysiological_connectivity.npy",
+    #         "gene": fetched / f"data/{_parc[parc]}/gene_coexpression.npy",
+    #         "megfc": fetched
+    #         / f"data/{_parc[parc]}/groupFCmeg_aec_orth_{_parc[parc]}.npy.npz",
+    #         "haemodynamic": fetched
+    #         / f"data/{_parc[parc]}/haemodynamic_connectivity.npy",
+    #         "laminar": fetched / f"data/{_parc[parc]}/laminar_similarity.npy",
+    #         "metabolic": fetched
+    #         / f"data/{_parc[parc]}/metabolic_connectivity.npy",
+    #         "receptor": fetched
+    #         / f"data/{_parc[parc]}/receptor_similarity.npy",
+    #         "temporal": fetched
+    #         / f"data/{_parc[parc]}/temporal_similarity.npy",
+    #         "voneconomo": fetched
+    #         / f"data/{_parc[parc]}/voneconomo_{_parc[parc]}.csv",
+    #     }
+    #     for parc in ["cammoun033", "schaefer100", "schaefer400"]
+    # }
+
+    return fetched
 
 
-def fetch_hansen_receptors():
-    """Download files from Hansen et al., 2022, Nature Neuroscience."""
-    pass
+def fetch_hansen_receptors(force=False, data_dir=None, verbose=1):
+    """
+    Download files from Hansen et al., 2022, Nature Neuroscience.
+
+    This dataset contains
+
+    If you used this data, please cite [1]_.
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with fetched data.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1]
+    """
+    dataset_name = "ds-hansen_receptors"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    return fetched
 
 
-def fetch_hansen_genecognition():
-    """Download files from Hansen et al., 2021, Nature Human Behaviour."""
-    pass
+def fetch_hansen_genecognition(force=False, data_dir=None, verbose=1):
+    """Download files from Hansen et al., 2021, Nature Human Behaviour.
+
+    This dataset contains
+
+    If you used this data, please cite [1]_.
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with fetched data.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1]
+    """
+    dataset_name = "ds-hansen_genecognition"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    return fetched
 
 
-def fetch_hansen_brainstem():
-    """Download files from Hansen et al., 2024."""
-    pass
+def fetch_hansen_brainstem(force=False, data_dir=None, verbose=1):
+    """Download files from Hansen et al., 2024.
+
+    This dataset contains
+
+    If you used this data, please cite [1]_.
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with fetched data.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1]
+    """
+    dataset_name = "ds-hansen_brainstem"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    return fetched
 
 
-def fetch_shafiei_hcpmeg():
-    """Download files from Shafiei et al., 2022 & Shafiei et al., 2023."""
-    pass
+def fetch_shafiei_megfmrimapping(force=False, data_dir=None, verbose=1):
+    """Download files from Shafiei et al., 2022.
+
+    This dataset contains
+
+    If you used this data, please cite [1]_.
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with fetched data.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1]
+    """
+    dataset_name = "ds-shafiei_megfmrimapping"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    return fetched
 
 
-def fetch_suarez_mami():
-    """Download files from Suarez et al., 2022, eLife."""
-    pass
+def fetch_shafiei_megdynamics(force=False, data_dir=None, verbose=1):
+    """Download files from Shafiei et al., 2023.
+
+    This dataset contains
+
+    If you used this data, please cite [1]_.
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with fetched data.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1]
+    """
+    dataset_name = "ds-shafiei_megdynamics"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    return fetched
+
+
+def fetch_suarez_mami(force=False, data_dir=None, verbose=1):
+    """Download files from Suarez et al., 2022, eLife.
+
+    This dataset contains
+
+    If you used this data, please cite [1]_.
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with fetched data.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1]
+    """
+    dataset_name = "ds-suarez_mami"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    return fetched
 
 
 def fetch_famous_gmat(dataset, force=False, data_dir=None, verbose=1):

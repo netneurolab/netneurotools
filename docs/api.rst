@@ -57,7 +57,8 @@ To download project-related data
    fetch_hansen_receptors
    fetch_hansen_genecognition
    fetch_hansen_brainstem
-   fetch_shafiei_hcpmeg
+   fetch_shafiei_megfmrimapping
+   fetch_shafiei_megdynamics
    fetch_suarez_mami
    fetch_famous_gmat
    fetch_neurosynth
