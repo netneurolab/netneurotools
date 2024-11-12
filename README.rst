@@ -26,7 +26,7 @@ netneurotools: Tools for network neuroscience
 |
 
 This toolbox is a collection of functions written in Python that get frequent
-usage in the `Network Neuroscience Lab <netneurolab.github.io/>`_, housed in
+usage in the `Network Neuroscience Lab <https://netneurolab.github.io/>`_, housed in
 the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
 
@@ -91,6 +91,7 @@ work and have some documentation, there is always room for improvement! If
 you've found a bug, are experiencing a problem, or have a question, create a
 new `issue <https://github.com/netneurolab/netneurotools/issues>`_ with some
 information about it and one of our team members will do our best to help you.
+
 
 .. _licensing:
 

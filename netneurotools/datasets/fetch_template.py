@@ -1,28 +1,20 @@
 """Functions for fetching template data."""
 
-
 import json
-from pathlib import Path
-import os.path as op
-
-try:
-    # nilearn 0.10.3
-    from nilearn.datasets._utils import fetch_files
-except ImportError:
-    from nilearn.datasets.utils import _fetch_files as fetch_files
 
 from sklearn.utils import Bunch
 
 from .datasets_utils import (
     SURFACE,
-    _get_data_dir, _get_dataset_info, _get_reference_info, _check_freesurfer_subjid
+    _get_reference_info,
+    _check_freesurfer_subjid,
+    fetch_file,
 )
 
 
 def fetch_fsaverage(
-        version='fsaverage',
-        data_dir=None, resume=True, verbose=1
-    ):
+    version="fsaverage", use_local=False, force=False, data_dir=None, verbose=1
+):
     """
     Download files for fsaverage FreeSurfer template.
 
@@ -35,6 +27,8 @@ def fetch_fsaverage(
     version : str, optional
         One of {'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5',
         'fsaverage6'}. Default: 'fsaverage'
+    use_local : bool, optional
+        If True, will attempt to use local FreeSurfer data. Default: False
 
     Returns
     -------
@@ -45,12 +39,12 @@ def fetch_fsaverage(
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -67,48 +61,50 @@ def fetch_fsaverage(
         High-resolution intersubject averaging and a coordinate system for the
         cortical surface. Human brain mapping, 8(4):272\u2013284, 1999.
     """
-    versions = [
-        'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5', 'fsaverage6'
-    ]
+    versions = ["fsaverage", "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage6"]
     if version not in versions:
         raise ValueError(
-            f'The version of fsaverage requested {version} does not '
-            f'exist. Must be one of {versions}'
+            f"The version of fsaverage requested {version} does not "
+            f"exist. Must be one of {versions}"
         )
 
-    dataset_name = 'tpl-fsaverage'
+    dataset_name = "tpl-fsaverage"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    keys = ['orig', 'white', 'smoothwm', 'pial', 'inflated', 'sphere']
+    keys = ["orig", "white", "smoothwm", "pial", "inflated", "sphere"]
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)[version]
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
-    }
+    if use_local:
+        try:
+            data_dir = _check_freesurfer_subjid(version)[1]
+            data = {
+                k: SURFACE(
+                    data_dir / f"{version}/surf/lh.{k}",
+                    data_dir / f"{version}/surf/rh.{k}",
+                )
+                for k in keys
+            }
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"Local FreeSurfer data for {version} not found. "
+                "Please ensure FreeSurfer is installed and properly set up."
+            ) from None
+    else:
+        fetched = fetch_file(
+            dataset_name, keys=version, force=force, data_dir=data_dir, verbose=verbose
+        )
 
-    _filenames = [
-        f"{version}/surf/{hemi}.{surf}"
-        for surf in keys for hemi in ['lh', 'rh']
-    ]
+        data = {
+            k: SURFACE(
+                fetched / f"surf/lh.{k}",
+                fetched / f"surf/rh.{k}",
+            )
+            for k in keys
+        }
 
-    try:
-        # use local FreeSurfer data if available
-        data_dir = _check_freesurfer_subjid(version)[1]
-        data = [op.join(data_dir, f) for f in _filenames]
-    except FileNotFoundError:
-        _filenames = [f"{dataset_name}/{_}" for _ in _filenames]
-        _files = [(f, info['url'], opts) for f in _filenames]
-        data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
-
-    data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
-
-    return Bunch(**dict(zip(keys, data)))
+    return Bunch(**data)
 
 
-def fetch_hcp_standards(data_dir=None, resume=True, verbose=1):
+def fetch_hcp_standards(force=False, data_dir=None, verbose=1):
     """
     Fetch HCP standard mesh atlases for converting between FreeSurfer and HCP.
 
@@ -126,12 +122,12 @@ def fetch_hcp_standards(data_dir=None, resume=True, verbose=1):
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -151,31 +147,21 @@ def fetch_hcp_standards(data_dir=None, resume=True, verbose=1):
     .. [3] http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip
     .. [4] https://web.archive.org/web/20220121035833/http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip
     """
-    dataset_name = 'tpl-hcp_standards'
+    dataset_name = "tpl-hcp_standards"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)["standard_mesh_atlases"]
-
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
-    }
-    fetched = fetch_files(
-        data_dir,
-        files=[(f'{dataset_name}/standard_mesh_atlases', info['url'], opts)],
-        resume=resume, verbose=verbose
+    fetched = fetch_file(
+        dataset_name,
+        keys="standard_mesh_atlases",
+        force=force,
+        data_dir=data_dir,
+        verbose=verbose,
     )
-    fetched = Path(fetched[0])
 
     return fetched
 
 
-def fetch_civet(
-        density='41k', version='v1',
-        data_dir=None, resume=True, verbose=1
-    ):
+def fetch_civet(density="41k", version="v1", force=False, data_dir=None, verbose=1):
     """
     Fetch CIVET surface files.
 
@@ -200,12 +186,12 @@ def fetch_civet(
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -229,52 +215,48 @@ def fetch_civet(
         meeting of the organization for human brain mapping. Florence, Italy,
         pages 2266, 2006.
     """
-    densities = ['41k', '164k']
+    densities = ["41k", "164k"]
     if density not in densities:
         raise ValueError(
             f'The density of CIVET requested "{density}" does not exist. '
-            f'Must be one of {densities}'
+            f"Must be one of {densities}"
         )
-    versions = ['v1', 'v2']
+    versions = ["v1", "v2"]
     if version not in versions:
         raise ValueError(
             f'The version of CIVET requested "{version}" does not exist. '
-            f'Must be one of {versions}'
+            f"Must be one of {versions}"
         )
 
-    if version == 'v1' and density == '164k':
-        raise ValueError('The "164k" density CIVET surface only exists for '
-                         'version "v2"')
+    if version == "v1" and density == "164k":
+        raise ValueError(
+            'The "164k" density CIVET surface only exists for ' 'version "v2"'
+        )
 
-    dataset_name = 'tpl-civet'
+    dataset_name = "tpl-civet"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    keys = ['mid', 'white']
+    keys = ["mid", "white"]
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)[version][f'civet{density}']
+    fetched = fetch_file(
+        dataset_name,
+        keys=[version, "civet" + density],
+        force=force,
+        data_dir=data_dir,
+        verbose=verbose,
+    )
 
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
+    data = {
+        k: SURFACE(
+            fetched / f"tpl-civet_space-ICBM152_hemi-L_den-{density}_{k}.obj",
+            fetched / f"tpl-civet_space-ICBM152_hemi-R_den-{density}_{k}.obj",
+        )
+        for k in keys
     }
-
-    _filenames = [
-        f"{dataset_name}/{version}/civet{density}/"
-        f"tpl-civet_space-ICBM152_hemi-{hemi}_den-{density}_{surf}.obj"
-        for surf in keys for hemi in ['L', 'R']
-    ]
-    _files = [(f, info['url'], opts) for f in _filenames]
-
-    data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
-
-    data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
-
-    return Bunch(**dict(zip(keys, data)))
+    return Bunch(**data)
 
 
-def fetch_conte69(data_dir=None, resume=True, verbose=1):
+def fetch_conte69(force=False, data_dir=None, verbose=1):
     """
     Download files for Van Essen et al., 2012 Conte69 template.
 
@@ -291,12 +273,12 @@ def fetch_conte69(data_dir=None, resume=True, verbose=1):
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -313,39 +295,26 @@ def fetch_conte69(data_dir=None, resume=True, verbose=1):
         22(10):2241\u20132262, 2012.
     .. [3] http://brainvis.wustl.edu/wiki/index.php//Caret:Atlases/Conte69_Atlas
     """
-    dataset_name = 'tpl-conte69'
+    dataset_name = "tpl-conte69"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    keys = ['midthickness', 'inflated', 'vinflated']
+    keys = ["midthickness", "inflated", "vinflated"]
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    data = {
+        k: SURFACE(
+            fetched / f"tpl-conte69_space-MNI305_variant-fsLR32k_{k}.L.surf.gii",
+            fetched / f"tpl-conte69_space-MNI305_variant-fsLR32k_{k}.R.surf.gii",
+        )
+        for k in keys
     }
+    data["info"] = json.load(open(fetched / "template_description.json", "r"))
 
-    _filenames = [
-        f"{dataset_name}/tpl-conte69_space-MNI305_variant-fsLR32k_{res}.{hemi}.surf.gii"
-        for res in keys for hemi in ['L', 'R']
-    ] + [
-        f"{dataset_name}/template_description.json"
-    ]
-    _files = [(f, info['url'], opts) for f in _filenames]
-
-    data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
-
-    with open(data[-1], 'r') as src:
-        data[-1] = json.load(src)
-
-    # bundle hemispheres together
-    data = [SURFACE(*data[:-1][i:i + 2]) for i in range(0, 6, 2)] + [data[-1]]
-
-    return Bunch(**dict(zip(keys + ['info'], data)))
+    return Bunch(**data)
 
 
-def fetch_yerkes19(data_dir=None, resume=None, verbose=1):
+def fetch_yerkes19(force=False, data_dir=None, verbose=1):
     """
     Download files for Donahue et al., 2016 Yerkes19 template.
 
@@ -362,12 +331,12 @@ def fetch_yerkes19(data_dir=None, resume=None, verbose=1):
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -382,28 +351,19 @@ def fetch_yerkes19(data_dir=None, resume=None, verbose=1):
         of Neuroscience, 36(25):6758\u20136770, 2016.
     .. [2] https://balsa.wustl.edu/reference/show/976nz
     """
-    dataset_name = 'tpl-yerkes19'
+    dataset_name = "tpl-yerkes19"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    keys = ['midthickness', 'inflated', 'vinflated']
+    keys = ["midthickness", "inflated", "vinflated"]
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    data = {
+        k: SURFACE(
+            fetched / f"tpl-yerkes19_space-fsLR32k_{k}.L.surf.gii",
+            fetched / f"tpl-yerkes19_space-fsLR32k_{k}.R.surf.gii",
+        )
+        for k in keys
     }
-    _filenames = [
-        f"{dataset_name}/tpl-yerkes19_space-fsLR32k_{res}.{hemi}.surf.gii"
-        for res in keys for hemi in ['L', 'R']
 
-    ]
-    _files = [(f, info['url'], opts) for f in _filenames]
-
-    data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
-
-    # bundle hemispheres together
-    data = [SURFACE(*data[i:i + 2]) for i in range(0, 6, 2)]
-
-    return Bunch(**dict(zip(keys + ['info'], data)))
+    return Bunch(**data)

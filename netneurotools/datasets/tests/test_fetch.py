@@ -76,11 +76,7 @@ class TestFetchAtlas:
             if isinstance(out, (tuple, list)):
                 assert len(out) == e
             else:
-                assert isinstance(out, str) and out.endswith('.nii.gz')
-
-        if 'fsaverage' in version:
-            with pytest.warns(DeprecationWarning):
-                datasets.fetch_cammoun2012('surface', data_dir=tmpdir, verbose=0)
+                assert isinstance(out, Path) and str(out).endswith('.nii.gz')
 
     @pytest.mark.parametrize('version', [
         'fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k'
@@ -123,7 +119,7 @@ class TestFetchAtlas:
         """Test fetching of von Economo parcellations."""
         vek = datasets.fetch_voneconomo(data_dir=tmpdir, verbose=0)
         assert all(hasattr(vek, k) and len(vek[k]) == 2 for k in ['gcs', 'ctab'])
-        assert isinstance(vek.get('info'), str)
+        assert isinstance(vek.get('info'), Path)
 
 
 class TestFetchProject:

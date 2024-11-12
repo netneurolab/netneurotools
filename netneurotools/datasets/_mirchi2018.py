@@ -67,7 +67,7 @@ PANAS = {  # specification for creation of PANAS subscales for item scores
 }
 
 
-def _get_fc(data_dir=None, resume=True, verbose=1):
+def _get_fc(verbose=1):
     """
     Get functional connections from MyConnectome parcelled time series data.
 
@@ -95,7 +95,7 @@ def _get_fc(data_dir=None, resume=True, verbose=1):
     return np.vstack(fc)
 
 
-def _get_panas(data_dir=None, resume=True, verbose=1):
+def _get_panas():
     """
     Get PANAS subscales from MyConnectome behavioral data.
 

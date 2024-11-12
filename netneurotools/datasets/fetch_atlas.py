@@ -1,25 +1,16 @@
 """Functions for fetching atlas data."""
-import itertools
-import warnings
 
-try:
-    # nilearn 0.10.3
-    from nilearn.datasets._utils import fetch_files
-except ImportError:
-    from nilearn.datasets.utils import _fetch_files as fetch_files
+import itertools
+
 
 from sklearn.utils import Bunch
 
-from .datasets_utils import (
-    SURFACE,
-    _get_data_dir, _get_dataset_info, _get_reference_info
-)
+from .datasets_utils import SURFACE, _get_reference_info, fetch_file
 
 
 def fetch_cammoun2012(
-        version='MNI152NLin2009aSym',
-        data_dir=None, resume=True, verbose=1
-    ):
+    version="MNI152NLin2009aSym", force=False, data_dir=None, verbose=1
+):
     """
     Download files for Cammoun et al., 2012 multiscale parcellation.
 
@@ -47,12 +38,12 @@ def fetch_cammoun2012(
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -69,95 +60,81 @@ def fetch_cammoun2012(
         spectrum mri. Journal of neuroscience methods, 203(2):386\u2013397,
         2012.
     """
-    if version == 'surface':
-        warnings.warn('Providing `version="surface"` is deprecated and will '
-                      'be removed in a future release. For consistent '
-                      'behavior please use `version="fsaverage"` instead.',
-                      DeprecationWarning, stacklevel=2)
-        version = 'fsaverage'
-    elif version == 'volume':
-        warnings.warn('Providing `version="volume"` is deprecated and will '
-                      'be removed in a future release. For consistent '
-                      'behavior please use `version="MNI152NLin2009aSym"` '
-                      'instead.',
-                      DeprecationWarning, stacklevel=2)
-        version = 'MNI152NLin2009aSym'
-
     versions = [
-        'gcs', 'fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k',
-        'MNI152NLin2009aSym'
+        "gcs",
+        "fsaverage",
+        "fsaverage5",
+        "fsaverage6",
+        "fslr32k",
+        "MNI152NLin2009aSym",
     ]
     if version not in versions:
         raise ValueError(
-            f'The version of Cammoun et al., 2012 parcellation '
-            f'requested {version} does not exist. Must be one of {versions}'
+            f"The version of Cammoun et al., 2012 parcellation "
+            f"requested {version} does not exist. Must be one of {versions}"
         )
 
-    dataset_name = 'atl-cammoun2012'
+    dataset_name = "atl-cammoun2012"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    keys = ['scale033', 'scale060', 'scale125', 'scale250', 'scale500']
+    keys = ["scale033", "scale060", "scale125", "scale250", "scale500"]
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)[version]
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
-    }
+    fetched = fetch_file(
+        dataset_name, keys=version, force=force, data_dir=data_dir, verbose=verbose
+    )
 
-    # filenames differ based on selected version of dataset
-    if version == 'MNI152NLin2009aSym':
-        _filenames = [
-            f'{dataset_name}/{version}/'
-            f'atl-Cammoun2012_space-MNI152NLin2009aSym_res-{res[-3:]}'
-            f'_deterministic{suff}'
-            for res in keys for suff in ['.nii.gz']
-        ] + [
-            f'{dataset_name}/{version}/'
-            f'atl-Cammoun2012_space-MNI152NLin2009aSym_info.csv'
-        ]
-    elif version == 'fslr32k':
-        _filenames = [
-            f'{dataset_name}/{version}/'
-            f'atl-Cammoun2012_space-fslr32k_res-{res[-3:]}_hemi-{hemi}'
-            f'_deterministic{suff}'
-            for res in keys for hemi in ['L', 'R'] for suff in ['.label.gii']
-        ]
-    elif version in ('fsaverage', 'fsaverage5', 'fsaverage6'):
-        _filenames = [
-            f'{dataset_name}/{version}/'
-            f'atl-Cammoun2012_space-{version}_res-{res[-3:]}_hemi-{hemi}'
-            f'_deterministic{suff}'
-            for res in keys for hemi in ['L', 'R'] for suff in ['.annot']
-        ]
+    if version == "MNI152NLin2009aSym":
+        _fname = "atl-Cammoun2012_space-MNI152NLin2009aSym_res-{}_deterministic.nii.gz"
+        data = {
+            k: fetched
+            / _fname.format(k[-3:])
+            for k in keys
+        }
+        data["info"] = fetched / "atl-Cammoun2012_space-MNI152NLin2009aSym_info.csv"
+    elif version == "fslr32k":
+        _fname = "atl-Cammoun2012_space-fslr32k_res-{}_hemi-{}_deterministic.label.gii"
+        data = {
+            k: SURFACE(
+                fetched / _fname.format(k[-3:], "L"),
+                fetched / _fname.format(k[-3:], "R")
+            )
+            for k in keys
+        }
+    elif version in ("fsaverage", "fsaverage5", "fsaverage6"):
+        _fname = "atl-Cammoun2012_space-{}_res-{}_hemi-{}_deterministic.annot"
+        data = {
+            k: SURFACE(
+                fetched / _fname.format(version, k[-3:], "L"),
+                fetched / _fname.format(version, k[-3:], "R")
+            )
+            for k in keys
+        }
     else:
-        _filenames = [
-            f'{dataset_name}/{version}/'
-            f'atl-Cammoun2012_res-{res[5:]}_hemi-{hemi}'
-            f'_probabilistic{suff}'
-            for res in keys[:-1] + ['scale500v1', 'scale500v2', 'scale500v3']
-            for hemi in ['L', 'R'] for suff in ['.gcs', '.ctab']
-        ]
-    _files = [(f, info['url'], opts) for f in _filenames]
-    data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
+        data = {
+            k: [
+                fetched / f"atl-Cammoun2012_res-{k[5:]}_hemi-L_probabilistic.gcs",
+                fetched / f"atl-Cammoun2012_res-{k[5:]}_hemi-R_probabilistic.gcs",
+            ]
+            for k in keys[:-1]
+        }
+        data[keys[-1]] = list(
+            itertools.chain.from_iterable(
+                [
+                    [
+                        fetched
+                        / f"atl-Cammoun2012_res-{k[5:]}_hemi-L_probabilistic.gcs",
+                        fetched
+                        / f"atl-Cammoun2012_res-{k[5:]}_hemi-R_probabilistic.gcs",
+                    ]
+                    for k in ["scale500v1", "scale500v2", "scale500v3"]
+                ]
+            )
+        )
 
-    if version == 'MNI152NLin2009aSym':
-        keys += ['info']
-    elif version in ('fslr32k', 'fsaverage', 'fsaverage5', 'fsaverage6'):
-        data = [SURFACE(*data[i:i + 2]) for i in range(0, len(data), 2)]
-    else:
-        data = [data[::2][i:i + 2] for i in range(0, len(data) // 2, 2)]
-        # deal with the fact that last scale is split into three files :sigh:
-        data = data[:-3] + [list(itertools.chain.from_iterable(data[-3:]))]
-
-    return Bunch(**dict(zip(keys, data)))
+    return Bunch(**data)
 
 
-def fetch_schaefer2018(
-        version='fsaverage',
-        data_dir=None, resume=True, verbose=1
-    ):
+def fetch_schaefer2018(version="fsaverage", force=False, data_dir=None, verbose=1):
     """
     Download FreeSurfer .annot files for Schaefer et al., 2018 parcellation.
 
@@ -179,12 +156,12 @@ def fetch_schaefer2018(
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -201,55 +178,42 @@ def fetch_schaefer2018(
         functional connectivity mri. Cerebral cortex, 28(9):3095\u20133114,
         2018.
     """
-    versions = ['fsaverage', 'fsaverage5', 'fsaverage6', 'fslr32k']
+    versions = ["fsaverage", "fsaverage5", "fsaverage6", "fslr32k"]
     if version not in versions:
         raise ValueError(
-            f'The version of Schaefer et al., 2018 parcellation '
+            f"The version of Schaefer et al., 2018 parcellation "
             f'requested "{version}" does not exist. Must be one of {versions}'
         )
 
-    dataset_name = 'atl-schaefer2018'
+    dataset_name = "atl-schaefer2018"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    keys = [
-        f'{p}Parcels{n}Networks'
-        for p in range(100, 1001, 100) for n in [7, 17]
-    ]
+    keys = [f"{p}Parcels{n}Networks" for p in range(100, 1001, 100) for n in [7, 17]]
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)[version]
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
-    }
+    fetched = fetch_file(
+        dataset_name, keys=version, force=force, data_dir=data_dir, verbose=verbose
+    )
 
-    if version == 'fslr32k':
-        hemispheres, suffix = ['LR'], 'dlabel.nii'
+    if version == "fslr32k":
+        _fname = "atl-Schaefer2018_space-{}_hemi-{}_desc-{}_deterministic.dlabel.nii"
+        data = {
+            k: fetched / _fname.format(version, "LR", k)
+            for k in keys
+        }
     else:
-        hemispheres, suffix = ['L', 'R'], 'annot'
+        _fname = "atl-Schaefer2018_space-{}_hemi-{}_desc-{}_deterministic.annot"
+        data = {
+            k: SURFACE(
+                fetched / _fname.format(version, "L", k),
+                fetched / _fname.format(version, "R", k)
+            )
+            for k in keys
+        }
 
-    _filenames = [
-        f'{dataset_name}/{version}/'
-        f'atl-Schaefer2018_space-{version}_hemi-{hemi}_desc-{desc}'
-        f'_deterministic.{suffix}'
-        for desc in keys for hemi in hemispheres
-    ]
-
-    _files = [(f, info['url'], opts) for f in _filenames]
-
-    data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
-
-    if suffix == 'annot':
-        data = [SURFACE(*data[i:i + 2]) for i in range(0, len(keys) * 2, 2)]
-
-    return Bunch(**dict(zip(keys, data)))
+    return Bunch(**data)
 
 
-def fetch_mmpall(
-        version='fslr32k',
-        data_dir=None, resume=True, verbose=1
-    ):
+def fetch_mmpall(version="fslr32k", force=False, data_dir=None, verbose=1):
     """
     Download .label.gii files for Glasser et al., 2016 MMPAll atlas.
 
@@ -271,12 +235,12 @@ def fetch_mmpall(
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -292,37 +256,27 @@ def fetch_mmpall(
         Beckmann, Mark Jenkinson, and others. A multi-modal parcellation of
         human cerebral cortex. Nature, 536(7615):171\u2013178, 2016.
     """
-    versions = ['fslr32k']
+    versions = ["fslr32k"]
     if version not in versions:
         raise ValueError(
-            f'The version of Glasser et al., 2016 parcellation '
+            f"The version of Glasser et al., 2016 parcellation "
             f'requested "{version}" does not exist. Must be one of {versions}'
         )
 
-    dataset_name = 'atl-mmpall'
+    dataset_name = "atl-mmpall"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)[version]
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
-    }
+    fetched = fetch_file(
+        dataset_name, keys=version, force=force, data_dir=data_dir, verbose=verbose
+    )
 
-    _filenames = [
-        f'{dataset_name}/{version}/'
-        f'atl-MMPAll_space-{version}_hemi-{hemi}_deterministic.label.gii'
-        for hemi in ['L', 'R']
-    ]
-    _files = [(f, info['url'], opts) for f in _filenames]
-
-    data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
-
-    return SURFACE(*data)
+    return SURFACE(
+        fetched / f"atl-MMPAll_space-{version}_hemi-L_deterministic.label.gii",
+        fetched / f"atl-MMPAll_space-{version}_hemi-R_deterministic.label.gii",
+    )
 
 
-def fetch_pauli2018(data_dir=None, resume=True, verbose=1):
+def fetch_pauli2018(force=False, data_dir=None, verbose=1):
     """
     Download files for Pauli et al., 2018 subcortical parcellation.
 
@@ -338,12 +292,12 @@ def fetch_pauli2018(data_dir=None, resume=True, verbose=1):
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -358,29 +312,20 @@ def fetch_pauli2018(data_dir=None, resume=True, verbose=1):
         high-resolution probabilistic in vivo atlas of human subcortical brain
         nuclei. Scientific data, 5(1):1\u201313, 2018.
     """
-    dataset_name = 'atl-pauli2018'
+    dataset_name = "atl-pauli2018"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    keys = ['probabilistic', 'deterministic', 'info']
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
+    data = {
+        "probabilistic": fetched
+        / "atl-pauli2018_space-MNI152NLin2009cAsym_hemi-both_probabilistic.nii.gz",
+        "deterministic": fetched
+        / "atl-pauli2018_space-MNI152NLin2009cAsym_hemi-both_deterministic.nii.gz",
+        "info": fetched / "atl-pauli2018_space-MNI152NLin2009cAsym_info.csv",
+    }
 
-    _files = []
-    for _, v in info.items():
-        _f = f'{v["folder-name"]}/{v["file-name"]}'
-        _url = v['url']
-        _opts = {
-            'md5sum': v['md5'],
-            'move': f'{v["folder-name"]}/{v["file-name"]}'
-        }
-        _files.append(
-            (_f, _url, _opts)
-        )
-
-    data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
-
-    return Bunch(**dict(zip(keys, data)))
+    return Bunch(**data)
 
 
 def fetch_ye2020():
@@ -388,7 +333,7 @@ def fetch_ye2020():
     pass
 
 
-def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_voneconomo(force=False, data_dir=None, verbose=1):
     """
     Fetch von-Economo Koskinas probabilistic FreeSurfer atlas.
 
@@ -403,12 +348,12 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -423,29 +368,21 @@ def fetch_voneconomo(data_dir=None, url=None, resume=True, verbose=1):
         Schmidt, and Martijn P van den Heuvel. An mri von economo\u2013koskinas
         atlas. NeuroImage, 170:249\u2013256, 2018.
     """
-    dataset_name = 'atl-voneconomo_koskinas'
+    dataset_name = "atl-voneconomo_koskinas"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    keys = ['gcs', 'ctab', 'info']
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
+    data = {
+        "gcs": SURFACE(
+            fetched / "atl-vonEconomoKoskinas_hemi-L_probabilistic.gcs",
+            fetched / "atl-vonEconomoKoskinas_hemi-R_probabilistic.gcs",
+        ),
+        "ctab": SURFACE(
+            fetched / "atl-vonEconomoKoskinas_hemi-L_probabilistic.ctab",
+            fetched / "atl-vonEconomoKoskinas_hemi-R_probabilistic.ctab",
+        ),
+        "info": fetched / "atl-vonEconomoKoskinas_info.csv",
     }
 
-    _filenames = [
-        f'{dataset_name}/'
-        f'atl-vonEconomoKoskinas_hemi-{hemi}_probabilistic.{suff}'
-        for hemi in ['L', 'R'] for suff in ['gcs', 'ctab']
-    ] + [
-        f'{dataset_name}/atl-vonEconomoKoskinas_info.csv'
-    ]
-    _files = [(f, info['url'], opts) for f in _filenames]
-    data = fetch_files(data_dir, files=_files, resume=resume, verbose=verbose)
-
-    data = [SURFACE(*data[:-1:2])] + [SURFACE(*data[1:-1:2])] + [data[-1]]
-
-    return Bunch(**dict(zip(keys, data)))
+    return Bunch(**data)

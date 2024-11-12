@@ -2,14 +2,25 @@
 
 import json
 import os
+import shutil
+from pathlib import Path
 from collections import namedtuple
 import importlib.resources
 
 
-SURFACE = namedtuple('Surface', ('lh', 'rh'))
+try:
+    # nilearn 0.10.3
+    from nilearn.datasets._utils import fetch_single_file as _fetch_file
+except ImportError:
+    from nilearn.datasets.utils import _fetch_file
+
+
+SURFACE = namedtuple("Surface", ("lh", "rh"))
 
 FREESURFER_IGNORE = [
-    'unknown', 'corpuscallosum', 'Background+FreeSurfer_Defined_Medial_Wall'
+    "unknown",
+    "corpuscallosum",
+    "Background+FreeSurfer_Defined_Medial_Wall",
 ]
 
 
@@ -30,15 +41,13 @@ def _get_data_dir(data_dir=None):
         Path to use as data directory
     """
     if data_dir is None:
-        data_dir = os.environ.get('NNT_DATA', os.path.join('~', 'nnt-data'))
-    data_dir = os.path.expanduser(data_dir)
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-
+        data_dir = os.environ.get("NNT_DATA", str(Path.home() / "nnt-data"))
+    data_dir = Path(data_dir).expanduser()
+    data_dir.mkdir(parents=True, exist_ok=True)
     return data_dir
 
 
-def _decode_urls(data):
+def _decode_url(url_type, url):
     """
     Format `data` object with OSF API URL.
 
@@ -55,20 +64,105 @@ def _decode_urls(data):
     OSF_API = "https://files.osf.io/v1/resources/{}/providers/osfstorage/{}"
     GITHUB_RELEASE_API = "https://github.com/{}/{}/archive/refs/tags/{}.tar.gz"
 
-    if isinstance(data, str) or isinstance(data, list):
-        return data
-    elif 'url' in data:
-        if data['url-type'] == 'osf':
-            data['url'] = OSF_API.format(*data['url'])
-        elif data['url-type'] == 'github-release':
-            data['url'] = GITHUB_RELEASE_API.format(*data['url'])
-        else:
-            raise ValueError("URL type {} not recognized".format(data['url-type']))
+    if url_type == "osf":
+        out_url = OSF_API.format(*url)
+    elif url_type == "github-release":
+        out_url = GITHUB_RELEASE_API.format(*url)
+    else:
+        raise ValueError("URL type {} not recognized".format(url_type))
 
-    for key, value in data.items():
-        data[key] = _decode_urls(value)
+    return out_url
 
-    return data
+
+def fetch_file(dataset_name, keys=None, force=False, data_dir=None, verbose=1):
+    """
+    Fetch file(s) for dataset `dataset_name`.
+
+    Parameters
+    ----------
+    dataset_name : str
+        Name of dataset to fetch
+    keys : str or list, optional
+        If provided, will only fetch the specified key(s) from the dataset.
+        Default: None
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Verbosity level. Default: 1
+    """
+    data_dir = _get_data_dir(data_dir=data_dir)
+    info = _get_dataset_info(dataset_name)
+
+    # deal with nested keys
+    if keys is not None:
+        if isinstance(keys, str):
+            keys = [keys]
+        for k in keys:
+            info = info[k]
+
+    if "uncompress" in info and info["uncompress"]:
+        targ_folder = data_dir / info["rel-path"]
+
+        # check if folder exists and remove if force=True
+        if targ_folder.exists():
+            if force:
+                shutil.rmtree(targ_folder)
+                if verbose:
+                    print(f"Dataset {dataset_name} already exists. Overwriting.")
+            else:
+                if verbose:
+                    print(f"Dataset {dataset_name} already exists. Skipping download.")
+                return targ_folder
+
+        # download compressed file
+        dl_fname = _fetch_file(
+            _decode_url(info["url-type"], info["url"]),
+            data_dir,
+            resume=True,
+            md5sum=info["md5"],
+            verbose=verbose,
+        )
+
+        # extract contents and remove compressed file
+        shutil.unpack_archive(dl_fname, targ_folder.parent, format="gztar")
+        os.remove(dl_fname)
+
+        # rename folder if necessary
+        if "rename-folder" in info:
+            shutil.move(targ_folder.parent / info["rename-folder"], targ_folder)
+        if verbose:
+            print(f"Downloaded {dataset_name} to {data_dir}")
+        return targ_folder
+    else:
+        targ_file = data_dir / dataset_name / info["file-name"]
+
+        # check if file exists and remove if force=True
+        if targ_file.exists():
+            if force:
+                os.remove(targ_file)
+                if verbose:
+                    print(f"Dataset {dataset_name} already exists. Overwriting.")
+            else:
+                if verbose:
+                    print(f"Dataset {dataset_name} already exists. Skipping download.")
+                return targ_file
+        # download file
+        dl_fname = _fetch_file(
+            _decode_url(info["url-type"], info["url"]),
+            data_dir / dataset_name,
+            resume=True,
+            md5sum=info["md5"],
+            verbose=verbose,
+        )
+        # move/rename file
+        shutil.move(dl_fname, targ_file)
+        if verbose:
+            print(f"Downloaded {dataset_name} to {data_dir}")
+        return targ_file
 
 
 def _load_resource_json(relative_path):
@@ -86,11 +180,12 @@ def _load_resource_json(relative_path):
         JSON file loaded as a dictionary
     """
     # handling pkg_resources.resource_filename deprecation
-    if getattr(importlib.resources, 'files', None) is not None:
+    if getattr(importlib.resources, "files", None) is not None:
         f_resource = importlib.resources.files("netneurotools") / relative_path
     else:
         from pkg_resources import resource_filename
-        f_resource = resource_filename('netneurotools', relative_path)
+
+        f_resource = resource_filename("netneurotools", relative_path)
 
     with open(f_resource) as src:
         resource_json = json.load(src)
@@ -98,8 +193,8 @@ def _load_resource_json(relative_path):
     return resource_json
 
 
-NNT_DATASETS = _load_resource_json('datasets/datasets.json')
-NNT_DATASETS = _decode_urls(NNT_DATASETS)
+NNT_DATASETS = _load_resource_json("datasets/datasets.json")
+# NNT_DATASETS = _decode_urls(NNT_DATASETS)
 
 
 def _get_dataset_info(name):
@@ -127,7 +222,7 @@ def _get_dataset_info(name):
         ) from None
 
 
-NNT_REFERENCES = _load_resource_json('datasets/references.json')
+NNT_REFERENCES = _load_resource_json("datasets/references.json")
 
 
 def _get_reference_info(name, verbose=1, return_dict=False):
@@ -184,19 +279,24 @@ def _fill_reference_json(bib_file, json_file, overwrite=False, use_defaults=Fals
     None
     """
     if use_defaults:
-        bib_file = \
+        bib_file = (
             importlib.resources.files("netneurotools") / "datasets/netneurotools.bib"
-        json_file = \
+        )
+        json_file = (
             importlib.resources.files("netneurotools") / "datasets/references.json"
+        )
 
     from pybtex import PybtexEngine
+
     engine = PybtexEngine()
 
     def _get_citation(key):
         s = engine.format_from_file(
-            filename=bib_file, style="unsrt",
-            citations=[key], output_backend="plaintext"
-            )
+            filename=bib_file,
+            style="unsrt",
+            citations=[key],
+            output_backend="plaintext",
+        )
         return s.strip("\n").replace("[1] ", "")
 
     with open(json_file) as src:
@@ -239,17 +339,17 @@ def _check_freesurfer_subjid(subject_id, subjects_dir=None):
     # check inputs for subjects_dir and subject_id
     if subjects_dir is None or not os.path.isdir(subjects_dir):
         try:
-            subjects_dir = os.environ['SUBJECTS_DIR']
+            subjects_dir = Path(os.environ["SUBJECTS_DIR"])
         except KeyError:
-            subjects_dir = os.getcwd()
+            subjects_dir = Path.cwd()
     else:
-        subjects_dir = os.path.abspath(subjects_dir)
+        subjects_dir = Path(subjects_dir).resolve()
 
-    subjdir = os.path.join(subjects_dir, subject_id)
-    if not os.path.isdir(subjdir):
+    subjdir = subjects_dir / subject_id
+    if not subjdir.is_dir():
         raise FileNotFoundError(
-            f'Cannot find specified subject id {subject_id} in '
-            f'provided subject directory {subjects_dir}.'
+            f"Cannot find specified subject id {subject_id} in "
+            f"provided subject directory {subjects_dir}."
         )
 
     return subject_id, subjects_dir
@@ -278,14 +378,15 @@ def _get_freesurfer_subjid(subject_id, subjects_dir=None):
     try:
         subject_id, subjects_dir = _check_freesurfer_subjid(subject_id, subjects_dir)
     except FileNotFoundError:
-        if 'fsaverage' not in subject_id:
+        if "fsaverage" not in subject_id:
             raise ValueError(
-                f'Provided subject {subject_id} does not exist in provided '
-                f'subjects_dir {subjects_dir}'
+                f"Provided subject {subject_id} does not exist in provided "
+                f"subjects_dir {subjects_dir}"
             ) from None
         from .fetch_template import fetch_fsaverage
+
         fetch_fsaverage(subject_id)
-        subjects_dir = os.path.join(_get_data_dir(), 'tpl-fsaverage')
+        subjects_dir = os.path.join(_get_data_dir(), "tpl-fsaverage")
         subject_id, subjects_dir = _check_freesurfer_subjid(subject_id, subjects_dir)
 
     return subject_id, subjects_dir

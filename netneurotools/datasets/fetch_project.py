@@ -1,24 +1,16 @@
 """Functions for fetching project data."""
-import os
-from pathlib import Path
-import numpy as np
 
-try:
-    # nilearn 0.10.3
-    from nilearn.datasets._utils import fetch_files
-except ImportError:
-    from nilearn.datasets.utils import _fetch_files as fetch_files
+import os
+import numpy as np
 
 from sklearn.utils import Bunch
 
-from .datasets_utils import (
-    _get_data_dir, _get_dataset_info, _get_reference_info
-)
+from .datasets_utils import _get_data_dir, _get_reference_info, fetch_file
 
 from ._mirchi2018 import _get_fc, _get_panas
 
 
-def fetch_vazquez_rodriguez2019(data_dir=None, resume=True, verbose=1):
+def fetch_vazquez_rodriguez2019(force=False, data_dir=None, verbose=1):
     """
     Download files from Vazquez-Rodriguez et al., 2019, PNAS.
 
@@ -34,12 +26,12 @@ def fetch_vazquez_rodriguez2019(data_dir=None, resume=True, verbose=1):
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -53,37 +45,21 @@ def fetch_vazquez_rodriguez2019(data_dir=None, resume=True, verbose=1):
         Proceedings of the National Academy of Sciences,
         116(42):21219\u201321227, 2019.
     """
-    dataset_name = 'ds-vazquez_rodriguez2019'
+    dataset_name = "ds-vazquez_rodriguez2019"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}.tar.gz'
-    }
-    fetched = fetch_files(
-        data_dir,
-        files=[(dataset_name, info['url'], opts)],
-        resume=resume, verbose=verbose
-    )
-    fetched = Path(fetched[0])
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
 
     # load data
     rsq, grad = np.loadtxt(
-        fetched / "rsquared_gradient.csv",
-        delimiter=',', skiprows=1
+        fetched / "rsquared_gradient.csv", delimiter=",", skiprows=1
     ).T
-    data = {
-        'rsquared': rsq,
-        'gradient': grad
-    }
+    data = {"rsquared": rsq, "gradient": grad}
 
     return Bunch(**data)
 
 
-def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
+def fetch_mirchi2018(force=False, data_dir=None, verbose=1):
     """
     Download (and creates) dataset for replicating Mirchi et al., 2018, SCAN.
 
@@ -102,32 +78,39 @@ def fetch_mirchi2018(data_dir=None, resume=True, verbose=1):
     Y : (73, 13) numpy.ndarray
         PANAS subscales from MyConnectome behavioral data
     """
-    data_dir = os.path.join(_get_data_dir(data_dir=data_dir), 'ds-mirchi2018')
-    os.makedirs(data_dir, exist_ok=True)
+    data_dir = _get_data_dir(data_dir=data_dir) / "ds-mirchi2018"
+    data_dir.mkdir(exist_ok=True, parents=True)
 
-    X_fname = os.path.join(data_dir, 'myconnectome_fc.npy')
-    Y_fname = os.path.join(data_dir, 'myconnectome_panas.csv')
+    X_fname = data_dir / "myconnectome_fc.npy"
+    Y_fname = data_dir / "myconnectome_panas.csv"
 
     if not os.path.exists(X_fname):
-        X = _get_fc(data_dir=data_dir, resume=resume, verbose=verbose)
+        X = _get_fc(verbose=verbose)
         np.save(X_fname, X, allow_pickle=False)
     else:
         X = np.load(X_fname, allow_pickle=False)
 
     if not os.path.exists(Y_fname):
-        Y = _get_panas(data_dir=data_dir, resume=resume, verbose=verbose)
-        np.savetxt(Y_fname, np.column_stack(list(Y.values())),
-                   header=','.join(Y.keys()), delimiter=',', fmt='%i')
+        Y = _get_panas()
+        np.savetxt(
+            Y_fname,
+            np.column_stack(list(Y.values())),
+            header=",".join(Y.keys()),
+            delimiter=",",
+            fmt="%i",
+        )
         # convert dictionary to structured array before returning
-        Y = np.array([tuple(row) for row in np.column_stack(list(Y.values()))],
-                     dtype=dict(names=list(Y.keys()), formats=['i8'] * len(Y)))
+        Y = np.array(
+            [tuple(row) for row in np.column_stack(list(Y.values()))],
+            dtype=dict(names=list(Y.keys()), formats=["i8"] * len(Y)),
+        )
     else:
-        Y = np.genfromtxt(Y_fname, delimiter=',', names=True, dtype=int)
+        Y = np.genfromtxt(Y_fname, delimiter=",", names=True, dtype=int)
 
     return X, Y
 
 
-def fetch_hansen_manynetworks(data_dir=None, resume=True, verbose=1):
+def fetch_hansen_manynetworks(force=False, data_dir=None, verbose=1):
     """
     Download files from Hansen et al., 2023, PLOS Biology.
 
@@ -142,12 +125,12 @@ def fetch_hansen_manynetworks(data_dir=None, resume=True, verbose=1):
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -156,25 +139,10 @@ def fetch_hansen_manynetworks(data_dir=None, resume=True, verbose=1):
     ----------
     .. [1]
     """
-    dataset_name = 'ds-hansen_manynetworks'
+    dataset_name = "ds-hansen_manynetworks"
     _get_reference_info(dataset_name, verbose=verbose)
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(dataset_name)
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{dataset_name}/{dataset_name}.tar.gz'
-    }
-    # the download info["folder-name"].tar.gz was moved to
-    # {dataset_name}/{dataset_name}.tar.gz and uncompressed
-    # to keep the same structure as other datasets
-    fetched = fetch_files(
-        data_dir,
-        files=[(f'{dataset_name}/{info["folder-name"]}', info['url'], opts)],
-        resume=resume, verbose=verbose
-    )
-    fetched = Path(fetched[0])
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
 
     # load data
     data = {
@@ -187,7 +155,7 @@ def fetch_hansen_manynetworks(data_dir=None, resume=True, verbose=1):
         },
         "schaefer400": {
             "gene": fetched / "data/Schaefer400/gene_coexpression.npy",
-        }
+        },
     }
 
     return Bunch(**data)
@@ -218,10 +186,7 @@ def fetch_suarez_mami():
     pass
 
 
-def fetch_famous_gmat(
-        dataset,
-        data_dir=None, resume=True, verbose=1
-    ):
+def fetch_famous_gmat(dataset, force=False, data_dir=None, verbose=1):
     """
     Download files from multi-species connectomes.
 
@@ -248,12 +213,12 @@ def fetch_famous_gmat(
 
     Other Parameters
     ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
     data_dir : str, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
         `~/nnt-data` instead. Default: None
-    resume : bool, optional
-        Whether to attempt to resume partial download, if possible. Default: True
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
@@ -290,53 +255,43 @@ def fetch_famous_gmat(
         112(16):E2093\u2013E2101, 2015.
     """
     available_connectomes = [
-        'celegans',
-        'drosophila',
-        'human_func_scale033',
-        'human_func_scale060',
-        'human_func_scale125',
-        'human_func_scale250',
-        'human_func_scale500',
-        'human_struct_scale033',
-        'human_struct_scale060',
-        'human_struct_scale125',
-        'human_struct_scale250',
-        'human_struct_scale500',
-        'macaque_markov',
-        'macaque_modha',
-        'mouse',
-        'rat'
+        "celegans",
+        "drosophila",
+        "human_func_scale033",
+        "human_func_scale060",
+        "human_func_scale125",
+        "human_func_scale250",
+        "human_func_scale500",
+        "human_struct_scale033",
+        "human_struct_scale060",
+        "human_struct_scale125",
+        "human_struct_scale250",
+        "human_struct_scale500",
+        "macaque_markov",
+        "macaque_modha",
+        "mouse",
+        "rat",
     ]
 
     if dataset not in available_connectomes:
         raise ValueError(
-            f'Provided dataset {dataset} not available; '
-            f'must be one of {available_connectomes}'
+            f"Provided dataset {dataset} not available; "
+            f"must be one of {available_connectomes}"
         )
 
-    base_dataset_name = 'ds-famous_gmat'
+    base_dataset_name = "ds-famous_gmat"
     _get_reference_info(base_dataset_name, verbose=verbose)
 
-    data_dir = _get_data_dir(data_dir=data_dir)
-    info = _get_dataset_info(base_dataset_name)
-    opts = {
-        'uncompress': True,
-        'md5sum': info['md5'],
-        'move': f'{base_dataset_name}.tar.gz'
-    }
-    fetched = fetch_files(
-        data_dir,
-        files=[(base_dataset_name, info['url'], opts)],
-        resume=resume, verbose=verbose
+    fetched = fetch_file(
+        base_dataset_name, force=force, data_dir=data_dir, verbose=verbose
     )
-    fetched = Path(fetched[0])
 
     data = {}
     for f in (fetched / dataset).glob("*.csv"):
         try:
-            data[f.stem] = np.loadtxt(f, delimiter=',')
+            data[f.stem] = np.loadtxt(f, delimiter=",")
         except ValueError:
-            data[f.stem] = np.loadtxt(f, delimiter=',', dtype=str)
+            data[f.stem] = np.loadtxt(f, delimiter=",", dtype=str)
 
     return Bunch(**data)
 
