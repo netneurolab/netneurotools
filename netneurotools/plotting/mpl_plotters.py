@@ -285,3 +285,9 @@ def plot_point_brain(data, coords, views=None, views_orientation='vertical',
         cbar.outline.set_linewidth(0)
 
     return fig
+
+
+def plot_simple_brain():
+    """Plot a simple brain using matplotlib."""
+    # https://github.com/dutchconnectomelab/Simple-Brain-Plot
+    pass
