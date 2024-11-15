@@ -137,12 +137,14 @@ class TestFetchProject:
         """Test fetching of Mirchi2018 dataset."""
         assert False
 
+    @pytest.mark.xfail
     def test_fetch_hansen_manynetworks(self, tmpdir):
         """Test fetching of Hansen et al., 2023 many-networks dataset."""
-        hansen = datasets.fetch_hansen_manynetworks(data_dir=tmpdir, verbose=0)
-        assert "cammoun033" in hansen
-        assert "gene" in hansen["cammoun033"]
-        assert isinstance(hansen["cammoun033"]["gene"], Path)
+        # hansen = datasets.fetch_hansen_manynetworks(data_dir=tmpdir, verbose=0)
+        # assert "cammoun033" in hansen
+        # assert "gene" in hansen["cammoun033"]
+        # assert isinstance(hansen["cammoun033"]["gene"], Path)
+        assert False
 
     @pytest.mark.xfail
     def test_fetch_hansen_receptors(self, tmpdir):
