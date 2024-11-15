@@ -15,7 +15,7 @@ except ImportError:
     from nilearn.datasets.utils import _fetch_file
 
 
-SURFACE = namedtuple("Surface", ("lh", "rh"))
+SURFACE = namedtuple("Surface", ("L", "R"))
 
 FREESURFER_IGNORE = [
     "unknown",

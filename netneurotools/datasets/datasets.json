@@ -144,6 +144,102 @@
             "rel-path": "tpl-fsaverage/fsaverage6"
         }
     },
+    "tpl-fsaverage_curated": {
+        "fsaverage": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684b2cb2a5e01e968c918"
+            ],
+            "md5": "f4969a33b8cd88e46821ef581e492282",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage_curated/fsaverage"
+        },
+        "fsaverage6": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684aecb2a5e01fc68b7e1"
+            ],
+            "md5": "0cc48e9d5d5bb0216502888c954805fd",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage_curated/fsaverage6"
+        },
+        "fsaverage5": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684ab9096b7021b63cf6b"
+            ],
+            "md5": "c61384c271ee2e6b5449222281137414",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage_curated/fsaverage5"
+        },
+        "fsaverage4": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684ac9096b7021c63d9c5"
+            ],
+            "md5": "019dbf849671f5bed5a42476e5359997",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage_curated/fsaverage4"
+        }
+    },
+    "tpl-hcp_standards": {
+        "standard_mesh_atlases": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "6732749850aeaa53a10ddf2c"
+            ],
+            "md5": "c13bf257f0a7dea7955a83577cfe6659",
+            "uncompress": true,
+            "rel-path": "tpl-hcp_standards/standard_mesh_atlases"
+        }
+    },
+    "tpl-fslr_curated": {
+        "fslr164k": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684b9cb2a5e01fd68c115"
+            ],
+            "md5": "e86a2e9d998e07d621e8f31f0205bf3e",
+            "uncompress": true,
+            "rel-path": "tpl-fslr_curated/fslr164k"
+        },
+        "fslr32k": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684b53a6df1021bd4df2d"
+            ],
+            "md5": "7932b4418f63d28935b5adf67150b16f",
+            "uncompress": true,
+            "rel-path": "tpl-fslr_curated/fslr32k"
+        },
+        "fslr8k": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "63eadef9b3fed60444e3434f"
+            ],
+            "md5": "a1226aee262475e23d2cc37b84ef261d",
+            "uncompress": true,
+            "rel-path": "tpl-fslr_curated/fslr8k"
+        },
+        "fslr4k": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "63eadf00cb544b03fa9e6f00"
+            ],
+            "md5": "72b7b17d389a04774ca6fd4ca28b4087",
+            "uncompress": true,
+            "rel-path": "tpl-fslr_curated/fslr4k"
+        }
+    },
     "tpl-civet": {
         "v1": {
             "civet41k": {
@@ -177,6 +273,30 @@
                 "md5": "2c26ea033a905253b734889d08e1efdd",
                 "uncompress": true,
                 "rel-path": "tpl-civet/v2/civet164k"
+            }
+        }
+    },
+    "tpl-civet_curated": {
+        "v2": {
+            "civet41k": {
+                "url-type": "osf",
+                "url": [
+                    "4mw3a",
+                    "60b684a69096b7021c63d9a0"
+                ],
+                "md5": "b425aa4dd5aa9c3c764b192d2a799123",
+                "uncompress": true,
+                "rel-path": "tpl-civet_curated/v2/civet41k"
+            },
+            "civet164k": {
+                "url-type": "osf",
+                "url": [
+                    "4mw3a",
+                    "60b684ab3a6df1020dd50706"
+                ],
+                "md5": "90d8e99304e1ec3b85d1092ff9ac5b8f",
+                "uncompress": true,
+                "rel-path": "tpl-civet_curated/v2/civet164k"
             }
         }
     },
@@ -263,18 +383,6 @@
         "md5": "67085e2577d21dc3a742f4fcde6e3b18",
         "uncompress": true,
         "rel-path": "atl-voneconomo_koskinas"
-    },
-    "tpl-hcp_standards": {
-        "standard_mesh_atlases": {
-            "url-type": "osf",
-            "url": [
-                "udpv8",
-                "6732749850aeaa53a10ddf2c"
-            ],
-            "md5": "c13bf257f0a7dea7955a83577cfe6659",
-            "uncompress": true,
-            "rel-path": "tpl-hcp_standards/standard_mesh_atlases"
-        }
     },
     "ds-hansen_manynetworks": {
         "url-type": "github-release",

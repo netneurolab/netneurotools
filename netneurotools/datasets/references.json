@@ -51,6 +51,54 @@
             }
         ]
     },
+    "tpl-fsaverage_curated": {
+        "primary": [
+            {
+                "citation": "Anders M Dale, Bruce Fischl, and Martin I Sereno. Cortical surface-based analysis: i. segmentation and surface reconstruction. Neuroimage, 9(2):179\u2013194, 1999.",
+                "bibkey": "dale1999cortical"
+            },
+            {
+                "citation": "Bruce Fischl, Martin I Sereno, and Anders M Dale. Cortical surface-based analysis: ii: inflation, flattening, and a surface-based coordinate system. Neuroimage, 9(2):195\u2013207, 1999.",
+                "bibkey": "fischl1999cortical"
+            },
+            {
+                "citation": "Bruce Fischl, Martin I Sereno, Roger BH Tootell, and Anders M Dale. High-resolution intersubject averaging and a coordinate system for the cortical surface. Human brain mapping, 8(4):272\u2013284, 1999.",
+                "bibkey": "fischl1999high"
+            },
+            {
+                "citation": "Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet, Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz, Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps: structural and functional interpretation of brain maps. Nature Methods, 19(11):1472\u20131479, 2022.",
+                "bibkey": "markello2022neuromaps"
+            }
+        ]
+    },
+    "tpl-hcp_standards": {
+        "primary": [
+            {
+                "citation": "David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna Barch, Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen, Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome project: a data acquisition perspective. Neuroimage, 62(4):2222\u20132231, 2012.",
+                "bibkey": "van2012human"
+            },
+            {
+                "citation": "Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson, Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal preprocessing pipelines for the human connectome project. Neuroimage, 80:105\u2013124, 2013.",
+                "bibkey": "glasser2013minimal"
+            }
+        ]
+    },
+    "tpl-fslr_curated": {
+        "primary": [
+            {
+                "citation": "David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna Barch, Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen, Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome project: a data acquisition perspective. Neuroimage, 62(4):2222\u20132231, 2012.",
+                "bibkey": "van2012human"
+            },
+            {
+                "citation": "Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson, Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal preprocessing pipelines for the human connectome project. Neuroimage, 80:105\u2013124, 2013.",
+                "bibkey": "glasser2013minimal"
+            },
+            {
+                "citation": "Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet, Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz, Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps: structural and functional interpretation of brain maps. Nature Methods, 19(11):1472\u20131479, 2022.",
+                "bibkey": "markello2022neuromaps"
+            }
+        ]
+    },
     "tpl-civet": {
         "primary": [
             {
@@ -64,6 +112,26 @@
             {
                 "citation": "Y Ad-Dab'bagh, O Lyttelton, J Muehlboeck, C Lepage, D Einarson, K Mok, O Ivanov, R Vincent, J Lerch, and E Fombonne. The civet image-processing environment: a fully automated comprehensive pipeline for anatomical neuroimaging research. proceedings of the 12th annual meeting of the organization for human brain mapping. Florence, Italy, pages 2266, 2006.",
                 "bibkey": "ad2006civet"
+            }
+        ]
+    },
+    "tpl-civet_curated": {
+        "primary": [
+            {
+                "citation": "Oliver Lyttelton, Maxime Boucher, Steven Robbins, and Alan Evans. An unbiased iterative group registration template for cortical surface analysis. Neuroimage, 34(4):1535\u20131544, 2007.",
+                "bibkey": "lyttelton2007unbiased"
+            },
+            {
+                "citation": "Vladimir S Fonov, Alan C Evans, Robert C McKinstry, C Robert Almli, and DL Collins. Unbiased nonlinear average age-appropriate brain templates from birth to adulthood. NeuroImage, 47:S102, 2009.",
+                "bibkey": "fonov2009unbiased"
+            },
+            {
+                "citation": "Y Ad-Dab'bagh, O Lyttelton, J Muehlboeck, C Lepage, D Einarson, K Mok, O Ivanov, R Vincent, J Lerch, and E Fombonne. The civet image-processing environment: a fully automated comprehensive pipeline for anatomical neuroimaging research. proceedings of the 12th annual meeting of the organization for human brain mapping. Florence, Italy, pages 2266, 2006.",
+                "bibkey": "ad2006civet"
+            },
+            {
+                "citation": "Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet, Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz, Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps: structural and functional interpretation of brain maps. Nature Methods, 19(11):1472\u20131479, 2022.",
+                "bibkey": "markello2022neuromaps"
             }
         ]
     },
@@ -146,18 +214,6 @@
             {
                 "citation": "Lianne H Scholtens, Marcel A de Reus, Siemon C de Lange, Ruben Schmidt, and Martijn P van den Heuvel. An mri von economo\u2013koskinas atlas. NeuroImage, 170:249\u2013256, 2018.",
                 "bibkey": "scholtens2018mri"
-            }
-        ]
-    },
-    "tpl-hcp_standards": {
-        "primary": [
-            {
-                "citation": "David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna Barch, Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen, Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome project: a data acquisition perspective. Neuroimage, 62(4):2222\u20132231, 2012.",
-                "bibkey": "van2012human"
-            },
-            {
-                "citation": "Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson, Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal preprocessing pipelines for the human connectome project. Neuroimage, 80:105\u2013124, 2013.",
-                "bibkey": "glasser2013minimal"
             }
         ]
     },

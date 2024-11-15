@@ -104,6 +104,106 @@ def fetch_fsaverage(
     return Bunch(**data)
 
 
+def fetch_fsaverage_curated(version="fsaverage", force=False, data_dir=None, verbose=1):
+    """
+    Download files for fsaverage FreeSurfer template.
+
+    Curated by neuromaps.
+
+    This dataset contains
+
+    If you used this data, please cite 1_, 2_, 3_, 4_.
+
+    Parameters
+    ----------
+    version : str, optional
+        One of {'fsaverage', 'fsaverage4', 'fsaverage5',
+        'fsaverage6'}. Default: 'fsaverage'
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with template files.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1] Anders M Dale, Bruce Fischl, and Martin I Sereno. Cortical
+        surface-based analysis: i. segmentation and surface reconstruction.
+        Neuroimage, 9(2):179\u2013194, 1999.
+    .. [2] Bruce Fischl, Martin I Sereno, and Anders M Dale. Cortical
+        surface-based analysis: ii: inflation, flattening, and a surface-based
+        coordinate system. Neuroimage, 9(2):195\u2013207, 1999.
+    .. [3] Bruce Fischl, Martin I Sereno, Roger BH Tootell, and Anders M Dale.
+        High-resolution intersubject averaging and a coordinate system for the
+        cortical surface. Human brain mapping, 8(4):272\u2013284, 1999.
+    .. [4] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
+        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
+        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
+        structural and functional interpretation of brain maps. Nature Methods,
+        19(11):1472\u20131479, 2022.
+    """
+    versions = ["fsaverage", "fsaverage6", "fsaverage5", "fsaverage4"]
+    if version not in versions:
+        raise ValueError(
+            f"The version of fsaverage requested {version} does not "
+            f"exist. Must be one of {versions}"
+        )
+
+    dataset_name = "tpl-fsaverage_curated"
+    _get_reference_info("tpl-fsaverage_curated", verbose=verbose)
+
+    keys = ["white", "pial", "inflated", "sphere", "medial", "sulc", "vaavg"]
+    keys_suffix = {
+        "white": "white.surf",
+        "pial": "pial.surf",
+        "inflated": "inflated.surf",
+        "sphere": "sphere.surf",
+        "medial": "desc-nomedialwall_dparc.label",
+        "sulc": "desc-sulc_midthickness.shape",
+        "vaavg": "desc-vaavg_midthickness.shape",
+    }
+    version_density = {
+        "fsaverage": "164k",
+        "fsaverage6": "41k",
+        "fsaverage5": "10k",
+        "fsaverage4": "3k",
+    }
+    density = version_density[version]
+
+    fetched = fetch_file(
+        dataset_name, keys=version, force=force, data_dir=data_dir, verbose=verbose
+    )
+
+    # deal with default neuromaps directory structure in the archive
+    if not fetched.exists():
+        import shutil
+
+        shutil.move(fetched.parent / "atlases/fsaverage", fetched)
+        shutil.rmtree(fetched.parent / "atlases")
+
+    data = {
+        k: SURFACE(
+            fetched / f"tpl-fsaverage_den-{density}_hemi-L_{keys_suffix[k]}.gii",
+            fetched / f"tpl-fsaverage_den-{density}_hemi-R_{keys_suffix[k]}.gii",
+        )
+        for k in keys
+    }
+
+    return Bunch(**data)
+
+
 def fetch_hcp_standards(force=False, data_dir=None, verbose=1):
     """
     Fetch HCP standard mesh atlases for converting between FreeSurfer and HCP.
@@ -159,6 +259,116 @@ def fetch_hcp_standards(force=False, data_dir=None, verbose=1):
     )
 
     return fetched
+
+
+def fetch_fslr_curated(version="fslr32k", force=False, data_dir=None, verbose=1):
+    """
+    Download files for HCP fsLR template.
+
+    Curated by neuromaps.
+
+    This dataset contains
+
+    If you used this data, please cite 1_, 2_, 3_.
+
+    Parameters
+    ----------
+    version : str, optional
+        One of {"fslr4k", "fslr8k", "fslr32k", "fslr164k"}. Default: 'fslr32k'
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with template files.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1] David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna
+        Barch,Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen,
+        Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome
+        project: a data acquisition perspective. Neuroimage,
+        62(4):2222\u20132231, 2012.
+    .. [2] Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson,
+        Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad
+        Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal
+        preprocessing pipelines for the human connectome project. Neuroimage,
+        80:105\u2013124, 2013.
+    .. [3] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
+        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
+        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
+        structural and functional interpretation of brain maps. Nature Methods,
+        19(11):1472\u20131479, 2022.
+    """
+    versions = ["fslr4k", "fslr8k", "fslr32k", "fslr164k"]
+    if version not in versions:
+        raise ValueError(
+            f"The version of fsaverage requested {version} does not "
+            f"exist. Must be one of {versions}"
+        )
+
+    dataset_name = "tpl-fslr_curated"
+    _get_reference_info("tpl-fslr_curated", verbose=verbose)
+
+    keys = [
+        "midthickness",
+        "inflated",
+        "veryinflated",
+        "sphere",
+        "medial",
+        "sulc",
+        "vaavg",
+    ]
+    if version == "fslr4k":
+        keys.remove("veryinflated")
+    keys_suffix = {
+        "midthickness": "midthickness.surf",
+        "inflated": "inflated.surf",
+        "veryinflated": "veryinflated.surf",
+        "sphere": "sphere.surf",
+        "medial": "desc-nomedialwall_dparc.label",
+        "sulc": "desc-sulc_midthickness.shape",
+        "vaavg": "desc-vaavg_midthickness.shape",
+    }
+    version_density = {
+        "fslr4k": "4k",
+        "fslr8k": "8k",
+        "fslr32k": "32k",
+        "fslr164k": "164k",
+    }
+    density = version_density[version]
+
+    fetched = fetch_file(
+        dataset_name, keys=version, force=force, data_dir=data_dir, verbose=verbose
+    )
+
+    # deal with default neuromaps directory structure in the archive
+    if not fetched.exists():
+        import shutil
+
+        shutil.move(fetched.parent / "atlases/fsLR", fetched)
+        shutil.rmtree(fetched.parent / "atlases")
+
+    data = {
+        k: SURFACE(
+            fetched / f"tpl-fsLR_den-{density}_hemi-L_{keys_suffix[k]}.gii",
+            fetched / f"tpl-fsLR_den-{density}_hemi-R_{keys_suffix[k]}.gii",
+        )
+        for k in keys
+    }
+
+    return Bunch(**data)
 
 
 def fetch_civet(density="41k", version="v1", force=False, data_dir=None, verbose=1):
@@ -253,6 +463,124 @@ def fetch_civet(density="41k", version="v1", force=False, data_dir=None, verbose
         )
         for k in keys
     }
+    return Bunch(**data)
+
+
+def fetch_civet_curated(version="civet41k", force=False, data_dir=None, verbose=1):
+    """
+    Download files for CIVET template.
+
+    Curated by neuromaps.
+
+    This dataset contains
+
+    If you used this data, please cite 1_, 2_, 3_, 4_.
+
+    Parameters
+    ----------
+    version : {'civet41k', 'civet164k'}, optional
+        Which density of the CIVET-space geometry files to fetch.
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with template files.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Notes
+    -----
+    License: https://github.com/aces/CIVET_Full_Project/blob/master/LICENSE
+
+    References
+    ----------
+    .. [1] Oliver Lyttelton, Maxime Boucher, Steven Robbins, and Alan Evans. An
+        unbiased iterative group registration template for cortical surface
+        analysis. Neuroimage, 34(4):1535\u20131544, 2007.
+    .. [2] Vladimir S Fonov, Alan C Evans, Robert C McKinstry, C Robert Almli,
+        and DL Collins. Unbiased nonlinear average age-appropriate brain
+        templates from birth to adulthood. NeuroImage, 47:S102, 2009.
+    .. [3] Y Ad-Dab'bagh, O Lyttelton, J Muehlboeck, C Lepage, D Einarson, K
+        Mok, O Ivanov, R Vincent, J Lerch, and E Fombonne. The civet
+        image-processing environment: a fully automated comprehensive pipeline
+        for anatomical neuroimaging research. proceedings of the 12th annual
+        meeting of the organization for human brain mapping. Florence, Italy,
+        pages 2266, 2006.
+    .. [4] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
+        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
+        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
+        structural and functional interpretation of brain maps. Nature Methods,
+        19(11):1472\u20131479, 2022.
+    """
+    versions = ["civet41k", "civet164k"]
+    if version not in versions:
+        raise ValueError(
+            f"The version of fsaverage requested {version} does not "
+            f"exist. Must be one of {versions}"
+        )
+
+    dataset_name = "tpl-civet_curated"
+    _get_reference_info("tpl-civet_curated", verbose=verbose)
+
+    keys = [
+        "white",
+        "midthickness",
+        "inflated",
+        "veryinflated",
+        "sphere",
+        "medial",
+        "sulc",
+        "vaavg",
+    ]
+    keys_suffix = {
+        "white": "white.surf",
+        "midthickness": "midthickness.surf",
+        "inflated": "inflated.surf",
+        "veryinflated": "veryinflated.surf",
+        "sphere": "sphere.surf",
+        "medial": "desc-nomedialwall_dparc.label",
+        "sulc": "desc-sulc_midthickness.shape",
+        "vaavg": "desc-vaavg_midthickness.shape",
+    }
+    version_density = {
+        "civet41k": "41k",
+        "civet164k": "164k",
+    }
+    density = version_density[version]
+
+    fetched = fetch_file(
+        dataset_name,
+        keys=["v2", version],
+        force=force,
+        data_dir=data_dir,
+        verbose=verbose,
+    )
+
+    # deal with default neuromaps directory structure in the archive
+    if not fetched.exists():
+        import shutil
+
+        shutil.move(fetched.parent / "atlases/civet", fetched)
+        shutil.rmtree(fetched.parent / "atlases")
+
+    data = {
+        k: SURFACE(
+            fetched / f"tpl-civet_den-{density}_hemi-L_{keys_suffix[k]}.gii",
+            fetched / f"tpl-civet_den-{density}_hemi-R_{keys_suffix[k]}.gii",
+        )
+        for k in keys
+    }
+
     return Bunch(**data)
 
 

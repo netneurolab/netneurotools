@@ -27,8 +27,11 @@ To download templates
 
 
    fetch_fsaverage
+   fetch_fsaverage_curated
    fetch_hcp_standards
+   fetch_fslr_curated
    fetch_civet
+   fetch_civet_curated
    fetch_conte69
    fetch_yerkes19
 

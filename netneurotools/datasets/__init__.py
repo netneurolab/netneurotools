@@ -2,7 +2,9 @@
 
 
 from .fetch_template import (
-    fetch_fsaverage, fetch_hcp_standards, fetch_civet,
+    fetch_fsaverage, fetch_fsaverage_curated,
+    fetch_hcp_standards, fetch_fslr_curated,
+    fetch_civet, fetch_civet_curated,
     fetch_conte69, fetch_yerkes19
 )
 
@@ -38,7 +40,9 @@ from .datasets_utils import (
 
 __all__ = [
     # fetch_template
-    'fetch_fsaverage', 'fetch_hcp_standards', 'fetch_civet',
+    'fetch_fsaverage', 'fetch_fsaverage_curated',
+    'fetch_hcp_standards', 'fetch_fslr_curated',
+    'fetch_civet', 'fetch_civet_curated',
     'fetch_conte69', 'fetch_yerkes19',
     # fetch_atlas
     'fetch_cammoun2012', 'fetch_schaefer2018', 'fetch_mmpall',
