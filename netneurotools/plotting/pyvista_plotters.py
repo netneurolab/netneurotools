@@ -8,9 +8,9 @@ import numpy as np
 try:
     import pyvista as pv
 except ImportError:
-    raise ImportError(
-        "PyVista is required for this function. Please install it first."
-    ) from None
+    _has_pyvista = False
+else:
+    _has_pyvista = True
 
 from netneurotools.datasets import (
     fetch_civet_curated,
@@ -189,6 +189,9 @@ def pv_plot_surface(
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 0
     """
+    if not _has_pyvista:
+        raise ImportError("PyVista is required for this function")
+
     # setup data
     # could be a single array or a tuple of two arrays
     if hemi == "both":  # both hemispheres
