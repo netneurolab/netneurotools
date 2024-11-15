@@ -1,13 +1,21 @@
 """Functions for pyvista-based plotting."""
 
 from pathlib import Path
-import numpy as np
+
 import nibabel as nib
-import pyvista as pv
+import numpy as np
+
+try:
+    import pyvista as pv
+except ImportError:
+    raise ImportError(
+        "PyVista is required for this function. Please install it first."
+    ) from None
+
 from netneurotools.datasets import (
-    fetch_fslr_curated,
-    fetch_fsaverage_curated,
     fetch_civet_curated,
+    fetch_fsaverage_curated,
+    fetch_fslr_curated,
 )
 
 
@@ -314,10 +322,7 @@ def pv_plot_surface(
     )
 
     # default silhouette settings
-    silhouette_settings = dict(
-        color="white",
-        feature_angle=40
-    )
+    silhouette_settings = dict(color="white", feature_angle=40)
 
     # update if provided with custom settings
     if plotter_kws is not None:
