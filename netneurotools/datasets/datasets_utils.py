@@ -63,12 +63,15 @@ def _decode_url(url_type, url):
     """
     OSF_API = "https://files.osf.io/v1/resources/{}/providers/osfstorage/{}"
     GITHUB_RELEASE_API = "https://github.com/{}/{}/archive/refs/tags/{}.tar.gz"
+    GITHUB_ARCHIVE_API = "https://github.com/{}/{}/archive/{}.tar.gz"
     ZENODO_FILE_API = "https://zenodo.org/record/{}/files/{}?download=1"
 
     if url_type == "osf":
         out_url = OSF_API.format(*url)
     elif url_type == "github-release":
         out_url = GITHUB_RELEASE_API.format(*url)
+    elif url_type == "github-archive":
+        out_url = GITHUB_ARCHIVE_API.format(*url)
     elif url_type == "zenodo-file":
         out_url = ZENODO_FILE_API.format(*url)
     else:

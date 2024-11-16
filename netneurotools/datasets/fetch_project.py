@@ -218,7 +218,7 @@ def fetch_hansen_receptors(force=False, data_dir=None, verbose=1):
     return fetched
 
 
-def fetch_hansen_genecognition(force=False, data_dir=None, verbose=1):
+def fetch_hansen_genescognition(force=False, data_dir=None, verbose=1):
     """Download files from Hansen et al., 2021, Nature Human Behaviour.
 
     This dataset contains
@@ -246,7 +246,7 @@ def fetch_hansen_genecognition(force=False, data_dir=None, verbose=1):
     ----------
     .. [1]
     """
-    dataset_name = "ds-hansen_genecognition"
+    dataset_name = "ds-hansen_genescognition"
     _get_reference_info(dataset_name, verbose=verbose)
 
     fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
@@ -254,7 +254,7 @@ def fetch_hansen_genecognition(force=False, data_dir=None, verbose=1):
     return fetched
 
 
-def fetch_hansen_brainstem(force=False, data_dir=None, verbose=1):
+def fetch_hansen_brainstemfc(force=False, data_dir=None, verbose=1):
     """Download files from Hansen et al., 2024.
 
     This dataset contains
@@ -282,7 +282,7 @@ def fetch_hansen_brainstem(force=False, data_dir=None, verbose=1):
     ----------
     .. [1]
     """
-    dataset_name = "ds-hansen_brainstem"
+    dataset_name = "ds-hansen_brainstemfc"
     _get_reference_info(dataset_name, verbose=verbose)
 
     fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)

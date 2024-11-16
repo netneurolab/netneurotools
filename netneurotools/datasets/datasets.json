@@ -397,63 +397,63 @@
         "rel-path": "ds-hansen_manynetworks"
     },
     "ds-hansen_receptors": {
-        "url-type": "github-release",
+        "url-type": "github-archive",
         "url": [
             "netneurolab",
             "hansen_receptors",
-            "v1.0.0"
+            "f8b41da92a733f99368c1f39d4959731aa1316c1"
         ],
-        "md5": "",
+        "md5": "8d7472135ed1ecf18899ba6f680526c8",
         "uncompress": true,
-        "rename-folder": "hansen_receptors-1.0.0",
+        "rename-folder": "hansen_receptors-f8b41da92a733f99368c1f39d4959731aa1316c1",
         "rel-path": "ds-hansen_receptors"
     },
-    "ds-hansen_genecognition": {
-        "url-type": "github-release",
+    "ds-hansen_genescognition": {
+        "url-type": "github-archive",
         "url": [
             "netneurolab",
-            "hansen_genecognition",
-            "v1.0.0"
+            "hansen_genescognition",
+            "bdffc4b22c08bc69530b6b67baa7875ab1b82f77"
         ],
-        "md5": "",
+        "md5": "3f4108cb60234944142301df421e59ef",
         "uncompress": true,
-        "rename-folder": "hansen_genecognition-1.0.0",
-        "rel-path": "ds-hansen_genecognition"
+        "rename-folder": "hansen_genescognition-bdffc4b22c08bc69530b6b67baa7875ab1b82f77",
+        "rel-path": "ds-hansen_genescognition"
     },
-    "ds-hansen_brainstem": {
-        "url-type": "github-release",
+    "ds-hansen_brainstemfc": {
+        "url-type": "github-archive",
         "url": [
             "netneurolab",
-            "hansen_brainstem",
-            "v1.0.0"
+            "hansen_brainstemfc",
+            "522a60f2736f09b5c29cab9b9ffd174e4006e6af"
         ],
-        "md5": "",
+        "md5": "2b330934b5946d510f94040993b337d2",
         "uncompress": true,
-        "rename-folder": "hansen_brainstem-1.0.0",
-        "rel-path": "ds-hansen_brainstem"
+        "rename-folder": "hansen_brainstemfc-522a60f2736f09b5c29cab9b9ffd174e4006e6af",
+        "rel-path": "ds-hansen_brainstemfc"
     },
     "ds-shafiei_megfmrimapping": {
-        "url-type": "github-release",
+        "url-type": "github-archive",
         "url": [
             "netneurolab",
             "shafiei_megfmrimapping",
-            "v1.0.0"
+            "ba33fe8f3313f582d9422edf93d8f1f13309f8e1"
         ],
-        "md5": "",
+        "md5": "ddb83942e178e032b5787dba60025120",
         "uncompress": true,
-        "rename-folder": "shafiei_megfmrimapping-1.0.0",
+        "rename-folder": "shafiei_megfmrimapping-ba33fe8f3313f582d9422edf93d8f1f13309f8e1",
         "rel-path": "ds-shafiei_megfmrimapping"
     },
     "ds-shafiei_megdynamics": {
-        "url-type": "github-release",
+        "url-type": "github-archive",
         "url": [
             "netneurolab",
             "shafiei_megdynamics",
-            "v1.0.0"
+            "9c8a2a25ba3da78c27539c821be3eba4b0ac84e0"
         ],
-        "md5": "",
+        "md5": "c8a3a3575e0a5e2b9deb11c4f596cf5c",
         "uncompress": true,
-        "rename-folder": "shafiei_megdynamics-1.0.0",
+        "rename-folder": "shafiei_megdynamics-9c8a2a25ba3da78c27539c821be3eba4b0ac84e0",
         "rel-path": "ds-shafiei_megdynamics"
     },
     "ds-suarez_mami": {

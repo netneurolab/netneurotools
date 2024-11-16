@@ -330,7 +330,7 @@ def fetch_fslr_curated(version="fslr32k", force=False, data_dir=None, verbose=1)
         "sulc",
         "vaavg",
     ]
-    if version == "fslr4k":
+    if version in ["fslr4k", "fslr8k"]:
         keys.remove("veryinflated")
     keys_suffix = {
         "midthickness": "midthickness.surf",

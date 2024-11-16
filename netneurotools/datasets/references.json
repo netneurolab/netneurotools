@@ -281,7 +281,7 @@
             }
         ]
     },
-    "ds-hansen_genecognition": {
+    "ds-hansen_genescognition": {
         "primary": [
             {
                 "citation": "",
@@ -289,7 +289,7 @@
             }
         ]
     },
-    "ds-hansen_brainstem": {
+    "ds-hansen_brainstemfc": {
         "primary": [
             {
                 "citation": "",

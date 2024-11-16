@@ -24,7 +24,7 @@ from .fetch_project import (
     fetch_vazquez_rodriguez2019, fetch_mirchi2018,
     # new projects
     fetch_hansen_manynetworks, fetch_hansen_receptors,
-    fetch_hansen_genecognition, fetch_hansen_brainstem,
+    fetch_hansen_genescognition, fetch_hansen_brainstemfc,
     fetch_shafiei_megfmrimapping, fetch_shafiei_megdynamics,
     fetch_suarez_mami,
     # example data
@@ -51,7 +51,7 @@ __all__ = [
     # fetch_project
     'fetch_vazquez_rodriguez2019', 'fetch_mirchi2018',
     'fetch_hansen_manynetworks', 'fetch_hansen_receptors',
-    'fetch_hansen_genecognition', 'fetch_hansen_brainstem',
+    'fetch_hansen_genescognition', 'fetch_hansen_brainstemfc',
     'fetch_shafiei_megfmrimapping', 'fetch_shafiei_megdynamics',
     'fetch_suarez_mami',
     'fetch_famous_gmat',
