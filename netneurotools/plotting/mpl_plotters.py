@@ -232,6 +232,9 @@ def plot_point_brain(data, coords, views=None, views_orientation='vertical',
     Returns
     -------
     fig : :class:`matplotlib.figure.Figure`
+        Figure object for the plot
+    axes : :class:`matplotlib.axes.Axes`
+        Axes object for the plot
     """
     _views = dict(sagittal=(0, 180), sag=(0, 180),
                   axial=(90, 180), ax=(90, 180),
@@ -284,7 +287,7 @@ def plot_point_brain(data, coords, views=None, views_orientation='vertical',
                             drawedges=False, shrink=0.7)
         cbar.outline.set_linewidth(0)
 
-    return fig
+    return fig, axes
 
 
 def plot_simple_brain():
