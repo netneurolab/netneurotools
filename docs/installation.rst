@@ -24,15 +24,47 @@ Alternatively, you can install ``netneurotools`` directly from PyPi with:
 
     pip install netneurotools
 
+
 Optional installation for surface plotting
 ------------------------------------------
 
-In order to use surface plotting functionality like
-:py:func:`netneurotools.plotting.plot_fsaverage`, you will need a working
-``vtk``/``mayavi``/``pysurfer`` installation. These can generally be installed 
-with the following command:
+Pyvista
+~~~~~~~
 
-.. code-block: bash
+This is the new plotting library used in the package. This will allow you to use functions like
+
+-  :py:func:`netneurotools.plotting.pv_plot_surface`
+
+You will need a working ``pyvista`` installation. 
+Generally, we recommend using a clean conda environment, and install Pyvista using the following commands:
+
+.. code-block:: bash
+
+    conda create -n plotting python=3.12
+    conda activate plotting
+    conda install -c conda-forge pyvista
+    # if you are using Jupyter notebooks
+   conda install -c conda-forge jupyterlab trame trame-vtk trame-vuetify trame-jupyter-extension
+
+If you meet any issues, please refer to the
+`detailed installation guide <https://docs.pyvista.org/getting-started/installation.html>`_.
+
+
+Pysurfer (deprecated)
+~~~~~~~~~~~~~~~~~~~~~
+
+This is the old plotting library used in the package. It is now deprecated in favor of Pyvista.
+This will allow you to use functions like 
+
+-  :py:func:`netneurotools.plotting.plot_fsaverage`
+-  :py:func:`netneurotools.plotting.plot_fslr`
+-  :py:func:`netneurotools.plotting.plot_conte69`
+-  :py:func:`netneurotools.plotting.plot_fsvertex`
+
+You will need a working ``vtk``/``mayavi``/``pysurfer`` installation.
+These can generally be installed with the following command:
+
+.. code-block:: bash
 
     pip install vtk mayavi pysurfer
 
@@ -94,8 +126,9 @@ installation, there is generally no need to follow these instructions!
    -  Install from source
       ``pip install git+https://github.com/netneurolab/netneurotools.git``
 
-Troubleshooting
-~~~~~~~~~~~~~~~
+
+Here are some common issues and their solutions:
+
 
 -  Error related to ``from tvtk.vtk_module import VTK_MAJOR_VERSION``
 

@@ -120,7 +120,15 @@ Convenient functions
 
 .. currentmodule:: netneurotools.plotting
 
-PySurfer
+Pyvista
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   pv_plot_surface
+
+PySurfer (deprecated)
 
 .. autosummary::
    :template: function.rst
@@ -130,14 +138,6 @@ PySurfer
    plot_fslr
    plot_fsaverage
    plot_fsvertex
-
-Pyvista
-
-.. autosummary::
-   :template: function.rst
-   :toctree: generated/
-
-   pv_plot_surface
 
 matplotlib
 
