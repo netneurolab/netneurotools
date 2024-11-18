@@ -1,0 +1,470 @@
+{
+    "atl-cammoun2012": {
+        "gcs": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67326ef9ee12e85a3662f7c4"
+            ],
+            "md5": "a9a0779258c170805e4690394802a707",
+            "uncompress": true,
+            "rel-path": "atl-cammoun2012/gcs"
+        },
+        "fsaverage": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67326ef5c41abfb7cd0ddf1d"
+            ],
+            "md5": "a67cad69c51749240d4b1b0100f429f5",
+            "uncompress": true,
+            "rel-path": "atl-cammoun2012/fsaverage"
+        },
+        "fsaverage5": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67326ef5b1dd1a8ca6b2ef68"
+            ],
+            "md5": "2648b4d14461128c0889d9b9ad8ec349",
+            "uncompress": true,
+            "rel-path": "atl-cammoun2012/fsaverage5"
+        },
+        "fsaverage6": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67326ef766af3db75e62f62f"
+            ],
+            "md5": "a810eed6e19a6ccbf01253312da1f291",
+            "uncompress": true,
+            "rel-path": "atl-cammoun2012/fsaverage6"
+        },
+        "MNI152NLin2009aSym": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67326efaee12e85a3662f7c6"
+            ],
+            "md5": "7cc281d6916baf78bb53b12806d28454",
+            "uncompress": true,
+            "rel-path": "atl-cammoun2012/MNI152NLin2009aSym"
+        },
+        "fslr32k": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67326ef7bbbfa7f6feb2f071"
+            ],
+            "md5": "679575fbc83474730fd77fa17a522ed4",
+            "uncompress": true,
+            "rel-path": "atl-cammoun2012/fslr32k"
+        }
+    },
+    "atl-pauli2018": {
+        "url-type": "osf",
+        "url": [
+            "udpv8",
+            "6732834503ad88c31bb2f1c7"
+        ],
+        "md5": "214a9c4381919c00af1f0b97ea9f8ed7",
+        "uncompress": true,
+        "rel-path": "atl-pauli2018"
+    },
+    "tpl-conte69": {
+        "url-type": "osf",
+        "url": [
+            "udpv8",
+            "67327010ad7d0b0b8c4d6d92"
+        ],
+        "md5": "bd944e3f9f343e0e51e562b440960529",
+        "uncompress": true,
+        "rel-path": "tpl-conte69"
+
+    },
+    "tpl-yerkes19": {
+        "url-type": "osf",
+        "url": [
+            "udpv8",
+            "67327067f8f06756c60ddedd"
+        ],
+        "md5": "9ee4f1605fb690a85b04b61549d62925",
+        "uncompress": true,
+        "rel-path": "tpl-yerkes19"
+    },
+    "tpl-fsaverage": {
+        "fsaverage": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67327113dab4e926760ddf37"
+            ],
+            "md5": "a92a40fc0db1dfd88159cbdf517a25da",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage/fsaverage"
+        },
+        "fsaverage3": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "673271131ad23303434d6f68"
+            ],
+            "md5": "93c6d815aca12da38233c8b70a6e31e1",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage/fsaverage3"
+        },
+        "fsaverage4": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67327115ad7d0b0b8c4d6e2c"
+            ],
+            "md5": "7f7322d97d2e7bd8fb17dd09803f0e07",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage/fsaverage4"
+        },
+        "fsaverage5": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67327116b8b930019c62fd6b"
+            ],
+            "md5": "b79f2583917e2a5f79a4768e2b6e27e6",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage/fsaverage5"
+        },
+        "fsaverage6": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "67327118c1e3bbde16b2f05f"
+            ],
+            "md5": "a4695232aa1a1bad644f9c5dbf52eca5",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage/fsaverage6"
+        }
+    },
+    "tpl-fsaverage_curated": {
+        "fsaverage": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684b2cb2a5e01e968c918"
+            ],
+            "md5": "f4969a33b8cd88e46821ef581e492282",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage_curated/fsaverage"
+        },
+        "fsaverage6": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684aecb2a5e01fc68b7e1"
+            ],
+            "md5": "0cc48e9d5d5bb0216502888c954805fd",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage_curated/fsaverage6"
+        },
+        "fsaverage5": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684ab9096b7021b63cf6b"
+            ],
+            "md5": "c61384c271ee2e6b5449222281137414",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage_curated/fsaverage5"
+        },
+        "fsaverage4": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684ac9096b7021c63d9c5"
+            ],
+            "md5": "019dbf849671f5bed5a42476e5359997",
+            "uncompress": true,
+            "rel-path": "tpl-fsaverage_curated/fsaverage4"
+        }
+    },
+    "tpl-hcp_standards": {
+        "standard_mesh_atlases": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "6732749850aeaa53a10ddf2c"
+            ],
+            "md5": "c13bf257f0a7dea7955a83577cfe6659",
+            "uncompress": true,
+            "rel-path": "tpl-hcp_standards/standard_mesh_atlases"
+        }
+    },
+    "tpl-fslr_curated": {
+        "fslr164k": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684b9cb2a5e01fd68c115"
+            ],
+            "md5": "e86a2e9d998e07d621e8f31f0205bf3e",
+            "uncompress": true,
+            "rel-path": "tpl-fslr_curated/fslr164k"
+        },
+        "fslr32k": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "60b684b53a6df1021bd4df2d"
+            ],
+            "md5": "7932b4418f63d28935b5adf67150b16f",
+            "uncompress": true,
+            "rel-path": "tpl-fslr_curated/fslr32k"
+        },
+        "fslr8k": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "63eadef9b3fed60444e3434f"
+            ],
+            "md5": "a1226aee262475e23d2cc37b84ef261d",
+            "uncompress": true,
+            "rel-path": "tpl-fslr_curated/fslr8k"
+        },
+        "fslr4k": {
+            "url-type": "osf",
+            "url": [
+                "4mw3a",
+                "63eadf00cb544b03fa9e6f00"
+            ],
+            "md5": "72b7b17d389a04774ca6fd4ca28b4087",
+            "uncompress": true,
+            "rel-path": "tpl-fslr_curated/fslr4k"
+        }
+    },
+    "tpl-civet": {
+        "v1": {
+            "civet41k": {
+                "url-type": "osf",
+                "url": [
+                    "udpv8",
+                    "673272bedab4e926760ddf70"
+                ],
+                "md5": "57feb3db87e81508648a73e72ac427d6",
+                "uncompress": true,
+                "rel-path": "tpl-civet/v1/civet41k"
+            }
+        },
+        "v2": {
+            "civet41k": {
+                "url-type": "osf",
+                "url": [
+                    "udpv8",
+                    "673272f252f6f10b568ea5ae"
+                ],
+                "md5": "a91a092c4a92e95f817230863cf05a2e",
+                "uncompress": true,
+                "rel-path": "tpl-civet/v2/civet41k"
+            },
+            "civet164k": {
+                "url-type": "osf",
+                "url": [
+                    "udpv8",
+                    "673272f266af3db75e62fb33"
+                ],
+                "md5": "2c26ea033a905253b734889d08e1efdd",
+                "uncompress": true,
+                "rel-path": "tpl-civet/v2/civet164k"
+            }
+        }
+    },
+    "tpl-civet_curated": {
+        "v2": {
+            "civet41k": {
+                "url-type": "osf",
+                "url": [
+                    "4mw3a",
+                    "60b684a69096b7021c63d9a0"
+                ],
+                "md5": "b425aa4dd5aa9c3c764b192d2a799123",
+                "uncompress": true,
+                "rel-path": "tpl-civet_curated/v2/civet41k"
+            },
+            "civet164k": {
+                "url-type": "osf",
+                "url": [
+                    "4mw3a",
+                    "60b684ab3a6df1020dd50706"
+                ],
+                "md5": "90d8e99304e1ec3b85d1092ff9ac5b8f",
+                "uncompress": true,
+                "rel-path": "tpl-civet_curated/v2/civet164k"
+            }
+        }
+    },
+    "ds-famous_gmat": {
+        "url-type": "osf",
+        "url": [
+            "udpv8",
+            "67327344a6dba6adff62f48c"
+        ],
+        "md5": "b803de1058579881a759f475704e9f35",
+        "uncompress": true,
+        "rel-path": "ds-famous_gmat"
+    },
+    "ds-vazquez_rodriguez2019": {
+        "url-type": "osf",
+        "url": [
+            "udpv8",
+            "6732736066af3db75e62fb5b"
+        ],
+        "md5": "c710365a2cc5cddb8a2fbb5f6ae421a3",
+        "uncompress": true,
+        "rel-path": "ds-vazquez_rodriguez2019"
+    },
+    "atl-schaefer2018": {
+        "fsaverage": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "673273c54b79ea9a5062f4b3"
+            ],
+            "md5": "de53b3faaa076442ae8ddb5ef62d79e8",
+            "uncompress": true,
+            "rel-path": "atl-schaefer2018/fsaverage"
+        },
+        "fsaverage5": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "673273c550aeaa53a10dded5"
+            ],
+            "md5": "838dd438e9d10d0dda055b32d02a63f9",
+            "uncompress": true,
+            "rel-path": "atl-schaefer2018/fsaverage5"
+        },
+        "fsaverage6": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "673273c72e830a5cbd0dde84"
+            ],
+            "md5": "06461e983ba10c64621cae6250c0c8cd",
+            "uncompress": true,
+            "rel-path": "atl-schaefer2018/fsaverage6"
+        },
+        "fslr32k": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "673273c790023be9c44d6b5a"
+            ],
+            "md5": "770401d8fdcec6ca05f797e77230338e",
+            "uncompress": true,
+            "rel-path": "atl-schaefer2018/fslr32k"
+        }
+    },
+    "atl-mmpall": {
+        "fslr32k": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "6732741eb9a26212244d6bbb"
+            ],
+            "md5": "38371de50d8942dcf464d2b9c22edebf",
+            "uncompress": true,
+            "rel-path": "atl-mmpall/fslr32k"
+        }
+    },
+    "atl-voneconomo_koskinas": {
+        "url-type": "osf",
+        "url": [
+            "udpv8",
+            "6732744252f6f10b568ea607"
+        ],
+        "md5": "67085e2577d21dc3a742f4fcde6e3b18",
+        "uncompress": true,
+        "rel-path": "atl-voneconomo_koskinas"
+    },
+    "ds-hansen_manynetworks": {
+        "url-type": "github-release",
+        "url": [
+            "netneurolab",
+            "hansen_many_networks",
+            "v1.0.0"
+        ],
+        "md5": "9e503c759506293aa441054cfd206ccc",
+        "uncompress": true,
+        "rename-folder": "hansen_many_networks-1.0.0",
+        "rel-path": "ds-hansen_manynetworks"
+    },
+    "ds-hansen_receptors": {
+        "url-type": "github-archive",
+        "url": [
+            "netneurolab",
+            "hansen_receptors",
+            "f8b41da92a733f99368c1f39d4959731aa1316c1"
+        ],
+        "md5": "8d7472135ed1ecf18899ba6f680526c8",
+        "uncompress": true,
+        "rename-folder": "hansen_receptors-f8b41da92a733f99368c1f39d4959731aa1316c1",
+        "rel-path": "ds-hansen_receptors"
+    },
+    "ds-hansen_genescognition": {
+        "url-type": "github-archive",
+        "url": [
+            "netneurolab",
+            "hansen_genescognition",
+            "bdffc4b22c08bc69530b6b67baa7875ab1b82f77"
+        ],
+        "md5": "3f4108cb60234944142301df421e59ef",
+        "uncompress": true,
+        "rename-folder": "hansen_genescognition-bdffc4b22c08bc69530b6b67baa7875ab1b82f77",
+        "rel-path": "ds-hansen_genescognition"
+    },
+    "ds-hansen_brainstemfc": {
+        "url-type": "github-archive",
+        "url": [
+            "netneurolab",
+            "hansen_brainstemfc",
+            "522a60f2736f09b5c29cab9b9ffd174e4006e6af"
+        ],
+        "md5": "2b330934b5946d510f94040993b337d2",
+        "uncompress": true,
+        "rename-folder": "hansen_brainstemfc-522a60f2736f09b5c29cab9b9ffd174e4006e6af",
+        "rel-path": "ds-hansen_brainstemfc"
+    },
+    "ds-shafiei_megfmrimapping": {
+        "url-type": "github-archive",
+        "url": [
+            "netneurolab",
+            "shafiei_megfmrimapping",
+            "ba33fe8f3313f582d9422edf93d8f1f13309f8e1"
+        ],
+        "md5": "ddb83942e178e032b5787dba60025120",
+        "uncompress": true,
+        "rename-folder": "shafiei_megfmrimapping-ba33fe8f3313f582d9422edf93d8f1f13309f8e1",
+        "rel-path": "ds-shafiei_megfmrimapping"
+    },
+    "ds-shafiei_megdynamics": {
+        "url-type": "github-archive",
+        "url": [
+            "netneurolab",
+            "shafiei_megdynamics",
+            "9c8a2a25ba3da78c27539c821be3eba4b0ac84e0"
+        ],
+        "md5": "c8a3a3575e0a5e2b9deb11c4f596cf5c",
+        "uncompress": true,
+        "rename-folder": "shafiei_megdynamics-9c8a2a25ba3da78c27539c821be3eba4b0ac84e0",
+        "rel-path": "ds-shafiei_megdynamics"
+    },
+    "ds-suarez_mami": {
+        "url-type": "zenodo-file",
+        "url": [
+            "7143143",
+            "data.zip"
+        ],
+        "md5": "bf52dfd87b20fc565dd2bca626a7f65a",
+        "uncompress": true,
+        "rename-folder": "data",
+        "rel-path": "ds-suarez_mami"
+    }
+}

@@ -1,6 +1,7 @@
 -r ../requirements.txt
-sphinx>=2.0, <7.0.0
+sphinx>=2.0
 sphinx_rtd_theme
 sphinx-gallery
 pillow
 pytest-doctestplus
+sphinx_design

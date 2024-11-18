@@ -116,7 +116,7 @@ def combine_cammoun_500(lhannot, rhannot, subject_id, annot=None,
                 quiet=quiet)
 
             # save ctab information from annotation file
-            vtx, ct, names = nib.freesurfer.read_annot(fn)
+            _, ct, names = nib.freesurfer.read_annot(fn)
             data = np.column_stack([[f.decode() for f in names], ct[:, :-1]])
             ctab = ctab.append(pd.DataFrame(data), ignore_index=True)
 

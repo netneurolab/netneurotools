@@ -8,6 +8,65 @@ Python Reference API
 .. contents:: **List of modules**
    :local:
 
+.. _ref_datasets:
+
+:mod:`netneurotools.datasets` - Automatic dataset fetching
+----------------------------------------------------------
+
+.. automodule:: netneurotools.datasets
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.datasets
+
+To download templates
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+
+   fetch_fsaverage
+   fetch_fsaverage_curated
+   fetch_hcp_standards
+   fetch_fslr_curated
+   fetch_civet
+   fetch_civet_curated
+   fetch_conte69
+   fetch_yerkes19
+
+To download atlases
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+    fetch_cammoun2012
+    fetch_schaefer2018
+    fetch_mmpall
+    fetch_pauli2018
+    fetch_ye2020
+    fetch_voneconomo
+
+To download project-related data
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   fetch_vazquez_rodriguez2019
+   fetch_mirchi2018
+   fetch_hansen_manynetworks
+   fetch_hansen_receptors
+   fetch_hansen_genescognition
+   fetch_hansen_brainstemfc
+   fetch_shafiei_megfmrimapping
+   fetch_shafiei_megdynamics
+   fetch_suarez_mami
+   fetch_famous_gmat
+   fetch_neurosynth
+
+
 .. _ref_network:
 
 :mod:`netneurotools.networks` - Constructing networks
@@ -19,19 +78,144 @@ Python Reference API
 
 .. currentmodule:: netneurotools.networks
 
+To construct consensus networks
+
 .. autosummary::
    :template: function.rst
    :toctree: generated/
 
    func_consensus
    struct_consensus
-   threshold_network
-   binarize_network
-   match_length_degree_distribution
+
+To randomize networks
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
    randmio_und
+   match_length_degree_distribution
    strength_preserving_rand_sa
    strength_preserving_rand_sa_mse_opt
    strength_preserving_rand_sa_dir
+
+Convenient functions
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   binarize_network
+   threshold_network
+
+
+.. _ref_plotting:
+
+:mod:`netneurotools.plotting` - Plotting brain data
+---------------------------------------------------
+
+.. automodule:: netneurotools.plotting
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.plotting
+
+Pyvista
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   pv_plot_surface
+
+PySurfer (deprecated)
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   plot_conte69
+   plot_fslr
+   plot_fsaverage
+   plot_fsvertex
+
+matplotlib
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   plot_point_brain
+   plot_mod_heatmap
+
+Fun color & colormap stuff
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   available_cmaps
+
+
+.. _ref_metrics:
+
+:mod:`netneurotools.metrics` - Calculating graph metrics
+--------------------------------------------------------
+
+.. automodule:: netneurotools.metrics
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: netneurotools.metrics
+
+Brain network metrics
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   degrees_und
+   degrees_dir
+   distance_wei_floyd
+   retrieve_shortest_path
+   navigation_wu
+   get_navigation_path_length
+   communicability_bin
+   communicability_wei
+   path_transitivity
+   search_information
+   mean_first_passage_time
+   diffusion_efficiency
+   resource_efficiency_bin
+   flow_graph
+   assortativity
+   matching_ind_und
+   rich_feeder_peripheral
+
+Network spreading
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   simulate_atrophy
+
+Statistical network metrics
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   network_pearsonr
+   network_pearsonr_numba
+   network_pearsonr_pairwise
+   effective_resistance
+   network_polarisation
+   network_variance
+   network_variance_numba
+   network_covariance
+   network_covariance_numba
+
 
 .. _ref_modularity:
 
@@ -48,54 +232,16 @@ Python Reference API
    :template: function.rst
    :toctree: generated/
 
+   match_cluster_labels
+   match_assignments
+   reorder_assignments
+   find_consensus
    consensus_modularity
    zrand
    get_modularity
    get_modularity_z
    get_modularity_sig
 
-.. _ref_cluster:
-
-:mod:`netneurotools.cluster` - Working with clusters
-----------------------------------------------------
-
-.. automodule:: netneurotools.cluster
-   :no-members:
-   :no-inherited-members:
-
-.. currentmodule:: netneurotools.cluster
-
-.. autosummary::
-   :template: function.rst
-   :toctree: generated/
-
-   find_consensus
-   match_assignments
-   reorder_assignments
-   match_cluster_labels
-
-.. _ref_plotting:
-
-:mod:`netneurotools.plotting` - Plotting brain data
----------------------------------------------------
-
-.. automodule:: netneurotools.plotting
-   :no-members:
-   :no-inherited-members:
-
-.. currentmodule:: netneurotools.plotting
-
-.. autosummary::
-   :template: function.rst
-   :toctree: generated/
-
-   sort_communities
-   plot_mod_heatmap
-   plot_conte69
-   plot_fslr
-   plot_fsaverage
-   plot_fsvertex
-   plot_point_brain
 
 .. _ref_stats:
 
@@ -108,179 +254,86 @@ Python Reference API
 
 .. currentmodule:: netneurotools.stats
 
+Correlations
+
 .. autosummary::
    :template: function.rst
    :toctree: generated/
 
-   gen_spinsamples
-   residualize
-   get_mad_outliers
    efficient_pearsonr
+   weighted_pearsonr
+   make_correlated_xy
+
+Permutation tests
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
    permtest_1samp
    permtest_rel
    permtest_pearsonr
+
+Regressions
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   residualize
    get_dominance_stats
-   network_pearsonr
-   network_pearsonr_numba
-   network_pearsonr_pairwise
-   effective_resistance
-   network_polarisation
-   network_variance
-   network_variance_numba
-   network_covariance
-   network_covariance_numba
 
-.. _ref_metrics:
 
-:mod:`netneurotools.metrics` - Calculating graph metrics
---------------------------------------------------------
+.. _ref_spatial:
 
-.. automodule:: netneurotools.metrics
+:mod:`netneurotools.spatial` - Spatial statistics
+-------------------------------------------------
+
+.. automodule:: netneurotools.spatial
    :no-members:
    :no-inherited-members:
 
-.. currentmodule:: netneurotools.metrics
+.. currentmodule:: netneurotools.spatial
+
+Calculating spatial statistics
 
 .. autosummary::
    :template: function.rst
    :toctree: generated/
 
-   _binarize
-   degrees_und
-   degrees_dir
-   distance_wei_floyd
-   retrieve_shortest_path
-   communicability_bin
-   communicability_wei
-   rich_feeder_peripheral
-   navigation_wu
-   get_navigation_path_length
-   search_information
-   path_transitivity
-   flow_graph
-   mean_first_passage_time
-   diffusion_efficiency
-   resource_efficiency_bin
-   matching_ind_und
-   _graph_laplacian
+   morans_i
+   local_morans_i
 
-.. _ref_datasets:
 
-:mod:`netneurotools.datasets` - Automatic dataset fetching
-----------------------------------------------------------
+.. _ref_interface:
 
-.. automodule:: netneurotools.datasets
+:mod:`netneurotools.interface` - Interface for external tools
+-------------------------------------------------------------
+
+.. automodule:: netneurotools.interface
    :no-members:
    :no-inherited-members:
 
-.. currentmodule:: netneurotools.datasets
-
-Functions to download atlases and templates
+.. currentmodule:: netneurotools.interface
 
 .. autosummary::
    :template: function.rst
    :toctree: generated/
 
-    fetch_cammoun2012
-    fetch_civet
-    fetch_conte69
-    fetch_fsaverage
-    fetch_pauli2018
-    fetch_schaefer2018
-    fetch_hcp_standards
-    fetch_voneconomo
 
-Functions to download real-world datasets
+.. _ref_experimental:
 
-.. autosummary::
-   :template: function.rst
-   :toctree: generated/
+:mod:`netneurotools.experimental` - Functions in alpha stage
+------------------------------------------------------------
 
-   fetch_connectome
-   fetch_mirchi2018
-   fetch_vazquez_rodriguez2019
-
-Functions to generate (pseudo-random) datasets
-
-.. autosummary::
-   :template: function.rst
-   :toctree: generated/
-
-    make_correlated_xy
-
-.. _ref_freesurfer:
-
-:mod:`netneurotools.freesurfer` - FreeSurfer compatibility functions
---------------------------------------------------------------------
-
-.. automodule:: netneurotools.freesurfer
+.. automodule:: netneurotools.experimental
    :no-members:
    :no-inherited-members:
 
-.. currentmodule:: netneurotools.freesurfer
+.. currentmodule:: netneurotools.experimental
 
 .. autosummary::
    :template: function.rst
    :toctree: generated/
 
-   apply_prob_atlas
-   find_parcel_centroids
-   parcels_to_vertices
-   vertices_to_parcels
-   spin_data
-   spin_parcels
 
-.. _ref_civet:
-
-:mod:`netneurotools.civet` - CIVET compatibility functions
-----------------------------------------------------------
-
-.. automodule:: netneurotools.civet
-   :no-members:
-   :no-inherited-members:
-
-.. currentmodule:: netneurotools.civet
-
-.. autosummary::
-   :template: function.rst
-   :toctree: generated/
-
-   read_civet
-   civet_to_freesurfer
-
-.. _ref_utils:
-
-:mod:`netneurotools.utils` - Miscellaneous, grab bag utilities
---------------------------------------------------------------
-
-.. automodule:: netneurotools.utils
-   :no-members:
-   :no-inherited-members:
-
-.. currentmodule:: netneurotools.utils
-
-.. autosummary::
-   :template: function.rst
-   :toctree: generated/
-
-   run
-   add_constant
-   get_triu
-   get_centroids
-
-.. _ref_colors:
-
-:mod:`netneurotools.colors` - Useful colormaps
---------------------------------------------------------------
-
-.. automodule:: netneurotools.colors
-   :no-members:
-   :no-inherited-members:
-
-.. currentmodule:: netneurotools.colors
-
-.. autosummary::
-   :template: function.rst
-   :toctree: generated/
-
-   available_cmaps

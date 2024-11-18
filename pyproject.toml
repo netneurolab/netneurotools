@@ -37,9 +37,14 @@ doc = [
   "sphinx_rtd_theme",
   "sphinx-gallery"
 ]
-plotting = [
+pysurfer = [
+  "vtk",
   "mayavi",
   "pysurfer"
+]
+pyvista = [
+  "vtk",
+  "pyvista"
 ]
 numba = [
   "numba"
@@ -61,11 +66,17 @@ test = [
 requires = ["setuptools", "versioneer[toml]"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 include = [
   "netneurotools",
   "netneurotools.*"
 ]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.bib"]
 
 [tool.setuptools.dynamic]
 version = {attr = "netneurotools.__version__"}
@@ -79,12 +90,7 @@ tag_prefix = ""
 parentdir_prefix = ""
 
 [tool.ruff]
-select = ["E", "F", "B", "W", "D", "NPY"]
-ignore = [
-    "B905", # zip() without an explicit strict= parameter
-    # "W605", # Invalid escape sequence: latex
-    "NPY002", # Replace legacy `np.random` call with `np.random.Generator`
-]
+
 line-length = 88
 exclude = [
   "setup.py",
@@ -95,18 +101,26 @@ exclude = [
 ]
 target-version = "py38"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint]
+select = ["E", "F", "B", "W", "D", "NPY"]
+ignore = [
+    "B905", # zip() without an explicit strict= parameter
+    # "W605", # Invalid escape sequence: latex
+    "NPY002", # Replace legacy `np.random` call with `np.random.Generator`
+]
+preview = true
+
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["D104", "F401"]
-"netneurotools/tests/*" = ["B011", "D103"]
+"test_*" = ["B011"]
 "examples/*" = ["E402", "D"]
 
 [tool.coverage.run]
 source = ["netneurotools"]
 omit = [
-  "netneurotools/tests/*",
   "netneurotools/_version.py",
 ]
 

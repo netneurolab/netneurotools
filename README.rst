@@ -26,52 +26,59 @@ netneurotools: Tools for network neuroscience
 |
 
 This toolbox is a collection of functions written in Python that get frequent
-usage in the `Network Neuroscience Lab <netneurolab.github.io/>`_, housed in
+usage in the `Network Neuroscience Lab <https://netneurolab.github.io/>`_, housed in
 the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
 
-.. _installation:
-
-Installation
-------------
-
-Install directly from PyPi with :code:`pip install netneurotools` or install the main branch with
-
-.. code-block:: bash
-
-    git clone https://github.com/netneurolab/netneurotools.git
-    cd netneurotools
-    pip install .
 
 .. _features:
 
 Features
 --------
 
-*  Network neuroscience metrics: up-to-date and optimized
+Netneurotools provides a wide range of tools for network neuroscience research.
 
-   *  Network communication
-   *  Null networks
+*  A range of useful datasets fetchers
 
-*  Brain plotting functions: easy to use and customize
+*  Network construction: empirical and surrogate
 
-   *  Surface visualization 
-      `plot_fsaverage <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_fsaverage.html>`_ 
-      and `plot_fslr <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_fslr.html>`_
-   *  3D point brain `plot_point_brain <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_point_brain.html>`_
-   *  Sorted communities `plot_mod_heatmap <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.plotting.plot_mod_heatmap.html>`_
+*  Network (graph) metrics calculation: up-to-date and optimized
 
-*  Statistics functions
+*  Brain and network visualization
 
-   *  Dominance analysis `get_dominance_stats <https://netneurotools.readthedocs.io/en/latest/generated/netneurotools.stats.get_dominance_stats.html>`_
+*  Optimized statistics routines
 
-*  Fetchers for common datasets
+*  Convenient interface for external tools
 
-*  Utilities for working with FreeSurfer and CIVET
+*  And much more!
 
 
 Check out our `documentation <https://netneurotools.readthedocs.io/en/latest>`_
 for more information!
+
+
+.. _installation:
+
+Installation
+------------
+
+You can install directly from PyPi with :code:`pip install netneurotools`.
+
+This package is under active development. We recommend installing the latest version
+with 
+
+.. code-block:: bash
+
+    pip install git+https://github.com/netneurolab/netneurotools.git
+
+
+If you are looking for the earlier version of the toolbox before the recent breaking changes,
+you can install it with
+
+.. code-block:: bash
+
+    pip install git+https://github.com/netneurolab/netneurotools.git@0.2.X
+
 
 .. _development:
 
@@ -84,6 +91,7 @@ work and have some documentation, there is always room for improvement! If
 you've found a bug, are experiencing a problem, or have a question, create a
 new `issue <https://github.com/netneurolab/netneurotools/issues>`_ with some
 information about it and one of our team members will do our best to help you.
+
 
 .. _licensing:
 

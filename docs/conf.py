@@ -39,7 +39,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx_gallery.gen_gallery'
+    'sphinx_gallery.gen_gallery',
+    'sphinx_design'
 ]
 
 # Generate the API documentation when building
@@ -47,6 +48,7 @@ autosummary_generate = True
 autodoc_default_options = {'members': True, 'inherited-members': True}
 numpydoc_show_class_members = False
 autoclass_content = "class"
+napoleon_use_param = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
