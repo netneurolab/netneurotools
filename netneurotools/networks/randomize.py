@@ -3,12 +3,11 @@
 import bct
 import numpy as np
 from tqdm import tqdm
-from sklearn.utils.validation import (
-    check_random_state
-)
+from sklearn.utils.validation import check_random_state
 
 try:
     from numba import njit
+
     use_numba = True
 except ImportError:
     use_numba = False
@@ -65,7 +64,7 @@ def randmio_und(W, itr):
 
             # flip edge c-d with 50% probability
             # to explore all potential rewirings
-            if np.random.random() > .5:
+            if np.random.random() > 0.5:
                 i[e2], j[e2] = d, c
                 c, d = d, c
 
@@ -101,9 +100,9 @@ if use_numba:
     randmio_und = njit(randmio_und)
 
 
-def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
-                                     replacement=False, weighted=True,
-                                     seed=None):
+def match_length_degree_distribution(
+    W, D, nbins=10, nswap=1000, replacement=False, weighted=True, seed=None
+):
     """
     Generate degree- and edge length-preserving surrogate connectomes.
 
@@ -114,15 +113,15 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     D : (N, N) array-like
         symmetric distance matrix.
     nbins : int
-        number of distance bins (edge length matrix is performed by swapping
-        connections in the same bin). Default = 10.
+        number of distance bins (edge length matrix is performed by swapping connections
+        in the same bin). Default = 10.
     nswap : int
-        total number of edge swaps to perform. Recommended = nnodes * 20
+        total number of edge swaps to perform. Recommended = nnodes * 20.
         Default = 1000.
     replacement : bool, optional
-        if True all the edges are available for swapping. Default= False
+        if True all the edges are available for swapping. Default = False.
     weighted : bool, optional
-        Whether to return weighted rewired connectivity matrix. Default = True
+        if True the function returns a weighted matrix. Default = True.
     seed : float, optional
         Random seed. Default = None
 
@@ -148,7 +147,6 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     ---------
     Betzel, R. F., Bassett, D. S. (2018) Specificity and robustness of
     long-distance connections in weighted, interareal connectomes. PNAS.
-
     """
     rs = check_random_state(seed)
     N = len(W)
@@ -170,7 +168,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     nr = 0
     newB = np.copy(B)
 
-    while ((len(cn_x) >= 2) & (nr < nswap)):
+    while (len(cn_x) >= 2) & (nr < nswap):
         # choose randomly the edge to be rewired
         r = rs.randint(len(cn_x))
         n_x, n_y = cn_x[r], cn_y[r]
@@ -189,7 +187,8 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
             # (ops1_x, ops1_y) such that
             # L(n_x,n_y) = L(n_x, ops1_x) & L(ops1_x,ops1_y) = L(n_y, ops1_y)
             index = (L[n_x, n_y] == L[n_x, ops1_x]) & (
-                L[ops1_x, ops1_y] == L[n_y, ops1_y])
+                L[ops1_x, ops1_y] == L[n_y, ops1_y]
+            )
             if len(np.where(index)[0]) == 0:
                 cn_x = np.delete(cn_x, r)
                 cn_y = np.delete(cn_y, r)
@@ -197,11 +196,12 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
             else:
                 ops2_x, ops2_y = ops1_x[index], ops1_y[index]
                 # options of edges that didn't exist before
-                index = [(newB[min(n_x, ops2_x[i])][max(n_x, ops2_x[i])] == 0)
-                         & (newB[min(n_y, ops2_y[i])][max(n_y,
-                                                          ops2_y[i])] == 0)
-                         for i in range(len(ops2_x))]
-                if (len(np.where(index)[0]) == 0):
+                index = [
+                    (newB[min(n_x, ops2_x[i])][max(n_x, ops2_x[i])] == 0)
+                    & (newB[min(n_y, ops2_y[i])][max(n_y, ops2_y[i])] == 0)
+                    for i in range(len(ops2_x))
+                ]
+                if len(np.where(index)[0]) == 0:
                     cn_x = np.delete(cn_x, r)
                     cn_y = np.delete(cn_y, r)
 
@@ -225,8 +225,7 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
                     if replacement:
                         cn_x[r], cn_y[r] = min(n_x, nn_x), max(n_x, nn_x)
                         index = np.where((cn_x == nn_x) & (cn_y == nn_y))[0]
-                        cn_x[index], cn_y[index] = min(
-                            n_y, nn_y), max(n_y, nn_y)
+                        cn_x[index], cn_y[index] = min(n_y, nn_y), max(n_y, nn_y)
                     # rewire without replacement
                     else:
                         cn_x = np.delete(cn_x, r)
@@ -246,13 +245,15 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     if len(np.where(B != 0)[0]) != len(np.where(newB != 0)[0]):
         print(
             f"ERROR --- number of edges changed, \
-            B:{len(np.where(B != 0)[0])}, newB:{len(np.where(newB != 0)[0])}")
+            B:{len(np.where(B != 0)[0])}, newB:{len(np.where(newB != 0)[0])}"
+        )
     # check that the degree of the nodes it's the same
     for i in range(N):
         if np.sum(B[i]) != np.sum(newB[i]):
             print(
                 f"ERROR --- node {i} changed k by: \
-                {np.sum(B[i]) - np.sum(newB[i])}")
+                {np.sum(B[i]) - np.sum(newB[i])}"
+            )
 
     newW = np.zeros((N, N))
     if weighted:
@@ -278,12 +279,20 @@ def match_length_degree_distribution(W, D, nbins=10, nswap=1000,
     return newB, newW, nr
 
 
-def strength_preserving_rand_sa(A, rewiring_iter=10,
-                                nstage=100, niter=10000,
-                                temp=1000, frac=0.5,
-                                energy_type='sse', energy_func=None,
-                                R=None, connected=None,
-                                verbose=False, seed=None):
+def strength_preserving_rand_sa(
+    A,
+    rewiring_iter=10,
+    nstage=100,
+    niter=10000,
+    temp=1000,
+    frac=0.5,
+    energy_type="sse",
+    energy_func=None,
+    R=None,
+    connected=None,
+    verbose=False,
+    seed=None,
+):
     """
     Strength-preserving network randomization using simulated annealing.
 
@@ -364,12 +373,11 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
     try:
         A = np.asarray(A)
     except TypeError as err:
-        msg = ('A must be array_like. Received: {}.'.format(type(A)))
+        msg = "A must be array_like. Received: {}.".format(type(A))
         raise TypeError(msg) from err
 
     if frac > 1 or frac <= 0:
-        msg = ('frac must be between 0 and 1. '
-               'Received: {}.'.format(frac))
+        msg = "frac must be between 0 and 1. " "Received: {}.".format(frac)
         raise ValueError(msg)
 
     rs = check_random_state(seed)
@@ -396,32 +404,32 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
 
     if energy_func is not None:
         energy = energy_func(s, sb)
-    elif energy_type == 'sse':
-        energy = np.sum((s - sb)**2)
-    elif energy_type == 'max':
+    elif energy_type == "sse":
+        energy = np.sum((s - sb) ** 2)
+    elif energy_type == "max":
         energy = np.max(np.abs(s - sb))
-    elif energy_type == 'mae':
+    elif energy_type == "mae":
         energy = np.mean(np.abs(s - sb))
-    elif energy_type == 'mse':
-        energy = np.mean((s - sb)**2)
-    elif energy_type == 'rmse':
-        energy = np.sqrt(np.mean((s - sb)**2))
+    elif energy_type == "mse":
+        energy = np.mean((s - sb) ** 2)
+    elif energy_type == "rmse":
+        energy = np.sqrt(np.mean((s - sb) ** 2))
     else:
-        msg = ("energy_type must be one of 'sse', 'max', "
-               "'mae', 'mse', or 'rmse'. Received: {}.".format(energy_type))
+        msg = (
+            "energy_type must be one of 'sse', 'max', "
+            "'mae', 'mse', or 'rmse'. Received: {}.".format(energy_type)
+        )
         raise ValueError(msg)
 
     energymin = energy
     wtsmin = wts.copy()
 
     if verbose:
-        print('\ninitial energy {:.5f}'.format(energy))
+        print("\ninitial energy {:.5f}".format(energy))
 
-    for istage in tqdm(range(nstage), desc='annealing progress'):
-
+    for istage in tqdm(range(nstage), desc="annealing progress"):
         naccept = 0
         for _ in range(niter):
-
             # permutation
             e1 = rs.randint(m)
             e2 = rs.randint(m)
@@ -435,25 +443,28 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
 
             if energy_func is not None:
                 energy_prime = energy_func(sb_prime, s)
-            elif energy_type == 'sse':
-                energy_prime = np.sum((sb_prime - s)**2)
-            elif energy_type == 'max':
+            elif energy_type == "sse":
+                energy_prime = np.sum((sb_prime - s) ** 2)
+            elif energy_type == "max":
                 energy_prime = np.max(np.abs(sb_prime - s))
-            elif energy_type == 'mae':
+            elif energy_type == "mae":
                 energy_prime = np.mean(np.abs(sb_prime - s))
-            elif energy_type == 'mse':
-                energy_prime = np.mean((sb_prime - s)**2)
-            elif energy_type == 'rmse':
-                energy_prime = np.sqrt(np.mean((sb_prime - s)**2))
+            elif energy_type == "mse":
+                energy_prime = np.mean((sb_prime - s) ** 2)
+            elif energy_type == "rmse":
+                energy_prime = np.sqrt(np.mean((sb_prime - s) ** 2))
             else:
-                msg = ("energy_type must be one of 'sse', 'max', "
-                       "'mae', 'mse', or 'rmse'. "
-                       "Received: {}.".format(energy_type))
+                msg = (
+                    "energy_type must be one of 'sse', 'max', "
+                    "'mae', 'mse', or 'rmse'. "
+                    "Received: {}.".format(energy_type)
+                )
                 raise ValueError(msg)
 
             # permutation acceptance criterion
-            if (energy_prime < energy or
-               rs.rand() < np.exp(-(energy_prime - energy) / temp)):
+            if energy_prime < energy or rs.rand() < np.exp(
+                -(energy_prime - energy) / temp
+            ):
                 sb = sb_prime.copy()
                 wts[[e1, e2]] = wts[[e2, e1]]
                 energy = energy_prime
@@ -465,10 +476,12 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
         # temperature update
         temp = temp * frac
         if verbose:
-            print('\nstage {:d}, temp {:.5f}, best energy {:.5f}, '
-                  'frac of accepted moves {:.3f}'.format(istage, temp,
-                                                         energymin,
-                                                         naccept / niter))
+            print(
+                "\nstage {:d}, temp {:.5f}, best energy {:.5f}, "
+                "frac of accepted moves {:.3f}".format(
+                    istage, temp, energymin, naccept / niter
+                )
+            )
 
     B = np.zeros((n, n))
     B[(u, v)] = wtsmin
@@ -477,11 +490,18 @@ def strength_preserving_rand_sa(A, rewiring_iter=10,
     return B, energymin
 
 
-def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
-                                        nstage=100, niter=10000,
-                                        temp=1000, frac=0.5,
-                                        R=None, connected=None,
-                                        verbose=False, seed=None):
+def strength_preserving_rand_sa_mse_opt(
+    A,
+    rewiring_iter=10,
+    nstage=100,
+    niter=10000,
+    temp=1000,
+    frac=0.5,
+    R=None,
+    connected=None,
+    verbose=False,
+    seed=None,
+):
     """
     Strength-preserving network randomization using simulated annealing.
 
@@ -549,12 +569,11 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
     try:
         A = np.asarray(A)
     except TypeError as err:
-        msg = ('A must be array_like. Received: {}.'.format(type(A)))
+        msg = "A must be array_like. Received: {}.".format(type(A))
         raise TypeError(msg) from err
 
     if frac > 1 or frac <= 0:
-        msg = ('frac must be between 0 and 1. '
-               'Received: {}.'.format(frac))
+        msg = "frac must be between 0 and 1. " "Received: {}.".format(frac)
         raise ValueError(msg)
 
     rs = check_random_state(seed)
@@ -579,40 +598,39 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
     m = len(wts)
     sb = np.sum(B, axis=1)  # strengths of B
 
-    energy = np.mean((s - sb)**2)
+    energy = np.mean((s - sb) ** 2)
 
     energymin = energy
     wtsmin = wts.copy()
 
     if verbose:
-        print('\ninitial energy {:.5f}'.format(energy))
+        print("\ninitial energy {:.5f}".format(energy))
 
-    for istage in tqdm(range(nstage), desc='annealing progress'):
+    for istage in tqdm(range(nstage), desc="annealing progress"):
         naccept = 0
-        for (e1, e2), prob in zip(rs.randint(m, size=(niter, 2)),
-                                  rs.rand(niter)
-                                  ):
-
+        for (e1, e2), prob in zip(rs.randint(m, size=(niter, 2)), rs.rand(niter)):
             # permutation
             a, b, c, d = u[e1], v[e1], u[e2], v[e2]
             wts_change = wts[e1] - wts[e2]
-            delta_energy = (2 * wts_change *
-                            (2 * wts_change +
-                             (s[a] - sb[a]) +
-                             (s[b] - sb[b]) -
-                             (s[c] - sb[c]) -
-                             (s[d] - sb[d])
-                             )
-                            ) / n
+            delta_energy = (
+                2
+                * wts_change
+                * (
+                    2 * wts_change
+                    + (s[a] - sb[a])
+                    + (s[b] - sb[b])
+                    - (s[c] - sb[c])
+                    - (s[d] - sb[d])
+                )
+            ) / n
 
             # permutation acceptance criterion
-            if (delta_energy < 0 or prob < np.e**(-(delta_energy) / temp)):
-
+            if delta_energy < 0 or prob < np.e ** (-(delta_energy) / temp):
                 sb[[a, b]] -= wts_change
                 sb[[c, d]] += wts_change
                 wts[[e1, e2]] = wts[[e2, e1]]
 
-                energy = np.mean((sb - s)**2)
+                energy = np.mean((sb - s) ** 2)
 
                 if energy < energymin:
                     energymin = energy
@@ -622,10 +640,12 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
         # temperature update
         temp = temp * frac
         if verbose:
-            print('\nstage {:d}, temp {:.5f}, best energy {:.5f}, '
-                  'frac of accepted moves {:.3f}'.format(istage, temp,
-                                                         energymin,
-                                                         naccept / niter))
+            print(
+                "\nstage {:d}, temp {:.5f}, best energy {:.5f}, "
+                "frac of accepted moves {:.3f}".format(
+                    istage, temp, energymin, naccept / niter
+                )
+            )
 
     B = np.zeros((n, n))
     B[(u, v)] = wtsmin
@@ -634,12 +654,19 @@ def strength_preserving_rand_sa_mse_opt(A, rewiring_iter=10,
     return B, energymin
 
 
-def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
-                                    nstage=100, niter=10000,
-                                    temp=1000, frac=0.5,
-                                    energy_type='sse', energy_func=None,
-                                    connected=True, verbose=False,
-                                    seed=None):
+def strength_preserving_rand_sa_dir(
+    A,
+    rewiring_iter=10,
+    nstage=100,
+    niter=10000,
+    temp=1000,
+    frac=0.5,
+    energy_type="sse",
+    energy_func=None,
+    connected=True,
+    verbose=False,
+    seed=None,
+):
     """
     Strength-preserving network randomization using simulated annealing.
 
@@ -716,12 +743,11 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
     try:
         A = np.asarray(A)
     except TypeError as err:
-        msg = ('A must be array_like. Received: {}.'.format(type(A)))
+        msg = "A must be array_like. Received: {}.".format(type(A))
         raise TypeError(msg) from err
 
     if frac > 1 or frac <= 0:
-        msg = ('frac must be between 0 and 1. '
-               'Received: {}.'.format(frac))
+        msg = "frac must be between 0 and 1. " "Received: {}.".format(frac)
         raise ValueError(msg)
 
     rs = check_random_state(seed)
@@ -744,33 +770,34 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
 
     if energy_func is not None:
         energy = energy_func(s_in, sb_in) + energy_func(s_out, sb_out)
-    elif energy_type == 'sse':
-        energy = np.sum((s_in - sb_in)**2) + np.sum((s_out - sb_out)**2)
-    elif energy_type == 'max':
+    elif energy_type == "sse":
+        energy = np.sum((s_in - sb_in) ** 2) + np.sum((s_out - sb_out) ** 2)
+    elif energy_type == "max":
         energy = np.max(np.abs(s_in - sb_in)) + np.max(np.abs(s_out - sb_out))
-    elif energy_type == 'mae':
+    elif energy_type == "mae":
         energy = np.mean(np.abs(s_in - sb_in)) + np.mean(np.abs(s_out - sb_out))
-    elif energy_type == 'mse':
-        energy = np.mean((s_in - sb_in)**2) + np.mean((s_out - sb_out)**2)
-    elif energy_type == 'rmse':
-        energy = (np.sqrt(np.mean((s_in - sb_in)**2)) +
-                 np.sqrt(np.mean((s_out - sb_out)**2)))
+    elif energy_type == "mse":
+        energy = np.mean((s_in - sb_in) ** 2) + np.mean((s_out - sb_out) ** 2)
+    elif energy_type == "rmse":
+        energy = np.sqrt(np.mean((s_in - sb_in) ** 2)) + np.sqrt(
+            np.mean((s_out - sb_out) ** 2)
+        )
     else:
-        msg = ("energy_type must be one of 'sse', 'max', "
-               "'mae', 'mse', or 'rmse'. Received: {}.".format(energy_type))
+        msg = (
+            "energy_type must be one of 'sse', 'max', "
+            "'mae', 'mse', or 'rmse'. Received: {}.".format(energy_type)
+        )
         raise ValueError(msg)
 
     energymin = energy
     wtsmin = wts.copy()
 
     if verbose:
-        print('\ninitial energy {:.5f}'.format(energy))
+        print("\ninitial energy {:.5f}".format(energy))
 
-    for istage in tqdm(range(nstage), desc='annealing progress'):
-
+    for istage in tqdm(range(nstage), desc="annealing progress"):
         naccept = 0
         for _ in range(niter):
-
             # permutation
             e1 = rs.randint(m)
             e2 = rs.randint(m)
@@ -786,32 +813,41 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
             sb_prime_out[c] = sb_prime_out[c] - wts[e2] + wts[e1]
 
             if energy_func is not None:
-                energy_prime = (energy_func(sb_prime_in, s_in) +
-                                energy_func(sb_prime_out, s_out))
-            elif energy_type == 'sse':
-                energy_prime = (np.sum((sb_prime_in - s_in)**2) +
-                                np.sum((sb_prime_out - s_out)**2))
-            elif energy_type == 'max':
-                energy_prime = (np.max(np.abs(sb_prime_in - s_in)) +
-                                np.max(np.abs(sb_prime_out - s_out)))
-            elif energy_type == 'mae':
-                energy_prime = (np.mean(np.abs(sb_prime_in - s_in)) +
-                                np.mean(np.abs(sb_prime_out - s_out)))
-            elif energy_type == 'mse':
-                energy_prime = (np.mean((sb_prime_in - s_in)**2) +
-                                np.mean((sb_prime_out - s_out)**2))
-            elif energy_type == 'rmse':
-                energy_prime = (np.sqrt(np.mean((sb_prime_in - s_in)**2)) +
-                                np.sqrt(np.mean((sb_prime_out - s_out)**2)))
+                energy_prime = energy_func(sb_prime_in, s_in) + energy_func(
+                    sb_prime_out, s_out
+                )
+            elif energy_type == "sse":
+                energy_prime = np.sum((sb_prime_in - s_in) ** 2) + np.sum(
+                    (sb_prime_out - s_out) ** 2
+                )
+            elif energy_type == "max":
+                energy_prime = np.max(np.abs(sb_prime_in - s_in)) + np.max(
+                    np.abs(sb_prime_out - s_out)
+                )
+            elif energy_type == "mae":
+                energy_prime = np.mean(np.abs(sb_prime_in - s_in)) + np.mean(
+                    np.abs(sb_prime_out - s_out)
+                )
+            elif energy_type == "mse":
+                energy_prime = np.mean((sb_prime_in - s_in) ** 2) + np.mean(
+                    (sb_prime_out - s_out) ** 2
+                )
+            elif energy_type == "rmse":
+                energy_prime = np.sqrt(np.mean((sb_prime_in - s_in) ** 2)) + np.sqrt(
+                    np.mean((sb_prime_out - s_out) ** 2)
+                )
             else:
-                msg = ("energy_type must be one of 'sse', 'max', "
-                       "'mae', 'mse', or 'rmse'. "
-                       "Received: {}.".format(energy_type))
+                msg = (
+                    "energy_type must be one of 'sse', 'max', "
+                    "'mae', 'mse', or 'rmse'. "
+                    "Received: {}.".format(energy_type)
+                )
                 raise ValueError(msg)
 
             # permutation acceptance criterion
-            if (energy_prime < energy or
-               rs.rand() < np.exp(-(energy_prime - energy) / temp)):
+            if energy_prime < energy or rs.rand() < np.exp(
+                -(energy_prime - energy) / temp
+            ):
                 sb_in = sb_prime_in.copy()
                 sb_out = sb_prime_out.copy()
                 wts[[e1, e2]] = wts[[e2, e1]]
@@ -824,10 +860,12 @@ def strength_preserving_rand_sa_dir(A, rewiring_iter=10,
         # temperature update
         temp = temp * frac
         if verbose:
-            print('\nstage {:d}, temp {:.5f}, best energy {:.5f}, '
-                  'frac of accepted moves {:.3f}'.format(istage, temp,
-                                                         energymin,
-                                                         naccept / niter))
+            print(
+                "\nstage {:d}, temp {:.5f}, best energy {:.5f}, "
+                "frac of accepted moves {:.3f}".format(
+                    istage, temp, energymin, naccept / niter
+                )
+            )
 
     B = np.zeros((n, n))
     B[(u, v)] = wtsmin

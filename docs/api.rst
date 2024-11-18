@@ -58,7 +58,7 @@ To download project-related data
    fetch_mirchi2018
    fetch_hansen_manynetworks
    fetch_hansen_receptors
-   fetch_hansen_genecognition
+   fetch_hansen_genescognition
    fetch_hansen_brainstemfc
    fetch_shafiei_megfmrimapping
    fetch_shafiei_megdynamics
