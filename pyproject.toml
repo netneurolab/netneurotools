@@ -119,7 +119,7 @@ convention = "numpy"
 "examples/*" = ["E402", "D"]
 
 [tool.pytest.ini_options]
-addopts = "--strict-markers"
+addopts = "--strict-markers --pyargs"
 markers = [
   "fetcher: mark test to fetch data from the internet",
   "pyvista: mark test that requires pyvista",
