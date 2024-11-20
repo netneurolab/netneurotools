@@ -26,7 +26,8 @@ dependencies = [
   "matplotlib",
   "scikit-learn",
   "nibabel >=3.0.0",
-  "nilearn"
+  "nilearn",
+  "tqdm"
 ]
 
 dynamic=["version"]
