@@ -160,7 +160,7 @@ def pv_plot_surface(
 
     Returns
     -------
-    pl : PyVista.Plotter
+    pl : :class:`pyvista.Plotter`
         PyVista plotter object.
 
     Other Parameters

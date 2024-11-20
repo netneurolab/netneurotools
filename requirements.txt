@@ -1,5 +1,4 @@
 bctpy
-matplotlib
 nibabel
 nilearn
 numpy>=1.16

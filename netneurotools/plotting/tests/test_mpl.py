@@ -34,5 +34,6 @@ def test_plot_point_brain():
     """Test plot_point_brain function."""
     data = np.random.rand(100)
     coords = np.random.rand(100, 3)
-    out = plotting.plot_point_brain(data, coords)
-    assert isinstance(out, plt.Figure)
+    fig, axes = plotting.plot_point_brain(data, coords)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(axes, np.ndarray)

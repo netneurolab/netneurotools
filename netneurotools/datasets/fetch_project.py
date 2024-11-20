@@ -189,6 +189,11 @@ def fetch_hansen_receptors(force=False, data_dir=None, verbose=1):
 
     If you used this data, please cite [1]_.
 
+    .. important::
+       If you use this dataset, please also cite the original data sources.
+       See the original publication or `neuromaps <https://netneurolab.github.io/neuromaps/listofmaps.html>`_
+       for more information.
+
     Returns
     -------
     filenames : :class:`sklearn.utils.Bunch`
@@ -208,7 +213,12 @@ def fetch_hansen_receptors(force=False, data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1]
+    .. [1] Justine Y Hansen, Golia Shafiei, Ross D Markello, Kelly Smart, Sylvia
+        ML Cox, Martin N\u00f8rgaard, Vincent Beliveau, Yanjun Wu,
+        Jean-Dominique Gallezot, \u00c9tienne Aumont, and others. Mapping
+        neurotransmitter systems to the structural and functional organization
+        of the human neocortex. Nature neuroscience, 25(11):1569\u20131581,
+        2022.
     """
     dataset_name = "ds-hansen_receptors"
     _get_reference_info(dataset_name, verbose=verbose)
@@ -244,7 +254,10 @@ def fetch_hansen_genescognition(force=False, data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1]
+    .. [1] Justine Y Hansen, Ross D Markello, Jacob W Vogel, Jakob Seidlitz,
+        Danilo Bzdok, and Bratislav Misic. Mapping gene transcription and
+        neurocognition across human neocortex. Nature Human Behaviour,
+        5(9):1240\u20131250, 2021.
     """
     dataset_name = "ds-hansen_genescognition"
     _get_reference_info(dataset_name, verbose=verbose)
@@ -280,7 +293,10 @@ def fetch_hansen_brainstemfc(force=False, data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1]
+    .. [1] Justine Y Hansen, Simone Cauzzo, Kavita Singh, Mar\u00eda Guadalupe
+        Garc\u00eda-Gomar, James M Shine, Marta Bianciardi, and Bratislav Misic.
+        Integrating brainstem and cortical functional architectures. Nature
+        Neuroscience, pages 1\u201312, 2024.
     """
     dataset_name = "ds-hansen_brainstemfc"
     _get_reference_info(dataset_name, verbose=verbose)
@@ -316,7 +332,10 @@ def fetch_shafiei_megfmrimapping(force=False, data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1]
+    .. [1] Golia Shafiei, Sylvain Baillet, and Bratislav Misic. Human
+        electromagnetic and haemodynamic networks systematically converge in
+        unimodal cortex and diverge in transmodal cortex. PLoS biology,
+        20(8):e3001735, 2022.
     """
     dataset_name = "ds-shafiei_megfmrimapping"
     _get_reference_info(dataset_name, verbose=verbose)
@@ -352,7 +371,10 @@ def fetch_shafiei_megdynamics(force=False, data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1]
+    .. [1] Golia Shafiei, Ben D Fulcher, Bradley Voytek, Theodore D
+        Satterthwaite, Sylvain Baillet, and Bratislav Misic. Neurophysiological
+        signatures of cortical micro-architecture. Nature communications,
+        14(1):6000, 2023.
     """
     dataset_name = "ds-shafiei_megdynamics"
     _get_reference_info(dataset_name, verbose=verbose)
@@ -367,7 +389,7 @@ def fetch_suarez_mami(force=False, data_dir=None, verbose=1):
 
     This dataset contains
 
-    If you used this data, please cite [1]_.
+    If you used this data, please cite [1]_ and [2]_.
 
     Returns
     -------
@@ -388,7 +410,12 @@ def fetch_suarez_mami(force=False, data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1]
+    .. [1] Laura E Suarez, Yossi Yovel, Martijn P van den Heuvel, Olaf Sporns,
+        Yaniv Assaf, Guillaume Lajoie, and Bratislav Misic. A connectomics-based
+        taxonomy of mammals. Elife, 11:e78635, 2022.
+    .. [2] Yaniv Assaf, Arieli Bouznach, Omri Zomet, Assaf Marom, and Yossi
+        Yovel. Conservation of brain connectivity and wiring across the
+        mammalian class. Nature Neuroscience, 23(7):805\u2013808, 2020.
     """
     dataset_name = "ds-suarez_mami"
     _get_reference_info(dataset_name, verbose=verbose)

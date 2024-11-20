@@ -26,14 +26,15 @@ dependencies = [
   "matplotlib",
   "scikit-learn",
   "nibabel >=3.0.0",
-  "nilearn"
+  "nilearn",
+  "tqdm"
 ]
 
 dynamic=["version"]
 
 [project.optional-dependencies]
 doc = [
-  "sphinx >=2.0, <7.0.0",
+  "sphinx >=2.0",
   "sphinx_rtd_theme",
   "sphinx-gallery"
 ]
@@ -117,6 +118,14 @@ convention = "numpy"
 "__init__.py" = ["D104", "F401"]
 "test_*" = ["B011"]
 "examples/*" = ["E402", "D"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --pyargs"
+markers = [
+  "fetcher: mark test to fetch data from the internet",
+  "pyvista: mark test that requires pyvista",
+  "pysurfer: mark test that requires pysurfer"
+]
 
 [tool.coverage.run]
 source = ["netneurotools"]

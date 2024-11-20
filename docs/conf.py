@@ -115,6 +115,7 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+    'pyvista': ('https://docs.pyvista.org/', None),
 }
 
 doctest_global_setup = """\
