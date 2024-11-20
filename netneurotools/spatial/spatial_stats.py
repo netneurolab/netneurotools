@@ -1,5 +1,6 @@
 """Functions for calculating spatial statistics."""
 
+import numpy as np
 
 def morans_i():
     """Calculate Moran's I for spatial autocorrelation."""
