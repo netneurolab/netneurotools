@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-latest']
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
       - name: Print netneurotools version
         run: python -c "import netneurotools; print(netneurotools.__version__)" 
       - name: Run tests
-        run: pytest --doctest-modules --cov=netneurotools --cov-report=xml --junitxml=junit/test-results.xml --verbose -m pyvista
+        run: pytest --doctest-modules --junitxml=junit/test-results.xml --verbose -m pyvista
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:

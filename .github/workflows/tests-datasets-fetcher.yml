@@ -2,16 +2,16 @@ name: netneurotools-tests
 
 on: 
   workflow_dispatch:
-    push:
-      branches:
-        - main
-      paths:
-        - 'netneurotools/datasets/**'
-    pull_request:
-      branches:
-        - main
-      paths:
-        - 'netneurotools/datasets/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'netneurotools/datasets/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'netneurotools/datasets/**'
 
 jobs:
   check_style:
