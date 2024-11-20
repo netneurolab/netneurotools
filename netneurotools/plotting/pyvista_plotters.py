@@ -140,7 +140,7 @@ def pv_plot_surface(
         Colorbar limits. If None, will be set to 2.5th and 97.5th percentiles.
         Default is None.
     zoom_ratio : float, optional
-        Zoom ratio for the camera. Default is 1.0.
+        Zoom-in ratio for the camera. Default is 1.0.
     show_colorbar : bool, optional
         Whether to show the colorbar. Default is True.
     cbar_title : str, optional
