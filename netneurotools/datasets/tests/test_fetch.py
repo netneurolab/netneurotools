@@ -7,7 +7,7 @@ import numpy as np
 from netneurotools import datasets
 
 
-@pytest.mark.test_fetch
+@pytest.mark.fetcher
 class TestFetchTemplate:
     """Test fetching of template datasets."""
 
@@ -107,7 +107,7 @@ class TestFetchTemplate:
         )
 
 
-@pytest.mark.test_fetch
+@pytest.mark.fetcher
 class TestFetchAtlas:
     """Test fetching of atlas datasets."""
 
@@ -182,7 +182,7 @@ class TestFetchAtlas:
         assert isinstance(vek.get("info"), Path)
 
 
-@pytest.mark.test_fetch
+@pytest.mark.fetcher
 class TestFetchProject:
     """Test fetching of project datasets."""
 

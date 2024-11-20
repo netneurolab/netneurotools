@@ -1,0 +1,65 @@
+name: netneurotools-tests
+
+on: 
+  workflow_dispatch:
+    push:
+      branches:
+        - main
+      paths:
+        - 'netneurotools/datasets/**'
+    pull_request:
+      branches:
+        - main
+      paths:
+        - 'netneurotools/datasets/**'
+
+jobs:
+  check_style:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            python -m pip install ruff
+      - name: Run style checks
+        run: ruff check --output-format=github .
+
+  run_fetcher_tests:
+    needs: check_style
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['ubuntu-latest']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install netneurotools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install '.[test]'
+      - name: Print netneurotools version
+        run: python -c "import netneurotools; print(netneurotools.__version__)" 
+      - name: Run tests
+        run: pytest --doctest-modules --junitxml=junit/test-results.xml --verbose -m fetcher
+      - name: Upload pytest test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
+          path: junit/test-results.xml

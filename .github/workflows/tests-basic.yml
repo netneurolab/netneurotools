@@ -6,6 +6,8 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   check_style:
@@ -26,7 +28,7 @@ jobs:
       - name: Run style checks
         run: ruff check --output-format=github .
 
-  run_tests:
+  run_basic_tests:
     needs: check_style
     runs-on: ${{ matrix.os }}
     strategy:
@@ -44,21 +46,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-      - name: Install dependencies
+      - name: Install netneurotools
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest pytest-cov
-          python -m pip install -r requirements.txt
-      - name: Install netneurotools
-        run: python -m pip install .
+          python -m pip install '.[test]'
       - name: Print netneurotools version
         run: python -c "import netneurotools; print(netneurotools.__version__)" 
       - name: Run tests
-        run: pytest --doctest-modules --cov=netneurotools --cov-report=xml --junitxml=junit/test-results.xml --verbose --pyargs netneurotools
-      - name: Upload coverage
-        uses: codecov/codecov-action@v5
-        with:
-          files: coverage.xml
+        run: pytest --doctest-modules --junitxml=junit/test-results.xml --verbose -m "not (fetcher or pyvista pysurfer)"
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:
