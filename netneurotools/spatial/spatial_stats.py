@@ -4,7 +4,7 @@ import numpy as np
 
 def morans_i():
     """Calculate Moran's I for spatial autocorrelation."""
-    pass
+    a = np.array([1, 2, 3])
 
 
 def local_morans_i():
