@@ -93,23 +93,24 @@ def _extract_cifti_surface(data, axis, surf_name):
     return surf_data
 
 
-def _extract_cifti_label(axis):
+def _extract_cifti_label(axis, parc_ignore=PARCIGNORE):
     assert isinstance(axis, nib.cifti2.LabelAxis)
     keys, labels = list(
         zip(
             *[
                 (label_tuple[0], label_tuple[1][0])
                 for label_tuple in axis.label[0].items()
-                if label_tuple[1][0] not in PARCIGNORE
+                if label_tuple[1][0] not in parc_ignore
             ]
         )
     )
     return keys, labels
 
 
-def _extract_cifti_surface_label(data, label_axis, brainmodel_axis, surf_name):
+def _extract_cifti_surface_label(
+        data, label_axis, brainmodel_axis, surf_name, parc_ignore=PARCIGNORE):
     """Extract surface data from CIFTI file."""
-    keys, labels = _extract_cifti_label(label_axis)
+    keys, labels = _extract_cifti_label(label_axis, parc_ignore=parc_ignore)
 
     surf_data = _extract_cifti_surface(data, brainmodel_axis, surf_name)
 
@@ -163,7 +164,8 @@ def _check_vertices_to_parcels_parc_file(parc_file, hemi):
         _check_file_type(parc_file)
 
 
-def _load_parc_file(parc_file, cifti_structure=None):
+def _load_parc_file(parc_file, cifti_structure=None, parc_ignore=PARCIGNORE):
+
     if str(parc_file).endswith("gii"):
         vertices = nib.load(parc_file).agg_data()
         keys, labels = list(
@@ -173,7 +175,7 @@ def _load_parc_file(parc_file, cifti_structure=None):
                     for label_tuple in nib.load(parc_file)
                     .labeltable.get_labels_as_dict()
                     .items()
-                    if label_tuple[1] not in PARCIGNORE
+                    if label_tuple[1] not in parc_ignore
                 ]
             )
         )
@@ -187,6 +189,7 @@ def _load_parc_file(parc_file, cifti_structure=None):
                 cifti.header.get_axis(0),
                 cifti.header.get_axis(1),
                 cifti_structure,
+                parc_ignore=parc_ignore,
             )
             vertices = vertices.squeeze()
     elif str(parc_file).endswith("annot"):
@@ -197,7 +200,7 @@ def _load_parc_file(parc_file, cifti_structure=None):
             *[
                 (key, label)
                 for key, label in zip(keys, labels)
-                if label not in PARCIGNORE
+                if label not in parc_ignore
             ]
         )
     else:
@@ -210,9 +213,10 @@ def _load_parc_file(parc_file, cifti_structure=None):
 
 
 def _vertices_to_parcels_single_hemi(
-    vert_data, parc_file, cifti_structure=None, background=None
+    vert_data, parc_file, cifti_structure=None, background=None, parc_ignore=PARCIGNORE
 ):
-    vertices, keys, labels = _load_parc_file(parc_file, cifti_structure=cifti_structure)
+    vertices, keys, labels = _load_parc_file(
+        parc_file, cifti_structure=cifti_structure, parc_ignore=parc_ignore)
 
     if vertices.shape[0] != len(vert_data):
         raise ValueError(
@@ -236,7 +240,7 @@ def _vertices_to_parcels_single_hemi(
 
 
 def vertices_to_parcels(
-    vert_data, parc_file, hemi="both", background=None, ignore_indices=None
+    vert_data, parc_file, hemi="both", background=None, parc_ignore=PARCIGNORE
 ):
     """Convert vertex-level data to parcel-level data."""
     _check_vertices_to_parcels_parc_file(parc_file, hemi)
@@ -261,12 +265,14 @@ def vertices_to_parcels(
             parc_file[0],
             cifti_structure=cifti_structure_lh,
             background=background,
+            parc_ignore=parc_ignore,
         )
         reduced_rh, keys_rh, labels_rh = _vertices_to_parcels_single_hemi(
             vert_data[1],
             parc_file[1],
             cifti_structure=cifti_structure_rh,
             background=background,
+            parc_ignore=parc_ignore,
         )
 
         reduced = (reduced_lh, reduced_rh)
@@ -286,6 +292,7 @@ def vertices_to_parcels(
             parc_file,
             cifti_structure=cifti_structure_lh,
             background=background,
+            parc_ignore=parc_ignore,
         )
 
     return reduced, keys, labels
