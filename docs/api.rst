@@ -25,7 +25,6 @@ To download templates
    :template: function.rst
    :toctree: generated/
 
-
    fetch_fsaverage
    fetch_fsaverage_curated
    fetch_hcp_standards
@@ -295,7 +294,7 @@ Regressions
 
 .. currentmodule:: netneurotools.spatial
 
-Calculating spatial statistics
+To calculate spatial statistics
 
 .. autosummary::
    :template: function.rst
@@ -307,8 +306,8 @@ Calculating spatial statistics
 
 .. _ref_interface:
 
-:mod:`netneurotools.interface` - Interface for external tools
--------------------------------------------------------------
+:mod:`netneurotools.interface` - Interface with external data and tools
+-----------------------------------------------------------------------
 
 .. automodule:: netneurotools.interface
    :no-members:
@@ -316,9 +315,43 @@ Calculating spatial statistics
 
 .. currentmodule:: netneurotools.interface
 
+To parcellate surface data
+
 .. autosummary::
    :template: function.rst
    :toctree: generated/
+
+   vertices_to_parcels
+   parcels_to_vertices
+
+To work with CIFTI files
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   describe_cifti
+   extract_cifti_volume
+   extract_cifti_surface
+   extract_cifti_labels
+   extract_cifti_surface_labels
+   deconstruct_cifti
+
+To work with FreeSurfer files
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   extract_annot_labels
+
+To work with GIFTI files
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   extract_gifti_labels
 
 
 .. _ref_experimental:
