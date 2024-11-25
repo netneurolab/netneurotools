@@ -18,7 +18,6 @@ def _morans_i_vectorized(annot, weight):
     return n * upper / (lower * W)
 
 
-@njit
 def _morans_i_numba(annot, weight):
     n = annot.shape[0]
     annot = annot - np.mean(annot)  # all occurances are demean-ed
@@ -29,6 +28,10 @@ def _morans_i_numba(annot, weight):
             upper += weight[i, j] * annot[i] * annot[j]
             W += weight[i, j]
     return n * upper / lower / W
+
+
+if has_numba:
+    _morans_i_numba = njit(_morans_i_numba)
 
 
 def morans_i(annot, weight, use_numba=has_numba):
