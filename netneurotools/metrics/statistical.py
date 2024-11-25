@@ -4,9 +4,9 @@ import numpy as np
 
 try:
     from numba import njit
-    use_numba = True
+    has_numba = True
 except ImportError:
-    use_numba = False
+    has_numba = False
 
 from .metrics_utils import _graph_laplacian
 
@@ -129,7 +129,7 @@ def network_pearsonr_numba(annot1, annot2, weight):
     return upper / np.sqrt(lower1) / np.sqrt(lower2)
 
 
-if use_numba:
+if has_numba:
     network_pearsonr_numba = njit(network_pearsonr_numba)
 
 
@@ -159,7 +159,7 @@ def _cross_outer(annot_mat):
     return cross_outer
 
 
-if use_numba:
+if has_numba:
     # ("float64[:,:,:,::1](float64[:,::1])")
     _cross_outer = njit(_cross_outer)
 
@@ -194,7 +194,7 @@ def _multiply_sum(cross_outer, weight):
     return cross_outer_after
 
 
-if use_numba:
+if has_numba:
     # ("float64[:,::1](float64[:,:,:,::1],float64[:,::1])")
     _multiply_sum = njit(_multiply_sum)
 
@@ -229,7 +229,7 @@ def network_pearsonr_pairwise(annot_mat, weight):
     netneurotools.stats.network_pearsonr
     """
     annot_mat_demean = annot_mat - np.mean(annot_mat, axis=1, keepdims=True)
-    if use_numba:
+    if has_numba:
         cross_outer = _cross_outer(annot_mat_demean)
         cross_outer_after = _multiply_sum(cross_outer, weight)
     else:
@@ -265,7 +265,7 @@ def _onehot_quadratic_form_broadcast(Q_star):
     return R_eff
 
 
-if use_numba:
+if has_numba:
     # ("float64[:,::1](float64[:,::1])")
     _onehot_quadratic_form_broadcast = njit(_onehot_quadratic_form_broadcast)
 
@@ -318,7 +318,7 @@ def effective_resistance(W, directed=True):
     """
     L = _graph_laplacian(W)
     Q_star = np.linalg.pinv(L, hermitian=not directed)
-    if use_numba:
+    if has_numba:
         R_eff = _onehot_quadratic_form_broadcast(Q_star)
     else:
         Q_star_diag = np.diag(Q_star)
@@ -356,7 +356,7 @@ def _polariz_diff(vec):
     return (vec_pos - vec_neg)
 
 
-if use_numba:
+if has_numba:
     _polariz_diff = njit(_polariz_diff)
 
 
@@ -396,7 +396,7 @@ def _quadratic_form(W, vec_left, vec_right, squared=False):
     return ret
 
 
-if use_numba:
+if has_numba:
     _quadratic_form = njit(_quadratic_form)
 
 
@@ -457,7 +457,7 @@ def network_polarisation(vec, W, directed=True):
     L = _graph_laplacian(W)
     Q_star = np.linalg.pinv(L, hermitian=not directed)
     diff = _polariz_diff(vec)
-    if use_numba:
+    if has_numba:
         polariz_sq = _quadratic_form(Q_star, diff, diff, squared=False)
     else:
         polariz_sq = (diff.T @ Q_star @ diff)
@@ -548,7 +548,7 @@ def network_variance_numba(vec, D):
     return 0.5 * _quadratic_form(D, p, p, squared=True)
 
 
-if use_numba:
+if has_numba:
     network_variance_numba = njit(network_variance_numba)
 
 
@@ -657,5 +657,5 @@ def network_covariance_numba(joint_pmat, D, calc_marginal=True):
     return 0.5 * cov, 0.5 * var_p, 0.5 * var_q
 
 
-if use_numba:
+if has_numba:
     network_covariance_numba = njit(network_covariance_numba)

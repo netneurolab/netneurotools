@@ -13,9 +13,9 @@ from scipy.sparse.csgraph import shortest_path
 
 try:
     from numba import njit
-    use_numba = True
+    has_numba = True
 except ImportError:
-    use_numba = False
+    has_numba = False
 
 from .metrics_utils import _fast_binarize
 
@@ -141,7 +141,7 @@ def retrieve_shortest_path(s, t, p_mat):
     return path[::-1]
 
 
-if use_numba:
+if has_numba:
     retrieve_shortest_path = njit(retrieve_shortest_path)
 
 
