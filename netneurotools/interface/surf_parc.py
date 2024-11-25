@@ -146,9 +146,9 @@ def vertices_to_parcels(
     If hemi is 'both':
 
     * ``vert_data`` can be a tuple or list of two arrays. It can also be a single
-    array with left then right hemisphere data.
+      array with left then right hemisphere data.
     * ``parc_file`` should be a tuple or list of two paths, unless it is a dlabel.nii
-    file, in which case it can be a single path.
+      file, in which case it can be a single path.
     * Returns tuples of reduced data, keys, and labels.
 
     If hemi is 'L' or 'R':
@@ -267,9 +267,9 @@ def parcels_to_vertices(
     If hemi is 'both':
 
     * ``parc_data`` can be a tuple or list of two arrays. It can also be a single
-    array with left then right hemisphere data.
+      array with left then right hemisphere data.
     * ``parc_file`` should be a tuple or list of two paths, unless it is a dlabel.nii
-    file, in which case it can be a single path.
+      file, in which case it can be a single path.
     * Returns tuples of projected data, keys, and labels.
 
     If hemi is 'L' or 'R':
