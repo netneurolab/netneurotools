@@ -76,6 +76,7 @@ def test_local_morans_i(generate_test_data):
     annot_1, _, weight, expected = generate_test_data
     assert np.allclose(local_morans_i(annot_1, weight), expected)
 
+
 @pytest.mark.parametrize(
     "generate_test_data",
     [
@@ -90,6 +91,7 @@ def test_gearys_c(generate_test_data):
     assert np.isclose(gearys_c(annot_1, weight, use_numba=False), expected)
     assert np.isclose(gearys_c(annot_1, weight, use_numba=True), expected)
 
+
 @pytest.mark.parametrize(
     "generate_test_data",
     [
@@ -102,6 +104,7 @@ def test_local_gearys_c(generate_test_data):
     """Test local Geary's C calculation."""
     annot_1, _, weight, expected = generate_test_data
     assert np.allclose(local_gearys_c(annot_1, weight), expected)
+
 
 @pytest.mark.parametrize(
     "generate_test_data",
@@ -117,6 +120,7 @@ def test_lees_i(generate_test_data):
     assert np.isclose(lees_i(annot_1, annot_2, weight, use_numba=False), expected)
     assert np.isclose(lees_i(annot_1, annot_2, weight, use_numba=True), expected)
 
+
 @pytest.mark.parametrize(
     "generate_test_data",
     [
@@ -129,4 +133,3 @@ def test_local_lees_i(generate_test_data):
     """Test local Lee's I calculation."""
     annot_1, annot_2, weight, expected = generate_test_data
     assert np.allclose(local_lees_i(annot_1, annot_2, weight), expected)
-
