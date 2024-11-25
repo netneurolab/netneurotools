@@ -302,6 +302,10 @@ To calculate spatial statistics
 
    morans_i
    local_morans_i
+   gearys_c
+   local_gearys_c
+   lees_i
+   local_lees_i
 
 
 .. _ref_interface:
