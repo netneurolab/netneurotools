@@ -8,10 +8,10 @@ from scipy.cluster import hierarchy
 
 try:
     from numba import njit, prange
-    use_numba = True
+    has_numba = True
 except ImportError:
     prange = range
-    use_numba = False
+    has_numba = False
 
 
 def _get_relabels(c1, c2):
@@ -538,7 +538,7 @@ def _zrand_partitions(communities):
     return all_zrand
 
 
-if use_numba:
+if has_numba:
     _dummyvar = njit(_dummyvar)
     zrand = njit(zrand)
     _zrand_partitions = njit(_zrand_partitions, parallel=True)

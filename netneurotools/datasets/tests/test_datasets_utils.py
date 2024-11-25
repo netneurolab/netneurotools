@@ -28,7 +28,7 @@ def test_get_dataset_info(dset, expected):
         utils._get_dataset_info('notvalid')
 
 
-def test_get_data_dir(tmpdir):
+def test_get_data_dir(tmp_path):
     """Test getting data directory."""
-    data_dir = utils._get_data_dir(tmpdir)
+    data_dir = utils._get_data_dir(tmp_path)
     assert os.path.isdir(data_dir)

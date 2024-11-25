@@ -7,11 +7,13 @@ on:
       - main
     paths:
       - 'netneurotools/plotting/pyvista_plotters.py'
+      - 'netneurotools/plotting/tests/test_pyvista.py'
   pull_request:
     branches:
       - main
     paths:
       - 'netneurotools/plotting/pyvista_plotters.py'
+      - 'netneurotools/plotting/tests/test_pyvista.py'
 
 jobs:
   run_pyvista_tests:
