@@ -171,8 +171,8 @@ class TestFetchAtlas:
         )
 
     @pytest.mark.xfail
-    def test_fetch_ye2020(self, tmp_path):
-        """Test fetching of Ye2020 parcellations."""
+    def test_fetch_tian2020msa(self, tmp_path):
+        """Test fetching of tian2020msa parcellations."""
         assert False
 
     def test_fetch_voneconomo(self, tmp_path):

@@ -44,7 +44,7 @@ To download atlases
     fetch_schaefer2018
     fetch_mmpall
     fetch_pauli2018
-    fetch_ye2020
+    fetch_tian2020msa
     fetch_voneconomo
 
 To download project-related data
