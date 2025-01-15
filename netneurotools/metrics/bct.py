@@ -12,6 +12,7 @@ from scipy.stats import ttest_ind
 from scipy.sparse.csgraph import shortest_path
 
 from .. import has_numba
+
 if has_numba:
     from numba import njit
 from .metrics_utils import _fast_binarize
@@ -100,8 +101,12 @@ def distance_wei_floyd(D):
     netneurotools.metrics.retrieve_shortest_path
     """
     spl_mat, p_mat = shortest_path(
-        D, method="FW", directed=True, return_predecessors=True,
-        unweighted=False, overwrite=False
+        D,
+        method="FW",
+        directed=True,
+        return_predecessors=True,
+        unweighted=False,
+        overwrite=False,
     )
     return spl_mat, p_mat
 
@@ -206,7 +211,7 @@ def navigation_wu(nav_dist_mat, sc_mat):
                 # if isempty(next_node)
                 # || next_node == last_node
                 # || pl_bin > max_hops
-                if (new_pos in curr_path):
+                if new_pos in curr_path:
                     curr_path = []
                     curr_dist = np.inf
                     break
@@ -214,8 +219,7 @@ def navigation_wu(nav_dist_mat, sc_mat):
                     curr_path.append(new_pos)
                     curr_dist += nav_dist_mat[curr_pos, new_pos]
                     curr_pos = new_pos
-            nav_paths.append(
-                (src, tar, curr_dist, len(curr_path) - 1, curr_path))
+            nav_paths.append((src, tar, curr_dist, len(curr_path) - 1, curr_path))
 
     nav_sr = len([_ for _ in nav_paths if _[3] != -1]) / len(nav_paths)
 
@@ -224,8 +228,7 @@ def navigation_wu(nav_dist_mat, sc_mat):
         sorted(nav_paths, key=lambda x: x[0]), key=lambda x: x[0]
     ):
         curr_path = list(g)
-        nav_sr_node.append(
-            len([_ for _ in curr_path if _[3] != -1]) / len(curr_path))
+        nav_sr_node.append(len([_ for _ in curr_path if _[3] != -1]) / len(curr_path))
 
     nav_path_len = np.zeros_like(nav_dist_mat)
     nav_path_hop = np.zeros_like(nav_dist_mat)
@@ -315,7 +318,7 @@ def communicability_bin(adjacency, normalize=False):
            [3.19452805, 0.        , 4.19452805]])
     """
     if not np.any(np.logical_or(adjacency == 0, adjacency == 1)):
-        raise ValueError('Provided adjancecy matrix must be unweighted.')
+        raise ValueError("Provided adjancecy matrix must be unweighted.")
 
     # normalize by largest eigenvalue to prevent communicability metric from
     # "blowing up"
@@ -413,8 +416,9 @@ def path_transitivity(D):
     for i in range(n - 1):
         for j in range(i + 1, n):
             sig_and = np.logical_and(D[i, :], D[j, :])
-            m[i, j] = np.dot(D[i, :] + D[j, :], sig_and) \
-                / (deg_wu[i] + deg_wu[j] - 2 * D[i, j])
+            m[i, j] = np.dot(D[i, :] + D[j, :], sig_and) / (
+                deg_wu[i] + deg_wu[j] - 2 * D[i, j]
+            )
     m += m.transpose()
 
     _, p_mat = distance_wei_floyd(D)
@@ -423,9 +427,11 @@ def path_transitivity(D):
         for j in range(i + 1, n):
             path = retrieve_shortest_path(i, j, p_mat)
             K = len(path)
-            T_mat[i, j] = 2 \
-                * sum([m[i, j] for i, j in itertools.combinations(path, 2)]) \
+            T_mat[i, j] = (
+                2
+                * sum([m[i, j] for i, j in itertools.combinations(path, 2)])
                 / (K * (K - 1))
+            )
     T_mat += T_mat.transpose()
 
     return T_mat
@@ -487,23 +493,21 @@ def search_information(W, D, has_memory=False):
                 path = retrieve_shortest_path(i, j, p_mat)
                 if path[0] != -1:  # no path, depends on retrieve_shortest_path
                     if has_memory:
-                        pr_step_ff = \
-                            [0] + [T[i, j] for i, j in zip(path[:-1], path[1:])]
-                        pr_step_bk = \
-                            [T[i, j] for i, j in zip(path[1:], path[:-1])] + [0]
+                        pr_step_ff = [0] + [
+                            T[i, j] for i, j in zip(path[:-1], path[1:])
+                        ]
+                        pr_step_bk = [T[i, j] for i, j in zip(path[1:], path[:-1])] + [
+                            0
+                        ]
                         pr_step_ff = [
-                            i / (1 - j)
-                            for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
+                            i / (1 - j) for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
                         ]
                         pr_step_bk = [
-                            i / (1 - j)
-                            for i, j in zip(pr_step_bk[:-1], pr_step_bk[1:])
+                            i / (1 - j) for i, j in zip(pr_step_bk[:-1], pr_step_bk[1:])
                         ]
                     else:
-                        pr_step_ff = \
-                            [T[i, j] for i, j in zip(path[:-1], path[1:])]
-                        pr_step_bk = \
-                            [T[i, j] for i, j in zip(path[1:], path[:-1])]
+                        pr_step_ff = [T[i, j] for i, j in zip(path[:-1], path[1:])]
+                        pr_step_bk = [T[i, j] for i, j in zip(path[1:], path[:-1])]
                     SI[i, j] = -np.log2(np.prod(pr_step_ff))
                     SI[j, i] = -np.log2(np.prod(pr_step_bk))
                 else:
@@ -517,11 +521,11 @@ def search_information(W, D, has_memory=False):
                 path = retrieve_shortest_path(i, j, p_mat)
                 if path[0] != -1:  # no path, depends on retrieve_shortest_path
                     if has_memory:
-                        pr_step_ff = \
-                            [0] + [T[i, j] for i, j in zip(path[:-1], path[1:])]
+                        pr_step_ff = [0] + [
+                            T[i, j] for i, j in zip(path[:-1], path[1:])
+                        ]
                         pr_step_ff = [
-                            i / (1 - j)
-                            for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
+                            i / (1 - j) for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
                         ]
                     else:
                         pr_step_ff = [T[i, j] for i, j in zip(path[:-1], path[1:])]
@@ -684,7 +688,7 @@ def resource_efficiency_bin(W_bin, lambda_prob=0.5):
     for L_value in L_unique:
         if L_value == 0:
             continue
-        L_locs = (spl_mat == L_value)
+        L_locs = spl_mat == L_value
         h_cols = np.where(L_locs)[1]
         h_vec = np.unique(h_cols)
 
@@ -697,8 +701,7 @@ def resource_efficiency_bin(W_bin, lambda_prob=0.5):
             B_h_L = np.linalg.matrix_power(B_h, L_value)
             prob_aux[:, h_value] = B_h_L[:, h_value]
             z_aux[:, h_value] = np.divide(
-                np.ones((N,)) * np.log(1 - lambda_prob),
-                np.log(1 - B_h_L[:, h_value])
+                np.ones((N,)) * np.log(1 - lambda_prob), np.log(1 - B_h_L[:, h_value])
             )
 
         prob_aux[~L_locs] = 0
@@ -759,8 +762,7 @@ def flow_graph(W, r=None, t=1):
     ps = deg_wu / (deg_rate * r)  # (1, N) / (N, N) => (N, N)
     laplacian = np.diagflat(r) - np.multiply(np.divide(W, deg_wu), r)  # elementwise
     dyn = np.multiply(
-        deg_rate * scipy.sparse.linalg.expm(-t * laplacian),
-        ps
+        deg_rate * scipy.sparse.linalg.expm(-t * laplacian), ps
     )  # elementwise
     dyn = (dyn + dyn.T) / 2
     return dyn
@@ -1045,7 +1047,7 @@ def matching_ind_und(W):
     return M0
 
 
-def rich_feeder_peripheral(x, sc, stat='median'):
+def rich_feeder_peripheral(x, sc, stat="median"):
     """
     Calculate connectivity values in rich, feeder, and peripheral edges.
 
@@ -1074,10 +1076,10 @@ def rich_feeder_peripheral(x, sc, stat='median'):
     This code was written by Justine Hansen who promises to fix and even
     optimize the code should any issues arise, provided you let her know.
     """
-    stats = ['mean', 'median']
+    stats = ["mean", "median"]
     if stat not in stats:
-        raise ValueError(f'Provided stat {stat} not valid.\
-                         Must be one of {stats}')
+        raise ValueError(f"Provided stat {stat} not valid.\
+                         Must be one of {stats}")
 
     nnodes = len(sc)
     mask = np.triu(np.ones(nnodes), 1) > 0
@@ -1090,7 +1092,7 @@ def rich_feeder_peripheral(x, sc, stat='median'):
         hub = np.zeros([nnodes, 1])
         hub[hub_idx, :] = 1
 
-        rfp = np.zeros([nnodes, nnodes])      # for each link, define rfp
+        rfp = np.zeros([nnodes, nnodes])  # for each link, define rfp
         for edge1 in range(nnodes):
             for edge2 in range(nnodes):
                 if hub[edge1] + hub[edge2] == 2:
@@ -1104,24 +1106,30 @@ def rich_feeder_peripheral(x, sc, stat='median'):
     rfp = np.zeros([3, k])
     pvals = np.zeros([3, k])
     for degthresh in range(k):
-
-        redfunc = np.median if stat == 'median' else np.mean
+        redfunc = np.median if stat == "median" else np.mean
         for linktype in range(3):
-            rfp[linktype, degthresh] = redfunc(x[mask][rfp_label[:, degthresh]
-                                                       == linktype + 1])
+            rfp[linktype, degthresh] = redfunc(
+                x[mask][rfp_label[:, degthresh] == linktype + 1]
+            )
 
         # p-value (one-sided Welch's t-test)
         _, pvals[0, degthresh] = ttest_ind(
             x[mask][rfp_label[:, degthresh] == 1],
             x[mask][rfp_label[:, degthresh] != 1],
-            equal_var=False, alternative='greater')
+            equal_var=False,
+            alternative="greater",
+        )
         _, pvals[1, degthresh] = ttest_ind(
             x[mask][rfp_label[:, degthresh] == 2],
             x[mask][rfp_label[:, degthresh] == 3],
-            equal_var=False, alternative='greater')
+            equal_var=False,
+            alternative="greater",
+        )
         _, pvals[2, degthresh] = ttest_ind(
             x[mask][rfp_label[:, degthresh] == 3],
             x[mask][rfp_label[:, degthresh] == 2],
-            equal_var=False, alternative='greater')
+            equal_var=False,
+            alternative="greater",
+        )
 
     return rfp, pvals
