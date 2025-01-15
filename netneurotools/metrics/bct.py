@@ -766,9 +766,226 @@ def flow_graph(W, r=None, t=1):
     return dyn
 
 
-def assortativity(W, r=None):
-    """Calculate assortativity."""
-    pass
+def _assortativity_und_vectorized(x_vec, weight_mat):
+    weight_vec = np.sum(weight_mat, axis=0)
+    weight_sum = np.sum(weight_vec)
+    x_norm_mean = np.dot(x_vec, weight_vec) / weight_sum
+    x_inner = x_vec - x_norm_mean
+    upper = np.sum(weight_mat * np.outer(x_inner, x_inner))
+    lower = np.sum(weight_vec * x_inner**2)
+    return upper / lower
+
+
+def _assortativity_und_numba(x_vec, weight_mat):
+    n = len(x_vec)
+    weight_vec = np.sum(weight_mat, axis=0)
+    weight_sum = np.sum(weight_vec)
+    x_norm_mean = np.dot(x_vec, weight_vec) / weight_sum
+    upper, lower = 0.0, 0.0
+    for i in range(n):
+        for j in range(n):
+            upper += (
+                weight_mat[i, j] * (x_vec[i] - x_norm_mean) * (x_vec[j] - x_norm_mean)
+            )
+    for i in range(n):
+        lower += weight_vec[i] * (x_vec[i] - x_norm_mean) ** 2
+    return upper / lower
+
+
+if has_numba:
+    _assortativity_und_numba = _assortativity_und_numba
+
+
+def assortativity_und(x, W, use_numba=True):
+    r"""
+    Calculate assortativity for undirected networks.
+
+    This function implements Bazinet's assortativity for annotated networks as
+    defined in [1]_.
+
+    Parameters
+    ----------
+    x : (N,) array_like
+        Annotation scores for each node in the network
+    W : (N, N) array_like
+        Weighted, undirected connection weight array
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
+
+    Returns
+    -------
+    assortativity : float
+        Assortativity of the network
+
+    Notes
+    -----
+    Assortativity is defined as the Pearson correlation between the local
+    annotation scores of connected nodes [2]_. In other words, it quantifies the
+    tendency for nodes with similar annotation scores to be connected [1]_.
+    For an adjacency matrix :math:`A`, and an annotation vector :math:`\mathbf{x}`,
+    the assortativity of a network, with respect to :math:`\bar{\mathbf{x}}`
+    is defined as:
+
+    .. math::
+        \begin{align}
+        r & = \sum_{ij} \frac{a_{ij}}{2m} \tilde{x}_i \tilde{x}_j \\
+          & = \sum_{ij} \frac{a_{ij}}{2m}
+          (\frac{x_i-\bar{\mathbf{x}}}{\sigma_{\mathbf{x}}})
+          (\frac{x_j-\bar{\mathbf{x}}}{\sigma_{\mathbf{x}}})
+        \end{align}
+
+    where :math:`a_{ij}` is the weight of the connection between nodes :math:`i`
+    and :math:`j`, :math:`2m` is the total weight of the network.
+    :math:`\bar{\mathbf{x}}` and :math:`\sigma_{\mathbf{x}}` are the mean and
+    standard deviation of the annotation, defined as:
+
+    .. math::
+        \begin{align}
+        \bar{\mathbf{x}} & = \frac{1}{2m} \sum_i k_i x_i \\
+        \sigma_{\mathbf{x}} & = \sqrt{\frac{1}{2m}
+        \sum_i k_i (x_i - \bar{\mathbf{x}})^2}
+        \end{align}
+
+    in which :math:`k_i` is the sum of the weights of the connections to node :math:`i`.
+
+    References
+    ----------
+    .. [1] Bazinet, V., Hansen, J. Y., Vos de Wael, R., Bernhardt, B. C., van
+        den Heuvel, M. P., & Misic, B. (2023). Assortative mixing in
+        micro-architecturally annotated brain connectomes. Nature
+        Communications, 14(1), 2850.
+    .. [2] Newman, M. E. (2003). Mixing patterns in networks. Physical review E,
+        67(2), 026126.
+
+    See Also
+    --------
+    netneurotools.metrics.assortativity_dir
+    """
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _assortativity_und_numba(x, W)
+    return _assortativity_und_vectorized(x, W)
+
+
+def _assortativity_dir_vectorized(x_vec, weight_mat):
+    weight_vec_in = np.sum(weight_mat, axis=0)
+    weight_vec_out = np.sum(weight_mat, axis=1)
+    weight_sum = np.sum(weight_vec_in)
+    x_norm_mean_in = np.dot(x_vec, weight_vec_in) / weight_sum
+    x_norm_mean_out = np.dot(x_vec, weight_vec_out) / weight_sum
+    x_inner_in = x_vec - x_norm_mean_in
+    x_inner_out = x_vec - x_norm_mean_out
+    upper = np.sum(weight_mat * np.outer(x_inner_out, x_inner_in))
+    lower_1 = np.sum(weight_vec_in * x_inner_in**2)
+    lower_2 = np.sum(weight_vec_out * x_inner_out**2)
+    return upper / np.sqrt(lower_1 * lower_2)
+
+
+def _assortativity_dir_numba(x_vec, weight_mat):
+    n = len(x_vec)
+    weight_vec_in = np.sum(weight_mat, axis=0)
+    weight_vec_out = np.sum(weight_mat, axis=1)
+    weight_sum = np.sum(weight_vec_in)
+    x_norm_mean_in = np.sum(np.dot(x_vec, weight_vec_in)) / weight_sum
+    x_norm_mean_out = np.sum(np.dot(x_vec, weight_vec_out)) / weight_sum
+    upper, lower_1, lower_2 = 0.0, 0.0, 0.0
+    for i in range(n):
+        for j in range(n):
+            upper += (
+                weight_mat[i, j]
+                * (x_vec[j] - x_norm_mean_in)
+                * (x_vec[i] - x_norm_mean_out)
+            )
+    for i in range(n):
+        lower_1 += weight_vec_in[i] * (x_vec[i] - x_norm_mean_in) ** 2
+        lower_2 += weight_vec_out[i] * (x_vec[i] - x_norm_mean_out) ** 2
+    return upper / np.sqrt(lower_1 * lower_2)
+
+
+if has_numba:
+    _assortativity_dir_numba = njit(_assortativity_dir_numba)
+
+
+def assortativity_dir(x, W, use_numba=True):
+    r"""
+    Calculate assortativity for directed networks.
+
+    This function implements Bazinet's assortativity for annotated networks as
+    defined in [1]_.
+
+    Parameters
+    ----------
+    x : (N,) array_like
+        Annotation scores for each node in the network
+    W : (N, N) array_like
+        Weighted, directed connection weight array
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
+
+    Returns
+    -------
+    assortativity : float
+        Assortativity of the network
+
+    Notes
+    -----
+    For a directed adjacency matrix :math:`A`, and an annotation vector
+    :math:`\mathbf{x}`, the assortativity of the network is defined as:
+
+    .. math::
+
+        \begin{align}
+        r & = \sum_{ij} \frac{a_{ij}}{m}
+        \tilde{x}_i^{\text{out}} \tilde{x}_j^{\text{in}} \\
+        & = \sum_{ij} \frac{a_{ij}}{m}
+        (\frac{x_i-\bar{\mathbf{x}}^{\text{out}}}{\sigma_{\mathbf{x}}^{\text{out}}})
+        (\frac{x_j-\bar{\mathbf{x}}^{\text{in}}}{\sigma_{\mathbf{x}}^{\text{in}}})
+        \end{align}
+
+    where :math:`a_{ij}` is the weight of the directed connection from node
+    :math:`i` to node :math:`j`, and :math:`m` is the total weight of the
+    network. :math:`\bar{\mathbf{x}}^{\text{in}}`,
+    :math:`\bar{\mathbf{x}}^{\text{out}}`, :math:`\sigma_{\mathbf{x}}^{\text{in}}`,
+    and :math:`\sigma_{\mathbf{x}}^{\text{out}}` are the means and standard deviations
+    of the in-degree and out-degree
+    weighted annotations, defined as:
+
+    .. math::
+
+        \begin{align}
+        \bar{\mathbf{x}}^{\text{in}} & = \frac{1}{m} \sum_i k_i^{\text{in}} x_i \\
+        \bar{\mathbf{x}}^{\text{out}} & = \frac{1}{m} \sum_i k_i^{\text{out}} x_i \\
+        \sigma_{\mathbf{x}}^{\text{in}} & = \sqrt{\frac{1}{m}
+        \sum_i k_i^{\text{in}} (x_i - \bar{\mathbf{x}}^{\text{in}})^2} \\
+        \sigma_{\mathbf{x}}^{\text{out}} & = \sqrt{\frac{1}{m}
+        \sum_i k_i^{\text{out}} (x_i - \bar{\mathbf{x}}^{\text{out}})^2}
+        \end{align}
+
+    in which :math:`k_i^{\text{in}}` is the sum of incoming weights to node
+    :math:`i` and :math:`k_i^{\text{out}}` is the sum of outgoing weights from
+    node :math:`i`.
+
+    References
+    ----------
+    .. [1] Bazinet, V., Hansen, J. Y., Vos de Wael, R., Bernhardt, B. C., van
+        den Heuvel, M. P., & Misic, B. (2023). Assortative mixing in
+        micro-architecturally annotated brain connectomes. Nature
+        Communications, 14(1), 2850.
+    .. [2] Newman, M. E. (2003). Mixing patterns in networks. Physical review E,
+        67(2), 026126.
+
+    See Also
+    --------
+    netneurotools.metrics.assortativity_und
+    """
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _assortativity_dir_numba(x, W)
+    return _assortativity_dir_vectorized(x, W)
 
 
 def matching_ind_und(W):

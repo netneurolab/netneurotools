@@ -187,7 +187,8 @@ Brain network metrics
    diffusion_efficiency
    resource_efficiency_bin
    flow_graph
-   assortativity
+   assortativity_und
+   assortativity_dir
    matching_ind_und
    rich_feeder_peripheral
 

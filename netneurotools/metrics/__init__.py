@@ -12,7 +12,7 @@ from .bct import (
     mean_first_passage_time, diffusion_efficiency,
     resource_efficiency_bin, flow_graph,
     # other
-    assortativity,
+    assortativity_und, assortativity_dir,
     matching_ind_und,
     rich_feeder_peripheral
 )
@@ -48,7 +48,8 @@ __all__ = [
     'path_transitivity', 'search_information',
     'mean_first_passage_time', 'diffusion_efficiency',
     'resource_efficiency_bin', 'flow_graph',
-    'assortativity', 'matching_ind_und',
+    'assortativity_und', 'assortativity_dir',
+    'matching_ind_und',
     'rich_feeder_peripheral',
     # metrics_utils
     '_fast_binarize', '_graph_laplacian',
