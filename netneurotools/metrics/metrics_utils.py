@@ -1,12 +1,9 @@
 """Functions for supporting network metrics."""
 
 import numpy as np
-
-try:
+from .. import has_numba
+if has_numba:
     from numba import njit
-    has_numba = True
-except ImportError:
-    has_numba = False
 
 
 def _fast_binarize(W):

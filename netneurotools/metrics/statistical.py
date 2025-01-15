@@ -2,11 +2,9 @@
 
 import numpy as np
 
-try:
+from .. import has_numba
+if has_numba:
     from numba import njit
-    has_numba = True
-except ImportError:
-    has_numba = False
 
 from .metrics_utils import _graph_laplacian
 

@@ -11,7 +11,13 @@ except ImportError:  # scipy < 1.8.0
     from scipy.stats.stats import _chk2_asarray
 
 
-def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
+from .. import has_numba
+
+if has_numba:
+    from numba import njit
+
+
+def efficient_pearsonr(a, b, ddof=1, nan_policy="propagate"):
     """
     Compute correlation of matching columns in `a` and `b`.
 

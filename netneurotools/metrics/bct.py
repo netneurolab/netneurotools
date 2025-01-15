@@ -11,12 +11,9 @@ import scipy
 from scipy.stats import ttest_ind
 from scipy.sparse.csgraph import shortest_path
 
-try:
+from .. import has_numba
+if has_numba:
     from numba import njit
-    has_numba = True
-except ImportError:
-    has_numba = False
-
 from .metrics_utils import _fast_binarize
 
 
