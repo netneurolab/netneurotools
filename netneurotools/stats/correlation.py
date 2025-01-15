@@ -103,9 +103,88 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy="propagate"):
     return corr, prob
 
 
-def weighted_pearsonr():
-    """Calculate weighted Pearson correlation coefficient."""
+def fast_pearsonr():
+    """Calculate Pearson correlation coefficient."""
     pass
+
+
+def _weighted_mean(x, w):
+    return np.sum(x * w) / np.sum(w)
+
+
+if has_numba:
+    _weighted_mean = njit(_weighted_mean)
+
+
+def _weighted_pearsonr_vectorized(x_vec, y_vec, weight_vec):
+    x_bar_diff = x_vec - _weighted_mean(x_vec, weight_vec)
+    y_bar_diff = y_vec - _weighted_mean(y_vec, weight_vec)
+    weight_vec_sum = np.sum(weight_vec)
+    cov_x_y = np.sum(weight_vec * x_bar_diff * y_bar_diff) / weight_vec_sum
+    cov_x_x = np.sum(weight_vec * x_bar_diff * x_bar_diff) / weight_vec_sum
+    cov_y_y = np.sum(weight_vec * y_bar_diff * y_bar_diff) / weight_vec_sum
+    return cov_x_y / np.sqrt(cov_x_x * cov_y_y)
+
+
+def _weighted_pearsonr_numba(x_vec, y_vec, weight_vec):
+    n = len(x_vec)
+    x_weighted_mean = _weighted_mean(x_vec, weight_vec)
+    y_weighted_mean = _weighted_mean(y_vec, weight_vec)
+    upper, lower1, lower2 = 0, 0, 0
+    for i in range(n):
+        upper += (
+            weight_vec[i] * (x_vec[i] - x_weighted_mean) * (y_vec[i] - y_weighted_mean)
+        )
+        lower1 += weight_vec[i] * (x_vec[i] - x_weighted_mean) ** 2
+        lower2 += weight_vec[i] * (y_vec[i] - y_weighted_mean) ** 2
+    return upper / np.sqrt(lower1 * lower2)
+
+
+if has_numba:
+    _weighted_pearsonr_numba = njit(_weighted_pearsonr_numba)
+
+
+def weighted_pearsonr(x_vec, y_vec, weight_vec, use_numba=has_numba):
+    r"""
+    Calculate weighted Pearson correlation coefficient.
+
+    Parameters
+    ----------
+    x_vec : array_like
+        First vector of data
+    y_vec : array_like
+        Second vector of data
+    weight_vec : array_like
+        Vector of weights
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
+
+    Returns
+    -------
+    corr : float
+        Weighted Pearson correlation coefficient
+
+    Notes
+    -----
+    This function calculates the weighted Pearson correlation coefficient between
+    two vectors, defined as:
+
+    .. math::
+        r = \frac{\sum_i w_i (x_i - \bar{x})(y_i - \bar{y})}
+                    {\sqrt{\sum_i w_i (x_i - \bar{x})^2 \sum_i w_i (y_i - \bar{y})^2}}
+
+    where :math:`x_i` and :math:`y_i` are the data points, :math:`w_i` are the
+    weights, and :math:`\bar{x}` and :math:`\bar{y}` are the weighted means of
+    the data points.
+
+    """
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _weighted_pearsonr_numba(x_vec, y_vec, weight_vec)
+    else:
+        return _weighted_pearsonr_vectorized(x_vec, y_vec, weight_vec)
 
 
 def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
