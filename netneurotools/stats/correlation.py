@@ -63,32 +63,33 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy="propagate"):
     """
     a, b, _ = _chk2_asarray(a, b, 0)
     if len(a) != len(b):
-        raise ValueError('Provided arrays do not have same length')
+        raise ValueError("Provided arrays do not have same length")
 
     if a.size == 0 or b.size == 0:
         return np.nan, np.nan
 
-    if nan_policy not in ('propagate', 'raise', 'omit'):
+    if nan_policy not in ("propagate", "raise", "omit"):
         raise ValueError(f'Value for nan_policy "{nan_policy}" not allowed')
 
     a, b = a.reshape(len(a), -1), b.reshape(len(b), -1)
-    if (a.shape[1] != b.shape[1]):
+    if a.shape[1] != b.shape[1]:
         a, b = np.broadcast_arrays(a, b)
 
     mask = np.logical_or(np.isnan(a), np.isnan(b))
-    if nan_policy == 'raise' and np.any(mask):
+    if nan_policy == "raise" and np.any(mask):
         raise ValueError('Input cannot contain NaN when nan_policy is "omit"')
-    elif nan_policy == 'omit':
+    elif nan_policy == "omit":
         # avoid making copies of the data, if possible
         a = np.ma.masked_array(a, mask, copy=False, fill_value=np.nan)
         b = np.ma.masked_array(b, mask, copy=False, fill_value=np.nan)
 
-    with np.errstate(invalid='ignore'):
-        corr = (sstats.zscore(a, ddof=ddof, nan_policy=nan_policy)
-                * sstats.zscore(b, ddof=ddof, nan_policy=nan_policy))
+    with np.errstate(invalid="ignore"):
+        corr = sstats.zscore(a, ddof=ddof, nan_policy=nan_policy) * sstats.zscore(
+            b, ddof=ddof, nan_policy=nan_policy
+        )
 
     sumfunc, n_obs = np.sum, len(a)
-    if nan_policy == 'omit':
+    if nan_policy == "omit":
         corr = corr.filled(np.nan)
         sumfunc = np.nansum
         n_obs = np.squeeze(np.sum(np.logical_not(np.isnan(corr)), axis=0))
@@ -244,7 +245,7 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
 
     # no correlations outside [-1, 1] bounds
     if np.any(np.abs(corr) > 1):
-        raise ValueError('Provided `corr` must (all) be in range [-1, 1].')
+        raise ValueError("Provided `corr` must (all) be in range [-1, 1].")
 
     # if we're given a single number, assume two vectors are desired
     if isinstance(corr, (int, float)):
@@ -254,10 +255,12 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     elif isinstance(corr, (list, np.ndarray)):
         corr = np.asarray(corr)
         if corr.ndim != 2 or len(corr) != len(corr.T):
-            raise ValueError('If `corr` is a list or array, must be a 2D '
-                             'square array, not {}'.format(corr.shape))
+            raise ValueError(
+                "If `corr` is a list or array, must be a 2D "
+                "square array, not {}".format(corr.shape)
+            )
         if np.any(np.diag(corr) != 1):
-            raise ValueError('Diagonal of `corr` must be 1.')
+            raise ValueError("Diagonal of `corr` must be 1.")
         covs = corr * 0.111
     means = [0] * len(covs)
 
