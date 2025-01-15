@@ -31,14 +31,11 @@ from .spreading import (
 
 from .statistical import (
     network_pearsonr,
-    network_pearsonr_numba,
     network_pearsonr_pairwise,
     effective_resistance,
     network_polarisation,
     network_variance,
-    network_variance_numba,
     network_covariance,
-    network_covariance_numba
 )
 
 
@@ -58,9 +55,7 @@ __all__ = [
     # spreading
     'simulate_atrophy',
     # statistical
-    'network_pearsonr', 'network_pearsonr_numba',
-    'network_pearsonr_pairwise', 'effective_resistance',
-    'network_polarisation', 'network_variance',
-    'network_variance_numba', 'network_covariance',
-    'network_covariance_numba'
+    'network_pearsonr', 'network_pearsonr_pairwise',
+    'effective_resistance', 'network_polarisation',
+    'network_variance', 'network_covariance',
 ]

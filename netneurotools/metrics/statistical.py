@@ -9,7 +9,33 @@ if has_numba:
 from .metrics_utils import _graph_laplacian
 
 
-def network_pearsonr(annot1, annot2, weight):
+def _network_pearsonr_vectorized(annot1, annot2, weight):
+    annot1 = annot1 - np.mean(annot1)
+    annot2 = annot2 - np.mean(annot2)
+    upper = np.sum(np.multiply(weight, np.outer(annot1, annot2)))
+    lower1 = np.sum(np.multiply(weight, np.outer(annot1, annot1)))
+    lower2 = np.sum(np.multiply(weight, np.outer(annot2, annot2)))
+    return upper / np.sqrt(lower1) / np.sqrt(lower2)
+
+
+def _network_pearsonr_numba(annot1, annot2, weight):
+    n = annot1.shape[0]
+    annot1 = annot1 - np.mean(annot1)
+    annot2 = annot2 - np.mean(annot2)
+    upper, lower1, lower2 = 0.0, 0.0, 0.0
+    for i in range(n):
+        for j in range(n):
+            upper += annot1[i] * annot2[j] * weight[i, j]
+            lower1 += annot1[i] * annot1[j] * weight[i, j]
+            lower2 += annot2[i] * annot2[j] * weight[i, j]
+    return upper / np.sqrt(lower1) / np.sqrt(lower2)
+
+
+if has_numba:
+    _network_pearsonr_numba = njit(_network_pearsonr_numba)
+
+
+def network_pearsonr(annot1, annot2, weight, use_numba=has_numba):
     r"""
     Calculate pearson correlation between two annotation vectors.
 
@@ -24,6 +50,9 @@ def network_pearsonr(annot1, annot2, weight):
         Second annotation vector, demean will be applied.
     weight : (N, N) array_like
         Weight matrix. Diagonal elements should be 1.
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
 
     Returns
     -------
@@ -86,49 +115,12 @@ def network_pearsonr(annot1, annot2, weight):
     --------
     netneurotools.stats.network_pearsonr_pairwise
     """
-    annot1 = annot1 - np.mean(annot1)
-    annot2 = annot2 - np.mean(annot2)
-    upper = np.sum(np.multiply(weight, np.outer(annot1, annot2)))
-    lower1 = np.sum(np.multiply(weight, np.outer(annot1, annot1)))
-    lower2 = np.sum(np.multiply(weight, np.outer(annot2, annot2)))
-    return upper / np.sqrt(lower1) / np.sqrt(lower2)
-
-
-def network_pearsonr_numba(annot1, annot2, weight):
-    """
-    Numba version of :meth:`netneurotools.stats.network_pearsonr`.
-
-    .. warning::
-       Test before use.
-
-    Parameters
-    ----------
-    annot1 : (N,) array_like
-        First annotation vector, demean will be applied.
-    annot2 : (N,) array_like
-        Second annotation vector, demean will be applied.
-    weight : (N, N) array_like
-        Weight matrix. Diagonal elements should be 1.
-
-    Returns
-    -------
-    corr : float
-        Network correlation between `annot1` and `annot2`
-    """
-    n = annot1.shape[0]
-    annot1 = annot1 - np.mean(annot1)
-    annot2 = annot2 - np.mean(annot2)
-    upper, lower1, lower2 = 0.0, 0.0, 0.0
-    for i in range(n):
-        for j in range(n):
-            upper += annot1[i] * annot2[j] * weight[i, j]
-            lower1 += annot1[i] * annot1[j] * weight[i, j]
-            lower2 += annot2[i] * annot2[j] * weight[i, j]
-    return upper / np.sqrt(lower1) / np.sqrt(lower2)
-
-
-if has_numba:
-    network_pearsonr_numba = njit(network_pearsonr_numba)
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _network_pearsonr_numba(annot1, annot2, weight)
+    else:
+        return _network_pearsonr_vectorized(annot1, annot2, weight)
 
 
 def _cross_outer(annot_mat):
@@ -462,7 +454,21 @@ def network_polarisation(vec, W, directed=True):
     return np.sqrt(polariz_sq)
 
 
-def network_variance(vec, D):
+def _network_variance_vectorized(vec, D):
+    p = vec / np.sum(vec)
+    return 0.5 * (p.T @ np.multiply(D, D) @ p)
+
+
+def _network_variance_numba(vec, D):
+    p = vec / np.sum(vec)
+    return 0.5 * _quadratic_form(D, p, p, squared=True)
+
+
+if has_numba:
+    _network_variance_numba = njit(_network_variance_numba)
+
+
+def network_variance(vec, D, use_numba=has_numba):
     r"""
     Calculate variance of a vector on a graph.
 
@@ -479,6 +485,9 @@ def network_variance(vec, D):
         Will be normalized internally as a probability distribution.
     D : (N, N) array_like
         Distance matrix.
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
 
     Returns
     -------
@@ -515,42 +524,47 @@ def network_variance(vec, D):
     --------
     netneurotools.stats.network_covariance
     """
-    p = vec / np.sum(vec)
-    return 0.5 * (p.T @ np.multiply(D, D) @ p)
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _network_variance_numba(vec, D)
+    else:
+        return _network_variance_vectorized(vec, D)
 
 
-def network_variance_numba(vec, D):
-    """
-    Numba version of :meth:`netneurotools.stats.network_variance`.
+def _network_covariance_vectorized(joint_pmat, D, calc_marginal=True):
+    p = np.sum(joint_pmat, axis=1)
+    q = np.sum(joint_pmat, axis=0)
+    D_sq = np.multiply(D, D)
+    cov = p.T @ D_sq @ q - np.sum(np.multiply(joint_pmat, D_sq))
+    if calc_marginal:
+        var_p = p.T @ D_sq @ p
+        var_q = q.T @ D_sq @ q
+    else:
+        var_p, var_q = 0, 0
+    return 0.5 * cov, 0.5 * var_p, 0.5 * var_q
 
-    Network variance is a measure of variance taken into account the network
-    structure.
 
-    .. warning::
-       Test before use.
-
-    Parameters
-    ----------
-    vec : (N,) array_like
-        Input vector. Must be all positive.
-        Will be normalized internally as a probability distribution.
-    D : (N, N) array_like
-        Distance matrix.
-
-    Returns
-    -------
-    network_variance : float
-        Network variance of `vec` on `D`
-    """
-    p = vec / np.sum(vec)
-    return 0.5 * _quadratic_form(D, p, p, squared=True)
+def _network_covariance_numba(joint_pmat, D, calc_marginal=True):
+    n = joint_pmat.shape[0]
+    p = np.sum(joint_pmat, axis=1)
+    q = np.sum(joint_pmat, axis=0)
+    cov = 0.0
+    var_p, var_q = 0.0, 0.0
+    for i in range(n):
+        for j in range(n):
+            cov += (p[i] * q[j] - joint_pmat[i, j]) * D[i, j]**2
+            if calc_marginal:
+                var_p += p[i] * p[j] * D[i, j]**2
+                var_q += q[i] * q[j] * D[i, j]**2
+    return 0.5 * cov, 0.5 * var_p, 0.5 * var_q
 
 
 if has_numba:
-    network_variance_numba = njit(network_variance_numba)
+    _network_covariance_numba = njit(_network_covariance_numba)
 
 
-def network_covariance(joint_pmat, D, calc_marginal=True):
+def network_covariance(joint_pmat, D, calc_marginal=True, use_numba=has_numba):
     r"""
     Calculate covariance of a joint probability matrix on a graph.
 
@@ -566,6 +580,9 @@ def network_covariance(joint_pmat, D, calc_marginal=True):
     calc_marginal : bool, optional
         Whether to calculate marginal variance. It will be marginally faster if
         :code:`calc_marginal=False` (returning marginal variances as 0). Default: True
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
 
     Returns
     -------
@@ -601,59 +618,9 @@ def network_covariance(joint_pmat, D, calc_marginal=True):
     --------
     netneurotools.stats.network_variance
     """
-    p = np.sum(joint_pmat, axis=1)
-    q = np.sum(joint_pmat, axis=0)
-    D_sq = np.multiply(D, D)
-    cov = p.T @ D_sq @ q - np.sum(np.multiply(joint_pmat, D_sq))
-    if calc_marginal:
-        var_p = p.T @ D_sq @ p
-        var_q = q.T @ D_sq @ q
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _network_covariance_numba(joint_pmat, D, calc_marginal)
     else:
-        var_p, var_q = 0, 0
-    return 0.5 * cov, 0.5 * var_p, 0.5 * var_q
-
-
-def network_covariance_numba(joint_pmat, D, calc_marginal=True):
-    """
-    Numba version of :meth:`netneurotools.stats.network_covariance`.
-
-    .. warning::
-       Test before use.
-
-    Parameters
-    ----------
-    joint_pmat : (N, N) array_like
-        Joint probability matrix. Please make sure that it is valid.
-    D : (N, N) array_like
-        Distance matrix.
-    calc_marginal : bool, optional
-        Whether to calculate marginal variance. It will be marginally faster if
-        :code:`calc_marginal=False` (returning marginal variances as 0). Default: True
-
-    Returns
-    -------
-    network_covariance : float
-        Covariance of `joint_pmat` on `D`
-    var_p : float
-        Marginal variance of `joint_pmat` on `D`.
-        Will be 0 if :code:`calc_marginal=False`
-    var_q : float
-        Marginal variance of `joint_pmat` on `D`.
-        Will be 0 if :code:`calc_marginal=False`
-    """
-    n = joint_pmat.shape[0]
-    p = np.sum(joint_pmat, axis=1)
-    q = np.sum(joint_pmat, axis=0)
-    cov = 0.0
-    var_p, var_q = 0.0, 0.0
-    for i in range(n):
-        for j in range(n):
-            cov += (p[i] * q[j] - joint_pmat[i, j]) * D[i, j]**2
-            if calc_marginal:
-                var_p += p[i] * p[j] * D[i, j]**2
-                var_q += q[i] * q[j] * D[i, j]**2
-    return 0.5 * cov, 0.5 * var_p, 0.5 * var_q
-
-
-if has_numba:
-    network_covariance_numba = njit(network_covariance_numba)
+        return _network_covariance_vectorized(joint_pmat, D, calc_marginal)

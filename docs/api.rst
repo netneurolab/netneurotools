@@ -206,14 +206,11 @@ Statistical network metrics
    :toctree: generated/
 
    network_pearsonr
-   network_pearsonr_numba
    network_pearsonr_pairwise
    effective_resistance
    network_polarisation
    network_variance
-   network_variance_numba
    network_covariance
-   network_covariance_numba
 
 
 .. _ref_modularity:
