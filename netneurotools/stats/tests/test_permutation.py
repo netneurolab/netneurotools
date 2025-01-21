@@ -4,6 +4,8 @@ import pytest
 import numpy as np
 from netneurotools import stats
 
+from netneurotools.stats import sw_nest_perm_ols, sw_nest
+
 
 @pytest.mark.xfail
 def test_permtest_1samp():
@@ -63,3 +65,66 @@ def test_permtest_pearsonr():
                                    np.column_stack([y, b]))
     assert np.allclose(r, np.array([0.50004037, 0.89927523]))
     assert np.allclose(p, np.array([0.000999, 0.000999]))
+
+
+def test_sw_nest():
+    """Test the Network Enrichment Significance Testing."""
+    rng_data = np.random.default_rng(1234)
+
+    n_subj = 100
+    n_vertices = 50
+    n_covariates = 2
+    n_perm = 10
+
+    observed_vars = rng_data.random((n_subj, n_vertices))
+    predictor_vars = rng_data.random(n_subj)
+    covariate_vars = rng_data.random((n_subj, n_covariates))
+    network_ind = rng_data.choice([0, 1], size=(n_vertices,))
+
+    # freedman_lane=False
+    empirical_nofl, permuted_nofl = sw_nest_perm_ols(
+        observed_vars=observed_vars,
+        predictor_vars=predictor_vars,
+        covariate_vars=covariate_vars,
+        freedman_lane=False,
+        n_perm=n_perm,
+        rng=np.random.default_rng(1234),
+    )
+    p_nofl = sw_nest(
+        empirical_nofl, permuted_nofl, network_ind
+    )
+
+    assert empirical_nofl.shape == (n_vertices,)
+    assert permuted_nofl.shape == (n_perm, n_vertices)
+
+    assert np.allclose(np.mean(empirical_nofl), -0.0043906149291564785)
+    assert np.allclose(np.std(empirical_nofl), 0.11346599196523623)
+
+    assert np.allclose(np.mean(permuted_nofl), 0.0006606492690880903)
+    assert np.allclose(np.std(permuted_nofl), 0.10123368863376724)
+
+    assert np.allclose(p_nofl, 0.6363636363636364)
+
+    # freedman_lane=True
+    empirical_fl, permuted_fl = sw_nest_perm_ols(
+        observed_vars=observed_vars,
+        predictor_vars=predictor_vars,
+        covariate_vars=covariate_vars,
+        freedman_lane=True,
+        n_perm=n_perm,
+        rng=np.random.default_rng(1234),
+    )
+    p_fl = sw_nest(
+        empirical_fl, permuted_fl, network_ind
+    )
+
+    assert empirical_fl.shape == (n_vertices,)
+    assert permuted_fl.shape == (n_perm, n_vertices)
+
+    assert np.allclose(np.mean(empirical_fl), -0.0043906149291564785)
+    assert np.allclose(np.std(empirical_fl), 0.11346599196523623)
+
+    assert np.allclose(np.mean(permuted_fl), 0.004050601542834945)
+    assert np.allclose(np.std(permuted_fl), 0.10545332073703956)
+
+    assert np.allclose(p_fl, 0.5454545454545454)
