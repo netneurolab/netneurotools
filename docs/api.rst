@@ -25,7 +25,6 @@ To download templates
    :template: function.rst
    :toctree: generated/
 
-
    fetch_fsaverage
    fetch_fsaverage_curated
    fetch_hcp_standards
@@ -45,7 +44,7 @@ To download atlases
     fetch_schaefer2018
     fetch_mmpall
     fetch_pauli2018
-    fetch_ye2020
+    fetch_tian2020msa
     fetch_voneconomo
 
 To download project-related data
@@ -188,7 +187,8 @@ Brain network metrics
    diffusion_efficiency
    resource_efficiency_bin
    flow_graph
-   assortativity
+   assortativity_und
+   assortativity_dir
    matching_ind_und
    rich_feeder_peripheral
 
@@ -207,14 +207,11 @@ Statistical network metrics
    :toctree: generated/
 
    network_pearsonr
-   network_pearsonr_numba
    network_pearsonr_pairwise
    effective_resistance
    network_polarisation
    network_variance
-   network_variance_numba
    network_covariance
-   network_covariance_numba
 
 
 .. _ref_modularity:
@@ -295,7 +292,7 @@ Regressions
 
 .. currentmodule:: netneurotools.spatial
 
-Calculating spatial statistics
+To calculate spatial statistics
 
 .. autosummary::
    :template: function.rst
@@ -303,12 +300,16 @@ Calculating spatial statistics
 
    morans_i
    local_morans_i
+   gearys_c
+   local_gearys_c
+   lees_i
+   local_lees_i
 
 
 .. _ref_interface:
 
-:mod:`netneurotools.interface` - Interface for external tools
--------------------------------------------------------------
+:mod:`netneurotools.interface` - Interface with external data and tools
+-----------------------------------------------------------------------
 
 .. automodule:: netneurotools.interface
    :no-members:
@@ -316,9 +317,43 @@ Calculating spatial statistics
 
 .. currentmodule:: netneurotools.interface
 
+To parcellate surface data
+
 .. autosummary::
    :template: function.rst
    :toctree: generated/
+
+   vertices_to_parcels
+   parcels_to_vertices
+
+To work with CIFTI files
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   describe_cifti
+   extract_cifti_volume
+   extract_cifti_surface
+   extract_cifti_labels
+   extract_cifti_surface_labels
+   deconstruct_cifti
+
+To work with FreeSurfer files
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   extract_annot_labels
+
+To work with GIFTI files
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   extract_gifti_labels
 
 
 .. _ref_experimental:

@@ -11,7 +11,13 @@ except ImportError:  # scipy < 1.8.0
     from scipy.stats.stats import _chk2_asarray
 
 
-def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
+from .. import has_numba
+
+if has_numba:
+    from numba import njit
+
+
+def efficient_pearsonr(a, b, ddof=1, nan_policy="propagate"):
     """
     Compute correlation of matching columns in `a` and `b`.
 
@@ -57,32 +63,33 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
     """
     a, b, _ = _chk2_asarray(a, b, 0)
     if len(a) != len(b):
-        raise ValueError('Provided arrays do not have same length')
+        raise ValueError("Provided arrays do not have same length")
 
     if a.size == 0 or b.size == 0:
         return np.nan, np.nan
 
-    if nan_policy not in ('propagate', 'raise', 'omit'):
+    if nan_policy not in ("propagate", "raise", "omit"):
         raise ValueError(f'Value for nan_policy "{nan_policy}" not allowed')
 
     a, b = a.reshape(len(a), -1), b.reshape(len(b), -1)
-    if (a.shape[1] != b.shape[1]):
+    if a.shape[1] != b.shape[1]:
         a, b = np.broadcast_arrays(a, b)
 
     mask = np.logical_or(np.isnan(a), np.isnan(b))
-    if nan_policy == 'raise' and np.any(mask):
+    if nan_policy == "raise" and np.any(mask):
         raise ValueError('Input cannot contain NaN when nan_policy is "omit"')
-    elif nan_policy == 'omit':
+    elif nan_policy == "omit":
         # avoid making copies of the data, if possible
         a = np.ma.masked_array(a, mask, copy=False, fill_value=np.nan)
         b = np.ma.masked_array(b, mask, copy=False, fill_value=np.nan)
 
-    with np.errstate(invalid='ignore'):
-        corr = (sstats.zscore(a, ddof=ddof, nan_policy=nan_policy)
-                * sstats.zscore(b, ddof=ddof, nan_policy=nan_policy))
+    with np.errstate(invalid="ignore"):
+        corr = sstats.zscore(a, ddof=ddof, nan_policy=nan_policy) * sstats.zscore(
+            b, ddof=ddof, nan_policy=nan_policy
+        )
 
     sumfunc, n_obs = np.sum, len(a)
-    if nan_policy == 'omit':
+    if nan_policy == "omit":
         corr = corr.filled(np.nan)
         sumfunc = np.nansum
         n_obs = np.squeeze(np.sum(np.logical_not(np.isnan(corr)), axis=0))
@@ -97,9 +104,88 @@ def efficient_pearsonr(a, b, ddof=1, nan_policy='propagate'):
     return corr, prob
 
 
-def weighted_pearsonr():
-    """Calculate weighted Pearson correlation coefficient."""
+def fast_pearsonr():
+    """Calculate Pearson correlation coefficient."""
     pass
+
+
+def _weighted_mean(x, w):
+    return np.sum(x * w) / np.sum(w)
+
+
+if has_numba:
+    _weighted_mean = njit(_weighted_mean)
+
+
+def _weighted_pearsonr_vectorized(x_vec, y_vec, weight_vec):
+    x_bar_diff = x_vec - _weighted_mean(x_vec, weight_vec)
+    y_bar_diff = y_vec - _weighted_mean(y_vec, weight_vec)
+    weight_vec_sum = np.sum(weight_vec)
+    cov_x_y = np.sum(weight_vec * x_bar_diff * y_bar_diff) / weight_vec_sum
+    cov_x_x = np.sum(weight_vec * x_bar_diff * x_bar_diff) / weight_vec_sum
+    cov_y_y = np.sum(weight_vec * y_bar_diff * y_bar_diff) / weight_vec_sum
+    return cov_x_y / np.sqrt(cov_x_x * cov_y_y)
+
+
+def _weighted_pearsonr_numba(x_vec, y_vec, weight_vec):
+    n = len(x_vec)
+    x_weighted_mean = _weighted_mean(x_vec, weight_vec)
+    y_weighted_mean = _weighted_mean(y_vec, weight_vec)
+    upper, lower1, lower2 = 0, 0, 0
+    for i in range(n):
+        upper += (
+            weight_vec[i] * (x_vec[i] - x_weighted_mean) * (y_vec[i] - y_weighted_mean)
+        )
+        lower1 += weight_vec[i] * (x_vec[i] - x_weighted_mean) ** 2
+        lower2 += weight_vec[i] * (y_vec[i] - y_weighted_mean) ** 2
+    return upper / np.sqrt(lower1 * lower2)
+
+
+if has_numba:
+    _weighted_pearsonr_numba = njit(_weighted_pearsonr_numba)
+
+
+def weighted_pearsonr(x_vec, y_vec, weight_vec, use_numba=has_numba):
+    r"""
+    Calculate weighted Pearson correlation coefficient.
+
+    Parameters
+    ----------
+    x_vec : array_like
+        First vector of data
+    y_vec : array_like
+        Second vector of data
+    weight_vec : array_like
+        Vector of weights
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
+
+    Returns
+    -------
+    corr : float
+        Weighted Pearson correlation coefficient
+
+    Notes
+    -----
+    This function calculates the weighted Pearson correlation coefficient between
+    two vectors, defined as:
+
+    .. math::
+        r = \frac{\sum_i w_i (x_i - \bar{x})(y_i - \bar{y})}
+                    {\sqrt{\sum_i w_i (x_i - \bar{x})^2 \sum_i w_i (y_i - \bar{y})^2}}
+
+    where :math:`x_i` and :math:`y_i` are the data points, :math:`w_i` are the
+    weights, and :math:`\bar{x}` and :math:`\bar{y}` are the weighted means of
+    the data points.
+
+    """
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _weighted_pearsonr_numba(x_vec, y_vec, weight_vec)
+    else:
+        return _weighted_pearsonr_vectorized(x_vec, y_vec, weight_vec)
 
 
 def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
@@ -159,7 +245,7 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
 
     # no correlations outside [-1, 1] bounds
     if np.any(np.abs(corr) > 1):
-        raise ValueError('Provided `corr` must (all) be in range [-1, 1].')
+        raise ValueError("Provided `corr` must (all) be in range [-1, 1].")
 
     # if we're given a single number, assume two vectors are desired
     if isinstance(corr, (int, float)):
@@ -169,10 +255,12 @@ def make_correlated_xy(corr=0.85, size=10000, seed=None, tol=0.001):
     elif isinstance(corr, (list, np.ndarray)):
         corr = np.asarray(corr)
         if corr.ndim != 2 or len(corr) != len(corr.T):
-            raise ValueError('If `corr` is a list or array, must be a 2D '
-                             'square array, not {}'.format(corr.shape))
+            raise ValueError(
+                "If `corr` is a list or array, must be a 2D "
+                "square array, not {}".format(corr.shape)
+            )
         if np.any(np.diag(corr) != 1):
-            raise ValueError('Diagonal of `corr` must be 1.')
+            raise ValueError("Diagonal of `corr` must be 1.")
         covs = corr * 0.111
     means = [0] * len(covs)
 

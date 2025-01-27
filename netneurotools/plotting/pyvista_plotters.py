@@ -67,8 +67,10 @@ def _mask_medial_wall(data, template, hemi=None, data_dir=None, verbose=0):
             nib.load(curr_medial.L).agg_data(),
             nib.load(curr_medial.R).agg_data(),
         )
-        ret_L = data[0].copy()
-        ret_R = data[1].copy()
+        # convert to float for NaNs
+        # caution: might cause issues
+        ret_L = data[0].astype(float)
+        ret_R = data[1].astype(float)
         ret_L[np.where(1 - curr_medial_data[0])] = np.nan
         ret_R[np.where(1 - curr_medial_data[1])] = np.nan
         ret = (ret_L, ret_R)

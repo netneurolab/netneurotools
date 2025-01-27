@@ -5,12 +5,9 @@ import numpy as np
 from tqdm import tqdm
 from sklearn.utils.validation import check_random_state
 
-try:
+from .. import has_numba
+if has_numba:
     from numba import njit
-
-    use_numba = True
-except ImportError:
-    use_numba = False
 
 
 def randmio_und(W, itr):
@@ -96,7 +93,7 @@ def randmio_und(W, itr):
     return W, eff
 
 
-if use_numba:
+if has_numba:
     randmio_und = njit(randmio_und)
 
 

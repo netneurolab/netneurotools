@@ -13,7 +13,7 @@ from .fetch_atlas import (
     # cortical
     fetch_cammoun2012, fetch_schaefer2018, fetch_mmpall,
     # subcortical
-    fetch_pauli2018, fetch_ye2020,
+    fetch_pauli2018, fetch_tian2020msa,
     # annotation
     fetch_voneconomo
 )
@@ -46,7 +46,7 @@ __all__ = [
     'fetch_conte69', 'fetch_yerkes19',
     # fetch_atlas
     'fetch_cammoun2012', 'fetch_schaefer2018', 'fetch_mmpall',
-    'fetch_pauli2018', 'fetch_ye2020',
+    'fetch_pauli2018', 'fetch_tian2020msa',
     'fetch_voneconomo',
     # fetch_project
     'fetch_vazquez_rodriguez2019', 'fetch_mirchi2018',

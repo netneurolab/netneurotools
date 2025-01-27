@@ -31,6 +31,29 @@ def test_efficient_pearsonr_errors():
     assert all(np.isnan(a) for a in stats.efficient_pearsonr([], []))
 
 
+@pytest.mark.parametrize(
+    "x, y, w, expected",
+    [
+        (
+            np.array([3, 5, 6, 8, 3, 2, 6]),
+            np.array([3, 5, 2, 8, 3, 3, 6]),
+            np.array([7, 3, 3, 2, 4, 5, 7]),
+            0.7356763090950997,
+        )
+    ],
+)
+def test_weighted_pearsonr(x, y, w, expected):
+    """Test weighted_pearsonr function."""
+    assert np.allclose(
+        stats.weighted_pearsonr(x, y, w, use_numba=True),
+        expected,
+    )
+    assert np.allclose(
+        stats.weighted_pearsonr(x, y, w, use_numba=False),
+        expected,
+    )
+
+
 @pytest.mark.parametrize('corr, size, tol, seed', [
     (0.85, (1000,), 0.05, 1234),
     (0.85, (1000, 1000), 0.05, 1234),
