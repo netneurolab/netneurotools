@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.utils.validation import check_random_state
 from scipy import optimize
 from scipy.cluster import hierarchy
+from joblib import Parallel, delayed
 
 from .. import has_numba
 if has_numba:
@@ -368,7 +369,8 @@ def find_consensus(assignments, null_func=np.mean, return_agreement=False,
 
 
 def consensus_modularity(adjacency, gamma=1, B='modularity',
-                         repeats=250, null_func=np.mean, seed=None):
+                         repeats=250, null_func=np.mean, seed=None,
+                         n_jobs=1):
     """
     Find community assignments from `adjacency` through consensus.
 
@@ -394,6 +396,8 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
         Default: `np.mean`
     seed : {int, np.random.RandomState instance, None}, optional
         Seed for random number generation. Default: None
+    n_jobs : int, optional
+        Number of parallel jobs to run. Default: 1
 
     Returns
     -------
@@ -411,9 +415,11 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
     structure in networks. Chaos: An Interdisciplinary Journal of Nonlinear
     Science, 23(1), 013142.
     """
-    # generate community partitions `repeat` times
-    comms, Q_all = zip(*[bct.community_louvain(adjacency, gamma=gamma, B=B)
-                         for i in range(repeats)])
+    # generate community partitions `repeat` times with parallelization
+    comms, Q_all = zip(*Parallel(n_jobs=n_jobs)(
+        delayed(bct.community_louvain)(adjacency, gamma=gamma, B=B,
+                                       seed=seed)
+        for _ in range(repeats)))
     comms = np.column_stack(comms)
 
     # find consensus cluster assignments across all partitoning solutions
