@@ -328,8 +328,8 @@ def fetch_pauli2018(force=False, data_dir=None, verbose=1):
     return Bunch(**data)
 
 
-def fetch_ye2020():
-    """Fetch Ye et al., 2020 subcortical parcellation."""
+def fetch_tian2020msa():
+    """Fetch Tian et al., 2020 subcortical parcellation."""
     pass
 
 

@@ -3,7 +3,7 @@ name: netneurotools-docs
 on: 
   workflow_dispatch:
   push:
-      branches:
+    branches:
       - main
 
 permissions:

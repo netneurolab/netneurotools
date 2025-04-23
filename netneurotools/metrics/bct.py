@@ -11,12 +11,10 @@ import scipy
 from scipy.stats import ttest_ind
 from scipy.sparse.csgraph import shortest_path
 
-try:
-    from numba import njit
-    use_numba = True
-except ImportError:
-    use_numba = False
+from .. import has_numba
 
+if has_numba:
+    from numba import njit
 from .metrics_utils import _fast_binarize
 
 
@@ -103,8 +101,12 @@ def distance_wei_floyd(D):
     netneurotools.metrics.retrieve_shortest_path
     """
     spl_mat, p_mat = shortest_path(
-        D, method="FW", directed=True, return_predecessors=True,
-        unweighted=False, overwrite=False
+        D,
+        method="FW",
+        directed=True,
+        return_predecessors=True,
+        unweighted=False,
+        overwrite=False,
     )
     return spl_mat, p_mat
 
@@ -141,7 +143,7 @@ def retrieve_shortest_path(s, t, p_mat):
     return path[::-1]
 
 
-if use_numba:
+if has_numba:
     retrieve_shortest_path = njit(retrieve_shortest_path)
 
 
@@ -209,7 +211,7 @@ def navigation_wu(nav_dist_mat, sc_mat):
                 # if isempty(next_node)
                 # || next_node == last_node
                 # || pl_bin > max_hops
-                if (new_pos in curr_path):
+                if new_pos in curr_path:
                     curr_path = []
                     curr_dist = np.inf
                     break
@@ -217,8 +219,7 @@ def navigation_wu(nav_dist_mat, sc_mat):
                     curr_path.append(new_pos)
                     curr_dist += nav_dist_mat[curr_pos, new_pos]
                     curr_pos = new_pos
-            nav_paths.append(
-                (src, tar, curr_dist, len(curr_path) - 1, curr_path))
+            nav_paths.append((src, tar, curr_dist, len(curr_path) - 1, curr_path))
 
     nav_sr = len([_ for _ in nav_paths if _[3] != -1]) / len(nav_paths)
 
@@ -227,8 +228,7 @@ def navigation_wu(nav_dist_mat, sc_mat):
         sorted(nav_paths, key=lambda x: x[0]), key=lambda x: x[0]
     ):
         curr_path = list(g)
-        nav_sr_node.append(
-            len([_ for _ in curr_path if _[3] != -1]) / len(curr_path))
+        nav_sr_node.append(len([_ for _ in curr_path if _[3] != -1]) / len(curr_path))
 
     nav_path_len = np.zeros_like(nav_dist_mat)
     nav_path_hop = np.zeros_like(nav_dist_mat)
@@ -318,7 +318,7 @@ def communicability_bin(adjacency, normalize=False):
            [3.19452805, 0.        , 4.19452805]])
     """
     if not np.any(np.logical_or(adjacency == 0, adjacency == 1)):
-        raise ValueError('Provided adjancecy matrix must be unweighted.')
+        raise ValueError("Provided adjancecy matrix must be unweighted.")
 
     # normalize by largest eigenvalue to prevent communicability metric from
     # "blowing up"
@@ -416,8 +416,9 @@ def path_transitivity(D):
     for i in range(n - 1):
         for j in range(i + 1, n):
             sig_and = np.logical_and(D[i, :], D[j, :])
-            m[i, j] = np.dot(D[i, :] + D[j, :], sig_and) \
-                / (deg_wu[i] + deg_wu[j] - 2 * D[i, j])
+            m[i, j] = np.dot(D[i, :] + D[j, :], sig_and) / (
+                deg_wu[i] + deg_wu[j] - 2 * D[i, j]
+            )
     m += m.transpose()
 
     _, p_mat = distance_wei_floyd(D)
@@ -426,9 +427,11 @@ def path_transitivity(D):
         for j in range(i + 1, n):
             path = retrieve_shortest_path(i, j, p_mat)
             K = len(path)
-            T_mat[i, j] = 2 \
-                * sum([m[i, j] for i, j in itertools.combinations(path, 2)]) \
+            T_mat[i, j] = (
+                2
+                * sum([m[i, j] for i, j in itertools.combinations(path, 2)])
                 / (K * (K - 1))
+            )
     T_mat += T_mat.transpose()
 
     return T_mat
@@ -490,23 +493,21 @@ def search_information(W, D, has_memory=False):
                 path = retrieve_shortest_path(i, j, p_mat)
                 if path[0] != -1:  # no path, depends on retrieve_shortest_path
                     if has_memory:
-                        pr_step_ff = \
-                            [0] + [T[i, j] for i, j in zip(path[:-1], path[1:])]
-                        pr_step_bk = \
-                            [T[i, j] for i, j in zip(path[1:], path[:-1])] + [0]
+                        pr_step_ff = [0] + [
+                            T[i, j] for i, j in zip(path[:-1], path[1:])
+                        ]
+                        pr_step_bk = [T[i, j] for i, j in zip(path[1:], path[:-1])] + [
+                            0
+                        ]
                         pr_step_ff = [
-                            i / (1 - j)
-                            for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
+                            i / (1 - j) for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
                         ]
                         pr_step_bk = [
-                            i / (1 - j)
-                            for i, j in zip(pr_step_bk[:-1], pr_step_bk[1:])
+                            i / (1 - j) for i, j in zip(pr_step_bk[:-1], pr_step_bk[1:])
                         ]
                     else:
-                        pr_step_ff = \
-                            [T[i, j] for i, j in zip(path[:-1], path[1:])]
-                        pr_step_bk = \
-                            [T[i, j] for i, j in zip(path[1:], path[:-1])]
+                        pr_step_ff = [T[i, j] for i, j in zip(path[:-1], path[1:])]
+                        pr_step_bk = [T[i, j] for i, j in zip(path[1:], path[:-1])]
                     SI[i, j] = -np.log2(np.prod(pr_step_ff))
                     SI[j, i] = -np.log2(np.prod(pr_step_bk))
                 else:
@@ -520,11 +521,11 @@ def search_information(W, D, has_memory=False):
                 path = retrieve_shortest_path(i, j, p_mat)
                 if path[0] != -1:  # no path, depends on retrieve_shortest_path
                     if has_memory:
-                        pr_step_ff = \
-                            [0] + [T[i, j] for i, j in zip(path[:-1], path[1:])]
+                        pr_step_ff = [0] + [
+                            T[i, j] for i, j in zip(path[:-1], path[1:])
+                        ]
                         pr_step_ff = [
-                            i / (1 - j)
-                            for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
+                            i / (1 - j) for i, j in zip(pr_step_ff[1:], pr_step_ff[:-1])
                         ]
                     else:
                         pr_step_ff = [T[i, j] for i, j in zip(path[:-1], path[1:])]
@@ -687,7 +688,7 @@ def resource_efficiency_bin(W_bin, lambda_prob=0.5):
     for L_value in L_unique:
         if L_value == 0:
             continue
-        L_locs = (spl_mat == L_value)
+        L_locs = spl_mat == L_value
         h_cols = np.where(L_locs)[1]
         h_vec = np.unique(h_cols)
 
@@ -700,8 +701,7 @@ def resource_efficiency_bin(W_bin, lambda_prob=0.5):
             B_h_L = np.linalg.matrix_power(B_h, L_value)
             prob_aux[:, h_value] = B_h_L[:, h_value]
             z_aux[:, h_value] = np.divide(
-                np.ones((N,)) * np.log(1 - lambda_prob),
-                np.log(1 - B_h_L[:, h_value])
+                np.ones((N,)) * np.log(1 - lambda_prob), np.log(1 - B_h_L[:, h_value])
             )
 
         prob_aux[~L_locs] = 0
@@ -762,16 +762,232 @@ def flow_graph(W, r=None, t=1):
     ps = deg_wu / (deg_rate * r)  # (1, N) / (N, N) => (N, N)
     laplacian = np.diagflat(r) - np.multiply(np.divide(W, deg_wu), r)  # elementwise
     dyn = np.multiply(
-        deg_rate * scipy.sparse.linalg.expm(-t * laplacian),
-        ps
+        deg_rate * scipy.sparse.linalg.expm(-t * laplacian), ps
     )  # elementwise
     dyn = (dyn + dyn.T) / 2
     return dyn
 
 
-def assortativity(W, r=None):
-    """Calculate assortativity."""
-    pass
+def _assortativity_und_vectorized(x_vec, weight_mat):
+    weight_vec = np.sum(weight_mat, axis=0)
+    weight_sum = np.sum(weight_vec)
+    x_norm_mean = np.dot(x_vec, weight_vec) / weight_sum
+    x_inner = x_vec - x_norm_mean
+    upper = np.sum(weight_mat * np.outer(x_inner, x_inner))
+    lower = np.sum(weight_vec * x_inner**2)
+    return upper / lower
+
+
+def _assortativity_und_numba(x_vec, weight_mat):
+    n = len(x_vec)
+    weight_vec = np.sum(weight_mat, axis=0)
+    weight_sum = np.sum(weight_vec)
+    x_norm_mean = np.dot(x_vec, weight_vec) / weight_sum
+    upper, lower = 0.0, 0.0
+    for i in range(n):
+        for j in range(n):
+            upper += (
+                weight_mat[i, j] * (x_vec[i] - x_norm_mean) * (x_vec[j] - x_norm_mean)
+            )
+    for i in range(n):
+        lower += weight_vec[i] * (x_vec[i] - x_norm_mean) ** 2
+    return upper / lower
+
+
+if has_numba:
+    _assortativity_und_numba = _assortativity_und_numba
+
+
+def assortativity_und(x, W, use_numba=True):
+    r"""
+    Calculate assortativity for undirected networks.
+
+    This function implements Bazinet's assortativity for annotated networks as
+    defined in [1]_.
+
+    Parameters
+    ----------
+    x : (N,) array_like
+        Annotation scores for each node in the network
+    W : (N, N) array_like
+        Weighted, undirected connection weight array
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
+
+    Returns
+    -------
+    assortativity : float
+        Assortativity of the network
+
+    Notes
+    -----
+    Assortativity is defined as the Pearson correlation between the local
+    annotation scores of connected nodes [2]_. In other words, it quantifies the
+    tendency for nodes with similar annotation scores to be connected [1]_.
+    For an adjacency matrix :math:`A`, and an annotation vector :math:`\mathbf{x}`,
+    the assortativity of a network, with respect to :math:`\bar{\mathbf{x}}`
+    is defined as:
+
+    .. math::
+        \begin{align}
+        r & = \sum_{ij} \frac{a_{ij}}{2m} \tilde{x}_i \tilde{x}_j \\
+          & = \sum_{ij} \frac{a_{ij}}{2m}
+          (\frac{x_i-\bar{\mathbf{x}}}{\sigma_{\mathbf{x}}})
+          (\frac{x_j-\bar{\mathbf{x}}}{\sigma_{\mathbf{x}}})
+        \end{align}
+
+    where :math:`a_{ij}` is the weight of the connection between nodes :math:`i`
+    and :math:`j`, :math:`2m` is the total weight of the network.
+    :math:`\bar{\mathbf{x}}` and :math:`\sigma_{\mathbf{x}}` are the mean and
+    standard deviation of the annotation, defined as:
+
+    .. math::
+        \begin{align}
+        \bar{\mathbf{x}} & = \frac{1}{2m} \sum_i k_i x_i \\
+        \sigma_{\mathbf{x}} & = \sqrt{\frac{1}{2m}
+        \sum_i k_i (x_i - \bar{\mathbf{x}})^2}
+        \end{align}
+
+    in which :math:`k_i` is the sum of the weights of the connections to node :math:`i`.
+
+    References
+    ----------
+    .. [1] Bazinet, V., Hansen, J. Y., Vos de Wael, R., Bernhardt, B. C., van
+        den Heuvel, M. P., & Misic, B. (2023). Assortative mixing in
+        micro-architecturally annotated brain connectomes. Nature
+        Communications, 14(1), 2850.
+    .. [2] Newman, M. E. (2003). Mixing patterns in networks. Physical review E,
+        67(2), 026126.
+
+    See Also
+    --------
+    netneurotools.metrics.assortativity_dir
+    """
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _assortativity_und_numba(x, W)
+    return _assortativity_und_vectorized(x, W)
+
+
+def _assortativity_dir_vectorized(x_vec, weight_mat):
+    weight_vec_in = np.sum(weight_mat, axis=0)
+    weight_vec_out = np.sum(weight_mat, axis=1)
+    weight_sum = np.sum(weight_vec_in)
+    x_norm_mean_in = np.dot(x_vec, weight_vec_in) / weight_sum
+    x_norm_mean_out = np.dot(x_vec, weight_vec_out) / weight_sum
+    x_inner_in = x_vec - x_norm_mean_in
+    x_inner_out = x_vec - x_norm_mean_out
+    upper = np.sum(weight_mat * np.outer(x_inner_out, x_inner_in))
+    lower_1 = np.sum(weight_vec_in * x_inner_in**2)
+    lower_2 = np.sum(weight_vec_out * x_inner_out**2)
+    return upper / np.sqrt(lower_1 * lower_2)
+
+
+def _assortativity_dir_numba(x_vec, weight_mat):
+    n = len(x_vec)
+    weight_vec_in = np.sum(weight_mat, axis=0)
+    weight_vec_out = np.sum(weight_mat, axis=1)
+    weight_sum = np.sum(weight_vec_in)
+    x_norm_mean_in = np.sum(np.dot(x_vec, weight_vec_in)) / weight_sum
+    x_norm_mean_out = np.sum(np.dot(x_vec, weight_vec_out)) / weight_sum
+    upper, lower_1, lower_2 = 0.0, 0.0, 0.0
+    for i in range(n):
+        for j in range(n):
+            upper += (
+                weight_mat[i, j]
+                * (x_vec[j] - x_norm_mean_in)
+                * (x_vec[i] - x_norm_mean_out)
+            )
+    for i in range(n):
+        lower_1 += weight_vec_in[i] * (x_vec[i] - x_norm_mean_in) ** 2
+        lower_2 += weight_vec_out[i] * (x_vec[i] - x_norm_mean_out) ** 2
+    return upper / np.sqrt(lower_1 * lower_2)
+
+
+if has_numba:
+    _assortativity_dir_numba = njit(_assortativity_dir_numba)
+
+
+def assortativity_dir(x, W, use_numba=True):
+    r"""
+    Calculate assortativity for directed networks.
+
+    This function implements Bazinet's assortativity for annotated networks as
+    defined in [1]_.
+
+    Parameters
+    ----------
+    x : (N,) array_like
+        Annotation scores for each node in the network
+    W : (N, N) array_like
+        Weighted, directed connection weight array
+    use_numba : bool, optional
+        Whether to use numba for calculation. Default: True
+        (if numba is available).
+
+    Returns
+    -------
+    assortativity : float
+        Assortativity of the network
+
+    Notes
+    -----
+    For a directed adjacency matrix :math:`A`, and an annotation vector
+    :math:`\mathbf{x}`, the assortativity of the network is defined as:
+
+    .. math::
+
+        \begin{align}
+        r & = \sum_{ij} \frac{a_{ij}}{m}
+        \tilde{x}_i^{\text{out}} \tilde{x}_j^{\text{in}} \\
+        & = \sum_{ij} \frac{a_{ij}}{m}
+        (\frac{x_i-\bar{\mathbf{x}}^{\text{out}}}{\sigma_{\mathbf{x}}^{\text{out}}})
+        (\frac{x_j-\bar{\mathbf{x}}^{\text{in}}}{\sigma_{\mathbf{x}}^{\text{in}}})
+        \end{align}
+
+    where :math:`a_{ij}` is the weight of the directed connection from node
+    :math:`i` to node :math:`j`, and :math:`m` is the total weight of the
+    network. :math:`\bar{\mathbf{x}}^{\text{in}}`,
+    :math:`\bar{\mathbf{x}}^{\text{out}}`, :math:`\sigma_{\mathbf{x}}^{\text{in}}`,
+    and :math:`\sigma_{\mathbf{x}}^{\text{out}}` are the means and standard deviations
+    of the in-degree and out-degree
+    weighted annotations, defined as:
+
+    .. math::
+
+        \begin{align}
+        \bar{\mathbf{x}}^{\text{in}} & = \frac{1}{m} \sum_i k_i^{\text{in}} x_i \\
+        \bar{\mathbf{x}}^{\text{out}} & = \frac{1}{m} \sum_i k_i^{\text{out}} x_i \\
+        \sigma_{\mathbf{x}}^{\text{in}} & = \sqrt{\frac{1}{m}
+        \sum_i k_i^{\text{in}} (x_i - \bar{\mathbf{x}}^{\text{in}})^2} \\
+        \sigma_{\mathbf{x}}^{\text{out}} & = \sqrt{\frac{1}{m}
+        \sum_i k_i^{\text{out}} (x_i - \bar{\mathbf{x}}^{\text{out}})^2}
+        \end{align}
+
+    in which :math:`k_i^{\text{in}}` is the sum of incoming weights to node
+    :math:`i` and :math:`k_i^{\text{out}}` is the sum of outgoing weights from
+    node :math:`i`.
+
+    References
+    ----------
+    .. [1] Bazinet, V., Hansen, J. Y., Vos de Wael, R., Bernhardt, B. C., van
+        den Heuvel, M. P., & Misic, B. (2023). Assortative mixing in
+        micro-architecturally annotated brain connectomes. Nature
+        Communications, 14(1), 2850.
+    .. [2] Newman, M. E. (2003). Mixing patterns in networks. Physical review E,
+        67(2), 026126.
+
+    See Also
+    --------
+    netneurotools.metrics.assortativity_und
+    """
+    if use_numba:
+        if not has_numba:
+            raise ValueError("Numba not installed; cannot use numba for calculation")
+        return _assortativity_dir_numba(x, W)
+    return _assortativity_dir_vectorized(x, W)
 
 
 def matching_ind_und(W):
@@ -831,7 +1047,7 @@ def matching_ind_und(W):
     return M0
 
 
-def rich_feeder_peripheral(x, sc, stat='median'):
+def rich_feeder_peripheral(x, sc, stat="median"):
     """
     Calculate connectivity values in rich, feeder, and peripheral edges.
 
@@ -860,10 +1076,10 @@ def rich_feeder_peripheral(x, sc, stat='median'):
     This code was written by Justine Hansen who promises to fix and even
     optimize the code should any issues arise, provided you let her know.
     """
-    stats = ['mean', 'median']
+    stats = ["mean", "median"]
     if stat not in stats:
-        raise ValueError(f'Provided stat {stat} not valid.\
-                         Must be one of {stats}')
+        raise ValueError(f"Provided stat {stat} not valid.\
+                         Must be one of {stats}")
 
     nnodes = len(sc)
     mask = np.triu(np.ones(nnodes), 1) > 0
@@ -876,7 +1092,7 @@ def rich_feeder_peripheral(x, sc, stat='median'):
         hub = np.zeros([nnodes, 1])
         hub[hub_idx, :] = 1
 
-        rfp = np.zeros([nnodes, nnodes])      # for each link, define rfp
+        rfp = np.zeros([nnodes, nnodes])  # for each link, define rfp
         for edge1 in range(nnodes):
             for edge2 in range(nnodes):
                 if hub[edge1] + hub[edge2] == 2:
@@ -890,24 +1106,30 @@ def rich_feeder_peripheral(x, sc, stat='median'):
     rfp = np.zeros([3, k])
     pvals = np.zeros([3, k])
     for degthresh in range(k):
-
-        redfunc = np.median if stat == 'median' else np.mean
+        redfunc = np.median if stat == "median" else np.mean
         for linktype in range(3):
-            rfp[linktype, degthresh] = redfunc(x[mask][rfp_label[:, degthresh]
-                                                       == linktype + 1])
+            rfp[linktype, degthresh] = redfunc(
+                x[mask][rfp_label[:, degthresh] == linktype + 1]
+            )
 
         # p-value (one-sided Welch's t-test)
         _, pvals[0, degthresh] = ttest_ind(
             x[mask][rfp_label[:, degthresh] == 1],
             x[mask][rfp_label[:, degthresh] != 1],
-            equal_var=False, alternative='greater')
+            equal_var=False,
+            alternative="greater",
+        )
         _, pvals[1, degthresh] = ttest_ind(
             x[mask][rfp_label[:, degthresh] == 2],
             x[mask][rfp_label[:, degthresh] == 3],
-            equal_var=False, alternative='greater')
+            equal_var=False,
+            alternative="greater",
+        )
         _, pvals[2, degthresh] = ttest_ind(
             x[mask][rfp_label[:, degthresh] == 3],
             x[mask][rfp_label[:, degthresh] == 2],
-            equal_var=False, alternative='greater')
+            equal_var=False,
+            alternative="greater",
+        )
 
     return rfp, pvals

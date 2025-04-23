@@ -1,12 +1,9 @@
 """Functions for supporting network metrics."""
 
 import numpy as np
-
-try:
+from .. import has_numba
+if has_numba:
     from numba import njit
-    use_numba = True
-except ImportError:
-    use_numba = False
 
 
 def _fast_binarize(W):
@@ -26,7 +23,7 @@ def _fast_binarize(W):
     return (W > 0) * 1
 
 
-if use_numba:
+if has_numba:
     _fast_binarize = njit(_fast_binarize)
 
 
@@ -62,5 +59,5 @@ def _graph_laplacian(W):
     return D - W
 
 
-if use_numba:
+if has_numba:
     _graph_laplacian = njit(_graph_laplacian)  # ("float64[:,::1](float64[:,::1])")

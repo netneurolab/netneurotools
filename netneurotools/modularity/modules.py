@@ -6,12 +6,9 @@ from sklearn.utils.validation import check_random_state
 from scipy import optimize
 from scipy.cluster import hierarchy
 
-try:
-    from numba import njit, prange
-    use_numba = True
-except ImportError:
-    prange = range
-    use_numba = False
+from .. import has_numba
+if has_numba:
+    from numba import njit
 
 
 def _get_relabels(c1, c2):
@@ -530,15 +527,15 @@ def _zrand_partitions(communities):
     n_partitions = communities.shape[-1]
     all_zrand = np.zeros(int(n_partitions * (n_partitions - 1) / 2))
 
-    for c1 in prange(n_partitions):
-        for c2 in prange(c1 + 1, n_partitions):
+    for c1 in range(n_partitions):
+        for c2 in range(c1 + 1, n_partitions):
             idx = int((c1 * n_partitions) + c2 - ((c1 + 1) * (c1 + 2) // 2))
             all_zrand[idx] = zrand(communities[:, c1], communities[:, c2])
 
     return all_zrand
 
 
-if use_numba:
+if has_numba:
     _dummyvar = njit(_dummyvar)
     zrand = njit(zrand)
     _zrand_partitions = njit(_zrand_partitions, parallel=True)
