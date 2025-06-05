@@ -1,14 +1,12 @@
----
 name: Bug Report
 description: Submit a bug report
 title: "[BUG] "
 labels: ["bug"]
-assignees: []
 body:
   - type: markdown
     attributes:
       value: |
-        Welcome to `neuromaps`! Please fill out the following information describing the bug you have encountered.
+        Welcome to `netneurotools`! Please fill out the following information describing the bug you have encountered.
   - type: textarea
     id: bug-description
     attributes:
