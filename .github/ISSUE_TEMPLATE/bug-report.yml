@@ -1,0 +1,54 @@
+---
+name: Bug Report
+description: Submit a bug report
+title: "[BUG] "
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome to `neuromaps`! Please fill out the following information describing the bug you have encountered.
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what happened!
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: To Reproduce
+      description: Minimal code or steps to reproduce the behavior
+      value: |
+        >>> import netneurotools
+        >>>
+        >>>
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: Tell us what you expected to happen!
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution (optional)
+      description: A preliminary solution you'd like to include.
+      placeholder: How do you think this could be fixed?
+    validations:
+      required: false
+  - type: textarea
+    id: version
+    attributes:
+      label: Software version
+      description: Please run the following script in the terminal and paste the output here. `python -c 'import sys,netneurotools; print(sys.version); print(netneurotools.__version__)'`.
+    validations:
+      required: true
