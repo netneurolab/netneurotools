@@ -6,7 +6,7 @@ import numpy as np
 from netneurotools.spatial.spatial_stats import (
     morans_i, local_morans_i,
     gearys_c, local_gearys_c,
-    lees_i, local_lees_i
+    lees_l, local_lees_l
 )
 
 
@@ -35,8 +35,8 @@ def generate_test_data(request):
                 3.33112622823278, 2.48027429966568
             ]
         },
-        "lees_i": {3: -0.03207622, 4: 0.023249778},
-        "local_lees_i": {
+        "lees_l": {3: -0.03207622, 4: 0.023249778},
+        "local_lees_l": {
             3: [-0.297374681957742, 0.0116826474633146, -0.0293788020084983],
             4: [
                 0.439955191359293, -0.0105931628916757,
@@ -109,27 +109,27 @@ def test_local_gearys_c(generate_test_data):
 @pytest.mark.parametrize(
     "generate_test_data",
     [
-        pytest.param({"n": n, "which": "lees_i"}, id=f"lees_i-{n}")
+        pytest.param({"n": n, "which": "lees_l"}, id=f"lees_l-{n}")
         for n in [3, 4]
     ],
     indirect=True,
 )
-def test_lees_i(generate_test_data):
-    """Test Lee's I calculation."""
+def test_lees_l(generate_test_data):
+    """Test Lee's L calculation."""
     annot_1, annot_2, weight, expected = generate_test_data
-    assert np.isclose(lees_i(annot_1, annot_2, weight, use_numba=False), expected)
-    assert np.isclose(lees_i(annot_1, annot_2, weight, use_numba=True), expected)
+    assert np.isclose(lees_l(annot_1, annot_2, weight, use_numba=False), expected)
+    assert np.isclose(lees_l(annot_1, annot_2, weight, use_numba=True), expected)
 
 
 @pytest.mark.parametrize(
     "generate_test_data",
     [
-        pytest.param({"n": n, "which": "local_lees_i"}, id=f"local_lees_i-{n}")
+        pytest.param({"n": n, "which": "local_lees_l"}, id=f"local_lees_l-{n}")
         for n in [3, 4]
     ],
     indirect=True,
 )
-def test_local_lees_i(generate_test_data):
-    """Test local Lee's I calculation."""
+def test_local_lees_l(generate_test_data):
+    """Test local Lee's L calculation."""
     annot_1, annot_2, weight, expected = generate_test_data
-    assert np.allclose(local_lees_i(annot_1, annot_2, weight), expected)
+    assert np.allclose(local_lees_l(annot_1, annot_2, weight), expected)
