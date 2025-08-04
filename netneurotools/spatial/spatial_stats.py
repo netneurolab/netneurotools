@@ -11,7 +11,7 @@ def _morans_i_vectorized(annot, weight):
     n = annot.shape[0]
     annot_demean = annot - np.mean(annot)
     W = np.sum(weight)
-    upper = np.sum(weight * np.outer(annot_demean, annot_demean))
+    upper = np.sum(annot_demean * np.squeeze(weight @ annot_demean[:, None]))
     lower = np.sum(annot_demean**2)
     return n * upper / (lower * W)
 
