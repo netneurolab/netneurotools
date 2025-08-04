@@ -274,7 +274,7 @@ def local_gearys_c(annot, weight, use_sampvar=True):
     return right / m_2
 
 
-def _lees_i_vectorized(annot_1, annot_2, weight):
+def _lees_l_vectorized(annot_1, annot_2, weight):
     n = annot_1.shape[0]
     annot_1_demean = annot_1 - np.mean(annot_1)
     annot_2_demean = annot_2 - np.mean(annot_2)
@@ -294,7 +294,7 @@ def _lees_i_vectorized(annot_1, annot_2, weight):
     return n / s2 * upper / np.sqrt(lower_1) / np.sqrt(lower_2)
 
 
-def _lees_i_numba(annot_1, annot_2, weight):
+def _lees_l_numba(annot_1, annot_2, weight):
     n = annot_1.shape[0]
     annot_1_demean = annot_1 - np.mean(annot_1)
     annot_2_demean = annot_2 - np.mean(annot_2)
@@ -316,16 +316,16 @@ def _lees_i_numba(annot_1, annot_2, weight):
     return n / s2 * upper / np.sqrt(lower_1) / np.sqrt(lower_2)
 
 
-def lees_i(annot_1, annot_2, weight, use_numba=has_numba):
+def lees_l(annot_1, annot_2, weight, use_numba=has_numba):
     r"""
-    Calculate Lee's I for spatial autocorrelation.
+    Calculate Lee's L for spatial autocorrelation.
 
     Parameters
     ----------
     annot_1 : array-like, shape (n,)
-        Array of annotations to calculate Lee's I for.
+        Array of annotations to calculate Lee's L for.
     annot_2 : array-like, shape (n,)
-        Array of annotations to calculate Lee's I for.
+        Array of annotations to calculate Lee's L for.
     weight : array-like, shape (n, n)
         Spatial weight matrix. Note that we do not explicitly check for symmetry
         in the weight matrix, nor zero-diagonal elements.
@@ -335,12 +335,12 @@ def lees_i(annot_1, annot_2, weight, use_numba=has_numba):
 
     Returns
     -------
-    lees_i : float
-        Lee's I value for the given annotations and weight matrix.
+    lees_l : float
+        Lee's L value for the given annotations and weight matrix.
 
     Notes
     -----
-    Lee's I is calculated as:
+    Lee's L is calculated as:
 
     .. math::
         L(x,y) = \frac{n}{\sum_{i=1}^n(\sum_{j=1}^n w_{ij})^2}
@@ -367,33 +367,33 @@ def lees_i(annot_1, annot_2, weight, use_numba=has_numba):
     if use_numba:
         if not has_numba:
             raise ValueError("Numba not installed; cannot use numba for calculation")
-        return _lees_i_numba(annot_1, annot_2, weight)
+        return _lees_l_numba(annot_1, annot_2, weight)
     else:
-        return _lees_i_vectorized(annot_1, annot_2, weight)
+        return _lees_l_vectorized(annot_1, annot_2, weight)
 
 
-def local_lees_i(annot_1, annot_2, weight):
+def local_lees_l(annot_1, annot_2, weight):
     r"""
-    Calculate local Lee's I for spatial autocorrelation.
+    Calculate local Lee's L for spatial autocorrelation.
 
     Parameters
     ----------
     annot_1 : array-like, shape (n,)
-        Array of annotations to calculate Lee's I for.
+        Array of annotations to calculate Lee's L for.
     annot_2 : array-like, shape (n,)
-        Array of annotations to calculate Lee's I for.
+        Array of annotations to calculate Lee's L for.
     weight : array-like, shape (n, n)
         Spatial weight matrix. Note that we do not explicitly check for symmetry
         in the weight matrix, nor zero-diagonal elements.
 
     Returns
     -------
-    local_lees_i : array, shape (n,)
-        Local Lee's I values for the given annotations and weight matrix.
+    local_lees_l : array, shape (n,)
+        Local Lee's L values for the given annotations and weight matrix.
 
     Notes
     -----
-    Local Lee's I is calculated as:
+    Local Lee's L is calculated as:
 
     .. math::
         L_i(x,y) = \frac{(\sum_{j=1}^n w_{ij}(x_i - \bar{x}))
