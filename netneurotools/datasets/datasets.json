@@ -384,16 +384,28 @@
         "uncompress": true,
         "rel-path": "atl-voneconomo_koskinas"
     },
+    "ds-bazinet_assortativity": {
+        "url-type": "github-archive",
+        "url": [
+            "netneurolab",
+            "bazinet_assortativity",
+            "baab96d173b8c5a265667a4259cf228713dabcc7"
+        ],
+        "md5": "580de93603814df53341f31d98c799a3",
+        "uncompress": true,
+        "rename-folder": "bazinet_assortativity-baab96d173b8c5a265667a4259cf228713dabcc7",
+        "rel-path": "ds-bazinet_assortativity"
+    },
     "ds-hansen_manynetworks": {
-        "url-type": "github-release",
+        "url-type": "github-archive",
         "url": [
             "netneurolab",
             "hansen_many_networks",
-            "v1.0.0"
+            "72b4b3dc2983bf9baf0000926a610ead73b91b1d"
         ],
-        "md5": "9e503c759506293aa441054cfd206ccc",
+        "md5": "a24ee8a7639c3ccf768ff11d5bdfc2ab",
         "uncompress": true,
-        "rename-folder": "hansen_many_networks-1.0.0",
+        "rename-folder": "hansen_many_networks-72b4b3dc2983bf9baf0000926a610ead73b91b1d",
         "rel-path": "ds-hansen_manynetworks"
     },
     "ds-hansen_receptors": {
