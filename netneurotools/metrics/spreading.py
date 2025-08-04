@@ -26,11 +26,12 @@ from scipy.stats import norm, zscore
 def simulate_atrophy(SC_den, SC_len, seed, roi_sizes, T_total=1000, dt=0.1,
                      p_stay=0.5, v=1, trans_rate=1, init_number=1, GBA=None,
                      SNCA=None, k1=0.5, k=0, FC=None):
-    '''
-    Function to  simulate atrophy on a specified network, using a single
-    region as a seed of the process. This is a python version of SIRsimulator,
-    by Ying-Qiu Zheng: https://github.com/yingqiuz/SIR_simulator [1]_. This
-    python version was first used in [2]_.
+    """
+    Simulate atrophy on a specified network.
+
+    This is a python version of SIRsimulator, by Ying-Qiu Zheng:
+    https://github.com/yingqiuz/SIR_simulator [1]_. This python version was
+    first used in [2]_.
 
     Parameters
     ----------
@@ -83,8 +84,7 @@ def simulate_atrophy(SC_den, SC_len, seed, roi_sizes, T_total=1000, dt=0.1,
        Collins, D. L., Dagher, A., ... & Ducharme, S. (2023). Network structure
        and transcriptomic vulnerability shape atrophy in frontotemporal
        dementia. Brain, 146(1), 321-336.
-    '''
-
+    """
     # set-up syn_control
     syn_control = roi_sizes
 
@@ -132,8 +132,9 @@ def simulate_atrophy(SC_den, SC_len, seed, roi_sizes, T_total=1000, dt=0.1,
 
 def _normal_spread(SC_den, SC_len, syn_control, v=1, dt=0.1, p_stay=0.5,
                    GBA=None, SNCA=None, FC=None, k=0):
-    '''
-    Function to simulate the spread of normal proteins in a brain network.
+    """
+    Simulate the spread of normal proteins in a brain network.
+
     Part 1 of SIRsimulator. SIRsimulator being the original code written by
     Ying-Qiu Zheng in Matlab (https://github.com/yingqiuz/SIR_simulator) for
     her PLoS Biology paper [1]_. This Python version was first used in [2]_.
@@ -186,9 +187,7 @@ def _normal_spread(SC_den, SC_len, syn_control, v=1, dt=0.1, p_stay=0.5,
        Collins, D. L., Dagher, A., ... & Ducharme, S. (2023). Network structure
        and transcriptomic vulnerability shape atrophy in frontotemporal
        dementia. Brain, 146(1), 321-336.
-
-    '''
-
+    """
     # Compute basic information
     N_regions = len(SC_len)
 
@@ -226,7 +225,7 @@ def _normal_spread(SC_den, SC_len, syn_control, v=1, dt=0.1, p_stay=0.5,
     # normal alpha-syn growth
     # fill the network with normal proteins
     iter_max = 1000000000
-    for t in range(iter_max):
+    for _ in range(iter_max):
         # moving process
 
         # regions towards paths
@@ -263,8 +262,9 @@ def _mis_spread(SC_den, SC_len, seed, syn_control, ROIsize, Rnor, Pnor, v=1,
                 dt=0.1, p_stay=0.5, trans_rate=1, init_number=1, T_total=1000,
                 GBA=None, SNCA=None, return_agents_in_paths=False,
                 FC=None, k=0):
-    '''
-    Function to simulate the spread of misfolded proteins in a brain network.
+    """
+    Simulate the spread of misfolded proteins in a brain network.
+
     Part 2 of SIRsimulator. SIRsimulator being the original code written by
     Ying-Qiu Zheng in Matlab (https://github.com/yingqiuz/SIR_simulator) for
     her PLoS Biology paper [1]_. This Python version was first used in [2]_.
@@ -338,9 +338,7 @@ def _mis_spread(SC_den, SC_len, seed, syn_control, ROIsize, Rnor, Pnor, v=1,
        Collins, D. L., Dagher, A., ... & Ducharme, S. (2023). Network structure
        and transcriptomic vulnerability shape atrophy in frontotemporal
        dementia. Brain, 146(1), 321-336.
-
-    '''
-
+    """
     # Compute basic information
     N_regions = len(SC_len)
 
@@ -446,11 +444,11 @@ def _mis_spread(SC_den, SC_len, seed, syn_control, ROIsize, Rnor, Pnor, v=1,
 
 
 def _atrophy(SC_den, Rnor_all, Rmis_all, dt=0.1, k1=0.5, k=0, FC=None):
-    '''
-    Function to estimate the atrophy map from the distribution of normal and
-    misfolded proteins in the brain. This function is inspired by code
-    originally written in Matlab by Ying-Qiu Zheng
-    (https://github.com/yingqiuz/SIR_simulator) for her PLoS Biology
+    """
+    Estimate the atrophy from the normal and misfolded proteins distributions.
+
+    This function is inspired by code originally written in Matlab by Ying-Qiu
+    Zheng (https://github.com/yingqiuz/SIR_simulator) for her PLoS Biology
     paper [1]_ and was first used in [2]_.
 
     Parameters
@@ -490,9 +488,7 @@ def _atrophy(SC_den, Rnor_all, Rmis_all, dt=0.1, k1=0.5, k=0, FC=None):
        Collins, D. L., Dagher, A., ... & Ducharme, S. (2023). Network structure
        and transcriptomic vulnerability shape atrophy in frontotemporal
        dementia. Brain, 146(1), 321-336.
-
-    '''
-
+    """
     # Compute basic information
     N_regions = len(SC_den)
 
@@ -512,11 +508,11 @@ def _atrophy(SC_den, Rnor_all, Rmis_all, dt=0.1, k1=0.5, k=0, FC=None):
 
     # neuronal loss caused by lack of input from neighbouring regions
     ratio_cum = np.matmul(weights,
-                          (1-np.exp(-ratio * dt)))
+                          (1 - np.exp(-ratio * dt)))
 
     # one time step back
     ratio_cum = np.c_[np.zeros((N_regions, 1)), ratio_cum[:, :-1]]
-    ratio_cum = k2 * ratio_cum + k1 * (1-np.exp(-ratio * dt))
+    ratio_cum = k2 * ratio_cum + k1 * (1 - np.exp(-ratio * dt))
 
     simulated_atrophy = np.cumsum(ratio_cum, axis=1)
 
