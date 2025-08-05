@@ -773,8 +773,8 @@ def _assortativity_und_vectorized(x_vec, weight_mat):
     weight_sum = np.sum(weight_vec)
     x_norm_mean = np.dot(x_vec, weight_vec) / weight_sum
     x_inner = x_vec - x_norm_mean
-    upper = np.sum(weight_mat * np.outer(x_inner, x_inner))
-    lower = np.sum(weight_vec * x_inner**2)
+    upper = np.sum(x_inner * np.squeeze(weight_mat @ x_inner[:, None]))
+    lower = np.dot(weight_vec, x_inner**2)
     return upper / lower
 
 
@@ -795,10 +795,10 @@ def _assortativity_und_numba(x_vec, weight_mat):
 
 
 if has_numba:
-    _assortativity_und_numba = _assortativity_und_numba
+    _assortativity_und_numba = njit(_assortativity_und_numba)
 
 
-def assortativity_und(x, W, use_numba=True):
+def assortativity_und(x, W, use_numba=False):
     r"""
     Calculate assortativity for undirected networks.
 
@@ -808,11 +808,13 @@ def assortativity_und(x, W, use_numba=True):
     Parameters
     ----------
     x : (N,) array_like
-        Annotation scores for each node in the network
+        Annotation values for each node in the network
     W : (N, N) array_like
         Weighted, undirected connection weight array
     use_numba : bool, optional
-        Whether to use numba for calculation. Default: True
+        Whether to use numba for calculation. Note that numba is not
+        necessarily faster than the vectorized (non-numba) version.
+        Default: False
         (if numba is available).
 
     Returns
@@ -823,8 +825,8 @@ def assortativity_und(x, W, use_numba=True):
     Notes
     -----
     Assortativity is defined as the Pearson correlation between the local
-    annotation scores of connected nodes [2]_. In other words, it quantifies the
-    tendency for nodes with similar annotation scores to be connected [1]_.
+    annotation values of connected nodes [2]_. In other words, it quantifies the
+    tendency for nodes with similar annotation values to be connected [1]_.
     For an adjacency matrix :math:`A`, and an annotation vector :math:`\mathbf{x}`,
     the assortativity of a network, with respect to :math:`\bar{\mathbf{x}}`
     is defined as:
@@ -879,9 +881,9 @@ def _assortativity_dir_vectorized(x_vec, weight_mat):
     x_norm_mean_out = np.dot(x_vec, weight_vec_out) / weight_sum
     x_inner_in = x_vec - x_norm_mean_in
     x_inner_out = x_vec - x_norm_mean_out
-    upper = np.sum(weight_mat * np.outer(x_inner_out, x_inner_in))
-    lower_1 = np.sum(weight_vec_in * x_inner_in**2)
-    lower_2 = np.sum(weight_vec_out * x_inner_out**2)
+    upper = np.sum(x_inner_out * np.squeeze(weight_mat @ x_inner_in[:, None]))
+    lower_1 = np.dot(weight_vec_in, x_inner_in**2)
+    lower_2 = np.dot(weight_vec_out, x_inner_out**2)
     return upper / np.sqrt(lower_1 * lower_2)
 
 
@@ -890,8 +892,8 @@ def _assortativity_dir_numba(x_vec, weight_mat):
     weight_vec_in = np.sum(weight_mat, axis=0)
     weight_vec_out = np.sum(weight_mat, axis=1)
     weight_sum = np.sum(weight_vec_in)
-    x_norm_mean_in = np.sum(np.dot(x_vec, weight_vec_in)) / weight_sum
-    x_norm_mean_out = np.sum(np.dot(x_vec, weight_vec_out)) / weight_sum
+    x_norm_mean_in = np.dot(x_vec, weight_vec_in) / weight_sum
+    x_norm_mean_out = np.dot(x_vec, weight_vec_out) / weight_sum
     upper, lower_1, lower_2 = 0.0, 0.0, 0.0
     for i in range(n):
         for j in range(n):
@@ -910,7 +912,7 @@ if has_numba:
     _assortativity_dir_numba = njit(_assortativity_dir_numba)
 
 
-def assortativity_dir(x, W, use_numba=True):
+def assortativity_dir(x, W, use_numba=False):
     r"""
     Calculate assortativity for directed networks.
 
@@ -920,11 +922,13 @@ def assortativity_dir(x, W, use_numba=True):
     Parameters
     ----------
     x : (N,) array_like
-        Annotation scores for each node in the network
+        Annotation values for each node in the network
     W : (N, N) array_like
         Weighted, directed connection weight array
     use_numba : bool, optional
-        Whether to use numba for calculation. Default: True
+        Whether to use numba for calculation. Note that numba is not
+        necessarily faster than the vectorized (non-numba) version.
+        Default: False
         (if numba is available).
 
     Returns

@@ -101,7 +101,7 @@ def pv_plot_surface(
     mask_medial=True,
     cmap="viridis",
     clim=None,
-    zoom_ratio=1.0,
+    zoom_ratio=1.25,
     show_colorbar=True,
     cbar_title=None,
     show_plot=True,
@@ -142,7 +142,7 @@ def pv_plot_surface(
         Colorbar limits. If None, will be set to 2.5th and 97.5th percentiles.
         Default is None.
     zoom_ratio : float, optional
-        Zoom ratio for the camera. Default is 1.0.
+        Zoom ratio for the camera. Default is 1.25.
     show_colorbar : bool, optional
         Whether to show the colorbar. Default is True.
     cbar_title : str, optional
@@ -269,7 +269,7 @@ def pv_plot_surface(
 
     # default plotter settings
     plotter_settings = dict(
-        window_size=(350 * plotter_shape[1], 250 * plotter_shape[0]),
+        window_size=(700 * plotter_shape[1], 500 * plotter_shape[0]),
         border=False,
         lighting="three lights",
     )
@@ -320,8 +320,8 @@ def pv_plot_surface(
     cbar_settings = dict(
         title=cbar_title,
         n_labels=2,
-        label_font_size=10,
-        title_font_size=12,
+        label_font_size=20,
+        title_font_size=24,
         font_family="arial",
         height=0.15,
     )
