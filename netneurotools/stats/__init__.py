@@ -11,7 +11,10 @@ from .correlation import (
 from .permutation_test import (
     permtest_1samp,
     permtest_rel,
-    permtest_pearsonr
+    permtest_pearsonr,
+    sw_nest,
+    sw_nest_perm_ols,
+    sw_spice
 )
 
 
@@ -30,6 +33,7 @@ __all__ = [
     'efficient_pearsonr', 'weighted_pearsonr', 'make_correlated_xy',
     # permutation_test
     'permtest_1samp', 'permtest_rel', 'permtest_pearsonr',
+    'sw_nest', 'sw_nest_perm_ols', 'sw_spice',
     # regression
     '_add_constant', 'residualize', 'get_dominance_stats',
     # stats_utils

@@ -47,12 +47,13 @@ pyvista = [
   "vtk",
   "pyvista"
 ]
-numba = [
-  "numba"
-]
 style = [
   "flake8",
   "ruff"
+]
+extra = [
+  "numba",
+  "statsmodels",
 ]
 test = [
   "coverage",
