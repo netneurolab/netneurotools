@@ -619,7 +619,7 @@ def get_modularity_z(adjacency, comm, gamma=1, n_perm=10000, seed=None):
 
     # avoid instances where dist.std(1) == 0
     std = simu_qs.std(axis=1)
-    if std == 0:
+    if np.any(std == 0):
         return np.mean(real_qs - simu_qs.mean(axis=1))
     else:
         return np.mean((real_qs - simu_qs.mean(axis=1)) / std)
