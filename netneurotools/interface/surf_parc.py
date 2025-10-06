@@ -224,7 +224,7 @@ def _parcels_to_vertices_single_hemi(
         raise RuntimeWarning(f"Keys are not ordered: {keys}, {labels}")
 
     projected = np.full(
-        (vertices.shape[0],) + parc_data.shape[1:], fill, dtype=parc_data.dtype
+        (vertices.shape[0],) + parc_data.shape[1:], fill, dtype=np.float64
     )
     for i_idx, idx in enumerate(keys):
         found = vertices == idx
