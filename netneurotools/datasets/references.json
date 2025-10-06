@@ -324,5 +324,13 @@
                 "bibkey": "assaf2020conservation"
             }
         ]
+    },
+    "ds-bazinet_assortativity": {
+        "primary": [
+            {
+                "citation": "Vincent Bazinet, Justine Y Hansen, Reinder Vos de Wael, Boris C Bernhardt, Martijn P van den Heuvel, and Bratislav Misic. Assortative mixing in micro-architecturally annotated brain connectomes. Nature Communications, 14(1):2850, 2023.",
+                "bibkey": "bazinet2023assortative"
+            }
+        ]
     }
 }

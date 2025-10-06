@@ -26,7 +26,7 @@ from .fetch_project import (
     fetch_hansen_manynetworks, fetch_hansen_receptors,
     fetch_hansen_genescognition, fetch_hansen_brainstemfc,
     fetch_shafiei_megfmrimapping, fetch_shafiei_megdynamics,
-    fetch_suarez_mami,
+    fetch_suarez_mami, fetch_bazinet_assortativity,
     # example data
     fetch_famous_gmat,
     # resources
