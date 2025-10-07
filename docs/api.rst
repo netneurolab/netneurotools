@@ -62,6 +62,7 @@ To download project-related data
    fetch_shafiei_megfmrimapping
    fetch_shafiei_megdynamics
    fetch_suarez_mami
+   fetch_bazinet_assortativity
    fetch_famous_gmat
    fetch_neurosynth
 

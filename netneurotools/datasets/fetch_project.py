@@ -137,7 +137,11 @@ def fetch_hansen_manynetworks(force=False, data_dir=None, verbose=1):
 
     References
     ----------
-    .. [1]
+    .. [1] Justine Y Hansen, Golia Shafiei, Katharina Voigt, Emma X Liang,
+        Sylvia ML Cox, Marco Leyton, Sharna D Jamadar, and Bratislav Misic.
+        Integrating multimodal and multiscale connectivity blueprints of the
+        human cerebral cortex in health and disease. PLoS biology,
+        21(9):e3002314, 2023.
     """
     dataset_name = "ds-hansen_manynetworks"
     _get_reference_info(dataset_name, verbose=verbose)
@@ -418,6 +422,46 @@ def fetch_suarez_mami(force=False, data_dir=None, verbose=1):
         mammalian class. Nature Neuroscience, 23(7):805\u2013808, 2020.
     """
     dataset_name = "ds-suarez_mami"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
+
+    return fetched
+
+
+def fetch_bazinet_assortativity(force=False, data_dir=None, verbose=1):
+    """
+    Download files from Bazinet et al., 2023, Nature Communications.
+
+    This dataset contains
+
+    If you used this data, please cite [1]_.
+
+    Returns
+    -------
+    filenames : :class:`sklearn.utils.Bunch`
+        Dictionary-like object with fetched data.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, will overwrite existing dataset. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    References
+    ----------
+    .. [1] Vincent Bazinet, Justine Y Hansen, Reinder Vos de Wael,
+        Boris C Bernhardt, Martijn P van den Heuvel, and Bratislav Misic.
+        Assortative mixing in micro-architecturally annotated brain
+        connectomes. Nature Communications, 14(1):2850, 2023."
+    """
+    dataset_name = "ds-bazinet_assortativity"
     _get_reference_info(dataset_name, verbose=verbose)
 
     fetched = fetch_file(dataset_name, force=force, data_dir=data_dir, verbose=verbose)
