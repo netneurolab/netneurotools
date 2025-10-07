@@ -240,6 +240,11 @@ class TestFetchProject:
         suarez = datasets.fetch_suarez_mami(data_dir=tmp_path, verbose=0)
         assert suarez.exists()
 
+    def test_fetch_bazinet_assortativity(self, tmp_path):
+        """Test fetching of Bazinet et al., 2023 assortativity dataset."""
+        bazinet = datasets.fetch_bazinet_assortativity(data_dir=tmp_path, verbose=0)
+        assert bazinet.exists()
+
     @pytest.mark.parametrize(
         "dataset, expected",
         [
