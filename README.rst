@@ -30,7 +30,7 @@ usage in the `Network Neuroscience Lab <https://netneurolab.github.io/>`_, house
 the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
 
-The accompanying paper is out as a pre-print on `bioRxiv <https://www.biorxiv.org/content/10.1101/2025.09.09.675160v1>`_.
+The accompanying paper can be found on `bioRxiv <https://www.biorxiv.org/content/10.1101/2025.09.09.675160v1>`_.
 
 .. _features:
 
@@ -98,7 +98,7 @@ information about it and one of our team members will do our best to help you.
 Citation
 -----------
 
-If you use the toolbox, please cite our recent `pre-print <https://www.biorxiv.org/content/10.1101/2025.09.09.675160v1>`_.
+If you use the toolbox, please cite our `pre-print <https://www.biorxiv.org/content/10.1101/2025.09.09.675160v1>`_.
 
 Importantly, ``netneurotools`` often implements and builds on tools that have
 been previously developed, and we redistribute datasets that were acquired
