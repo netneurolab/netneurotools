@@ -15,8 +15,8 @@ netneurotools: Tools for network neuroscience
   :target: https://hub.docker.com/r/netneurolab/netneurotools/tags/
   :alt: Latest Docker image
 
-.. image:: https://github.com/netneurolab/netneurotools/actions/workflows/tests.yml/badge.svg
-  :target: https://github.com/netneurolab/netneurotools/actions/workflows/tests.yml
+.. image:: https://github.com/netneurolab/netneurotools/actions/workflows/tests-basic.yml/badge.svg
+  :target: https://github.com/netneurolab/netneurotools/actions/workflows/tests-basic.yml
   :alt: run-tests status
 
 .. image:: https://github.com/netneurolab/netneurotools/actions/workflows/docs.yml/badge.svg
@@ -30,6 +30,7 @@ usage in the `Network Neuroscience Lab <https://netneurolab.github.io/>`_, house
 the `Brain Imaging Centre <https://www.mcgill.ca/bic/home>`_ at
 `McGill University <https://www.mcgill.ca/>`_.
 
+The accompanying paper is out as a pre-print on `bioRxiv <https://www.biorxiv.org/content/10.1101/2025.09.09.675160v1>`_.
 
 .. _features:
 
@@ -65,7 +66,7 @@ Installation
 You can install directly from PyPi with :code:`pip install netneurotools`.
 
 This package is under active development. We recommend installing the latest version
-with 
+with
 
 .. code-block:: bash
 
@@ -92,6 +93,18 @@ you've found a bug, are experiencing a problem, or have a question, create a
 new `issue <https://github.com/netneurolab/netneurotools/issues>`_ with some
 information about it and one of our team members will do our best to help you.
 
+.. _citation:
+
+Citation
+-----------
+
+If you use the toolbox, please cite our recent `pre-print <https://www.biorxiv.org/content/10.1101/2025.09.09.675160v1>`_.
+
+Importantly, ``netneurotools`` often implements and builds on tools that have
+been previously developed, and we redistribute datasets that were acquired
+elsewhere. If you use the toolbox, please also ensure proper attribution to the
+original work, using the references found in the dosctrings or in the
+Reference API.
 
 .. _licensing:
 
