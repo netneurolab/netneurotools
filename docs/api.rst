@@ -271,6 +271,9 @@ Permutation tests
    permtest_1samp
    permtest_rel
    permtest_pearsonr
+   sw_nest
+   sw_nest_perm_ols
+   sw_spice
 
 Regressions
 
