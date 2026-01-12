@@ -4,11 +4,7 @@ import numpy as np
 import scipy.stats as sstats
 import scipy.special as sspecial
 from sklearn.utils.validation import check_random_state
-
-try:  # scipy >= 1.8.0
-    from scipy.stats._stats_py import _chk2_asarray
-except ImportError:  # scipy < 1.8.0
-    from scipy.stats.stats import _chk2_asarray
+from .stats_utils import _chk2_asarray
 
 
 from .. import has_numba
