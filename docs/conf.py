@@ -40,7 +40,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx_gallery.gen_gallery',
-    'sphinx_design'
+    # 'sphinx_design'
 ]
 
 # Generate the API documentation when building
@@ -129,6 +129,5 @@ sphinx_gallery_conf = {
     'reference_url': {
         'netneurotools': None
     },
-    'thumbnail_size': (250, 250),
-    'ignore_pattern': r'/wip.*\.py',
+    'thumbnail_size': (250, 250)
 }
