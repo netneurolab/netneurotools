@@ -106,20 +106,6 @@ def test_agreement_matrix():
     assert np.all(agreement == expected)
 
 
-def test_dummyvar():
-    """Test generation of dummy variables."""
-    # generate small example dummy variable code
-    out = modularity._dummyvar(np.array([1, 1, 2, 3, 3]))
-    assert np.all(out == np.array([[1, 0, 0],
-                                   [1, 0, 0],
-                                   [0, 1, 0],
-                                   [0, 0, 1],
-                                   [0, 0, 1]]))
-
-    allones = np.array([1, 1, 1, 1, 1, 1, 1, 1])
-    assert np.all(modularity._dummyvar(allones) == allones)
-
-
 def test_zrand():
     """Test calculation of zrand."""
     # make the same two-group community assignments (with different labels)

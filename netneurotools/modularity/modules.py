@@ -518,32 +518,10 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
     return consensus, np.array(Q_all), zrand_all
 
 
-def _dummyvar(labels):
-    """
-    Generate dummy-coded array from provided community assignment `labels`.
-
-    Parameters
-    ----------
-    labels : (N,) array_like
-        Labels assigning `N` samples to `G` groups
-
-    Returns
-    -------
-    ci : (N, G) numpy.ndarray
-        Dummy-coded array where 1 indicates that a sample belongs to a group
-    """
-    comms = np.unique(labels)
-
-    ci = np.zeros((len(labels), len(comms)))
-    for n, grp in enumerate(comms):
-        ci[:, n] = labels == grp
-
-    return ci
-
-
 def zrand(X, Y):
     """
-    Calculate the z-Rand index of two community assignments.
+    Calculate the z-Rand index of two community assignments. Communities are
+    relabeled to consecutive integers for the comparison.
 
     Parameters
     ----------
@@ -561,28 +539,36 @@ def zrand(X, Y):
     (2011). Comparing Community Structure to Characteristics in Online
     Collegiate Social Networks. SIAM Review, 53, 526-543.
     """
+    X = np.squeeze(X)
+    Y = np.squeeze(Y)
+
     if X.ndim > 1 or Y.ndim > 1:
-        if X.shape[-1] > 1 or Y.shape[-1] > 1:
-            raise ValueError('X and Y must have only one-dimension each. '
-                             'Please check inputs.')
+        raise ValueError('X and Y must have only one-dimension each. '
+                         'Please check inputs.')
 
-    Xf = X.flatten()
-    Yf = Y.flatten()
+    if len(X) != len(Y):
+        raise ValueError('X and Y must have the same length.')
 
-    n = len(Xf)
-    indx, indy = _dummyvar(Xf), _dummyvar(Yf)
-    Xa = indx.dot(indx.T)
-    Ya = indy.dot(indy.T)
+    X = np.unique(X, return_inverse=True)[1]
+    Y = np.unique(Y, return_inverse=True)[1]
 
-    M = n * (n - 1) / 2
-    M1 = Xa.nonzero()[0].size / 2
-    M2 = Ya.nonzero()[0].size / 2
+    # Calculate the contigency table + calculate row/column marginals
+    kx = X.max() + 1
+    ky = Y.max() + 1
+    nij = np.bincount(X * ky + Y).reshape(kx, ky)
+    ni = nij.sum(axis=1)
+    nj = nij.sum(axis=0)
 
-    wab = np.logical_and(Xa, Ya).nonzero()[0].size / 2
+    n = len(X)
+    M = n * (n - 1) // 2
+    M1 = np.sum(ni * (ni - 1)) / 2
+    M2 = np.sum(nj * (nj - 1)) / 2
+    wab = np.sum(nij * (nij - 1)) / 2
 
     mod = n * (n**2 - 3 * n - 2)
-    C1 = mod - (8 * (n + 1) * M1) + (4 * np.power(indx.sum(0), 3).sum())
-    C2 = mod - (8 * (n + 1) * M2) + (4 * np.power(indy.sum(0), 3).sum())
+
+    C1 = mod - 8 * (n + 1) * M1 + 4 * np.sum(ni**3)
+    C2 = mod - 8 * (n + 1) * M2 + 4 * np.sum(nj**3)
 
     a = M / 16
     b = ((4 * M1 - 2 * M)**2) * ((4 * M2 - 2 * M)**2) / (256 * (M**2))
@@ -664,8 +650,6 @@ def _unique_partitions(communities):
 
 
 if has_numba:
-    _dummyvar = njit(_dummyvar)
-    zrand = njit(zrand)
     _zrand_partitions = njit(_zrand_partitions, parallel=True)
 
 
