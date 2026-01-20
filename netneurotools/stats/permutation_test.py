@@ -2,13 +2,8 @@
 
 import numpy as np
 from sklearn.utils.validation import check_random_state
-
-try:  # scipy >= 1.8.0
-    from scipy.stats._stats_py import _chk2_asarray
-except ImportError:  # scipy < 1.8.0
-    from scipy.stats.stats import _chk2_asarray
-
 from .correlation import efficient_pearsonr
+from .stats_utils import _chk2_asarray
 
 
 def permtest_1samp(a, popmean, axis=0, n_perm=1000, seed=0):
