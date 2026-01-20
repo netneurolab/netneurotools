@@ -520,8 +520,9 @@ def consensus_modularity(adjacency, gamma=1, B='modularity',
 
 def zrand(X, Y):
     """
-    Calculate the z-Rand index of two community assignments. Communities are
-    relabeled to consecutive integers for the comparison.
+    Calculate the z-Rand index of two community assignments.
+
+    Communities are relabeled to consecutive integers for the comparison.
 
     Parameters
     ----------
