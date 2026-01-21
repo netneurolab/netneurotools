@@ -312,6 +312,37 @@ def reorder_assignments(assignments, consensus=None, col_sort=True,
     return assignments
 
 
+def agreement_matrix(assignments):
+    """
+    Compute the agreement matrix from cluster solutions in `assignments`.
+
+    Parameters
+    ----------
+    assignments : (N, M) array_like
+        Array of `M` clustering solutions for `N` samples (e.g., subjects,
+        nodes, etc). Values of array should be integer-based cluster assignment
+        labels
+
+    Returns
+    -------
+    agreement: (N, N) array_like
+        Agreement matrix where each entry indicates the number of times a pair
+        of samples was assigned to the same cluster.
+    """
+    assignments = np.asarray(assignments)
+    N, M = assignments.shape
+    agreement = np.zeros((N, N), dtype=np.int32)
+
+    for k in range(M):
+        labels = assignments[:, k]
+        for lbl in np.unique(labels):
+            nodes = np.where(labels == lbl)[0]
+            agreement[np.ix_(nodes, nodes)] += 1
+
+    np.fill_diagonal(agreement, 0)
+    return agreement
+
+
 def find_consensus(assignments, null_func=np.mean, return_agreement=False,
                    seed=None):
     """
@@ -351,11 +382,11 @@ def find_consensus(assignments, null_func=np.mean, return_agreement=False,
 
     # create agreement matrix from input community assignments and convert to
     # probability matrix by dividing by `comm`
-    agreement = bct.clustering.agreement(assignments, buffsz=samp) / comm
+    agreement = agreement_matrix(assignments) / comm
 
     # generate null agreement matrix and use to create threshold
     null_assign = np.column_stack([rs.permutation(i) for i in assignments.T])
-    null_agree = bct.clustering.agreement(null_assign, buffsz=samp) / comm
+    null_agree = agreement_matrix(null_assign) / comm
     threshold = null_func(null_agree)
 
     # run consensus clustering on agreement matrix after thresholding
