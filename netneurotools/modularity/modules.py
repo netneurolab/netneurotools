@@ -343,6 +343,68 @@ def agreement_matrix(assignments):
     return agreement
 
 
+def consensus_clustering(agreement, threshold, n_it=10):
+    """
+    Perform consensus clustering on an agreement matrix.
+
+    This algorithm, first introduced in [1]_, iteratively thresholds the
+    agreement matrix and applies community detection to identify stable
+    clustering partitions. The procedure terminates when a single unique
+    partition is obtained or when no supra-threshold agreement remains.
+
+    Parameters
+    ----------
+    agreement : (N, N) array_like
+        Agreement matrix indicating the frequency with which pairs of
+        samples were assigned to the same cluster
+    threshold : float
+        Threshold value used to remove weak agreement entries
+    n_it : int, optional
+        Number of community detection iterations per consensus step.
+        Default: 10
+
+    Returns
+    -------
+    consensus : (N,) numpy.ndarray
+        Consensus cluster labels
+
+    Notes
+    -----
+    This algorithm is adapted from `consensus_und` of the Brain Connectivity
+    Toolbox [2]_.
+
+    References
+    ----------
+    .. [1] Lancichinetti, A., & Fortunato, S. (2012). Consensus clustering in
+       complex networks. Scientific reports, 2(1), 336.
+
+    .. [2] Rubinov, M., & Sporns, O. (2010). Complex network measures of brain
+       connectivity: uses and interpretations. Neuroimage, 52(3), 1059-1069.
+
+    """
+    n = len(agreement)
+    while True:
+
+        thresholded_agreement = np.where(agreement >= threshold, agreement, 0)
+        np.fill_diagonal(thresholded_agreement, 0)
+
+        if np.all(thresholded_agreement == 0):
+            ci_unique = np.arange(n)
+            break
+        else:
+            ci = np.zeros((n, n_it))
+            for i in range(n_it):
+                ci[:, i], _ = bct.community_louvain(thresholded_agreement,
+                                                    B='modularity')
+            ci_unique = _unique_partitions(ci)
+            if ci_unique.shape[1] > 1:
+                agreement = agreement_matrix(ci) / n_it
+            else:
+                break
+
+    return np.squeeze(ci_unique + 1)
+
+
 def find_consensus(assignments, null_func=np.mean, return_agreement=False,
                    seed=None):
     """
@@ -390,7 +452,7 @@ def find_consensus(assignments, null_func=np.mean, return_agreement=False,
     threshold = null_func(null_agree)
 
     # run consensus clustering on agreement matrix after thresholding
-    consensus = bct.clustering.consensus_und(agreement, threshold, 10)
+    consensus = consensus_clustering(agreement, threshold, n_it=10)
 
     if return_agreement:
         return consensus.astype(int), agreement * (agreement > threshold)
@@ -564,6 +626,41 @@ def _zrand_partitions(communities):
             all_zrand[idx] = zrand(communities[:, c1], communities[:, c2])
 
     return all_zrand
+
+
+def _unique_partitions(communities):
+    """
+    Identify unique clustering partitions from a set of solutions.
+
+    Relabels each partition in `communities` to use consecutive integer labels
+    starting from zero, then removes duplicate partitions across columns.
+
+    Parameters
+    ----------
+    communities : (N, M) array_like
+        Array of `M` clustering solutions for `N` samples
+
+    Returns
+    -------
+    unique : (N, K) numpy.ndarray
+        Array containing the `K` unique clustering partitions identified
+        from `communities`
+    """
+    # Relabel partitions to consecutive integers
+    n, m = communities.shape
+    for i in range(m):
+        communities[:, i] = np.unique(communities[:, i], return_inverse=True)[1]
+
+    # Remove duplicate partitions
+    seen = set()
+    unique_cols = []
+    for i in range(m):
+        key = tuple(communities[:, i])
+        if key not in seen:
+            seen.add(key)
+            unique_cols.append(communities[:, i])
+
+    return np.column_stack(unique_cols)
 
 
 if has_numba:
