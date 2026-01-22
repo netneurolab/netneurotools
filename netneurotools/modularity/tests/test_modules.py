@@ -56,8 +56,8 @@ def test_match_assignments():
 
     # check that we didn't _actually_ change cluster assignments with matching;
     # the agreement matrices should match!
-    assert np.allclose(bct.clustering.agreement(assignments),
-                       bct.clustering.agreement(matched))
+    assert np.allclose(modularity.agreement_matrix(assignments),
+                       modularity.agreement_matrix(matched))
 
 
 def test_reorder_assignments():
@@ -93,6 +93,18 @@ def test_reorder_assignments():
 def test_find_consensus(assignments, clusters):
     """Test finding consensus clustering."""
     assert np.all(modularity.find_consensus(assignments) == clusters)
+
+
+def test_agreement_matrix():
+    """Test calculation of agreement matrix."""
+    assignments = np.array([[0, 0],
+                            [0, 1],
+                            [1, 1]])
+    expected = np.array([[0, 1, 0],
+                         [1, 0, 1],
+                         [0, 1, 0]])
+    agreement = modularity.agreement_matrix(assignments)
+    assert np.all(agreement == expected)
 
 
 def test_dummyvar():
