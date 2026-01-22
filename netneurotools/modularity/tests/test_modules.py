@@ -1,6 +1,5 @@
 """For testing netneurotools.modularity.modules functionality."""
 
-import bct
 import pytest
 import numpy as np
 from sklearn.cluster import k_means, spectral_clustering
