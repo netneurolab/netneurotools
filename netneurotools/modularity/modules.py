@@ -6,10 +6,6 @@ from sklearn.utils.validation import check_random_state
 from scipy import optimize
 from scipy.cluster import hierarchy
 
-from .. import has_numba
-if has_numba:
-    from numba import njit
-
 
 def _get_relabels(c1, c2):
     """
@@ -654,10 +650,6 @@ def _unique_partitions(communities):
             unique_cols.append(communities[:, i])
 
     return np.column_stack(unique_cols)
-
-
-if has_numba:
-    _zrand_partitions = njit(_zrand_partitions, parallel=True)
 
 
 def get_modularity(adjacency, comm, gamma=1):
