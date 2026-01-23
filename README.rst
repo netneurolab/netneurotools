@@ -54,7 +54,7 @@ Netneurotools provides a wide range of tools for network neuroscience research.
 *  And much more!
 
 
-Check out our `documentation <https://netneurotools.readthedocs.io/en/latest>`_
+Check out our `documentation <https://netneurolab.github.io/netneurotools/>`_
 for more information!
 
 
@@ -103,7 +103,7 @@ If you use the toolbox, please cite our `pre-print <https://www.biorxiv.org/cont
 Importantly, ``netneurotools`` often implements and builds on tools that have
 been previously developed, and we redistribute datasets that were acquired
 elsewhere. If you use the toolbox, please also ensure proper attribution to the
-original work, using the references found in the dosctrings or in the
+original work, using the references found in the docstrings or in the
 Reference API.
 
 .. _licensing:
