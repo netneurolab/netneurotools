@@ -553,10 +553,16 @@ def zrand(X, Y):
     X = np.unique(X, return_inverse=True)[1]
     Y = np.unique(Y, return_inverse=True)[1]
 
+    # Check for undefined single-community case
+    if X.max() == 0 or Y.max() == 0:
+        raise ValueError('X and Y must contain at least 2 distinct communities '
+                         'each. z-Rand is undefined for single-community '
+                         'inputs (standard deviation=0).')
+
     # Calculate the contigency table + calculate row/column marginals
     kx = X.max() + 1
     ky = Y.max() + 1
-    nij = np.bincount(X * ky + Y).reshape(kx, ky)
+    nij = np.bincount(X * ky + Y, minlength=kx * ky).reshape(kx, ky)
     ni = nij.sum(axis=1)
     nj = nij.sum(axis=0)
 

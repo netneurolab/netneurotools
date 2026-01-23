@@ -108,14 +108,23 @@ def test_agreement_matrix():
 
 def test_zrand():
     """Test calculation of zrand."""
+
     # make the same two-group community assignments (with different labels)
     label = np.ones((100, 1))
     X, Y = np.vstack((label, label * 2)), np.vstack((label * 2, label))
+    expected = 140.356688476182
     # compare
+    assert np.isclose(modularity.zrand(X, Y), expected)
+    assert modularity.zrand(X, X) == modularity.zrand(X, Y)
     assert modularity.zrand(X, Y) == modularity.zrand(X, Y[::-1])
-    random = rs.choice([0, 1], size=X.shape)
-    assert modularity.zrand(X, Y) > modularity.zrand(X, random)
     assert modularity.zrand(X, Y) == modularity.zrand(X[:, 0], Y[:, 0])
+
+    # make two community assignments with different numbers of communities
+    X = np.array([0,0,0,1,1,1,2,1,1,2,0])
+    Y = np.array([2,0,3,3,1,0,2,1,3,1,2])
+    expected = -0.06593804733957866
+    # compare
+    assert np.isclose(modularity.zrand(X, Y), expected)
 
 
 def test_zrand_partitions():
