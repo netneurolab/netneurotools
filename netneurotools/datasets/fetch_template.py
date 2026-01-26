@@ -18,7 +18,9 @@ def fetch_fsaverage(
     """
     Download files for fsaverage FreeSurfer template.
 
-    This dataset contains
+    This dataset contains surface files for the fsaverage template including
+    original, white matter, pial, inflated, and spherical surfaces for both
+    left and right hemispheres.
 
     If you used this data, please cite 1_, 2_, 3_.
 
@@ -33,9 +35,10 @@ def fetch_fsaverage(
     Returns
     -------
     filenames : :class:`sklearn.utils.Bunch`
-        Dictionary-like object with keys ['surf'] where corresponding values
-        are length-2 lists downloaded template files (each list composed of
-        files for the left and right hemisphere).
+        Dictionary-like object with keys ['orig', 'white', 'smoothwm', 'pial',
+        'inflated', 'sphere'], where corresponding values are Surface
+        namedtuples containing filepaths for the left (L) and right (R)
+        hemisphere surface files.
 
     Other Parameters
     ----------------
@@ -48,6 +51,202 @@ def fetch_fsaverage(
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
+
+    Notes
+    -----
+    The returned surfaces represent different stages of cortical surface
+    reconstruction and transformations:
+
+    - **orig**: Original surface extracted from the brain volume, representing
+      the initial estimate of the cortical boundary before topology correction.
+    - **white**: White matter surface, representing the boundary between white
+      matter and gray matter (inner cortical surface).
+    - **smoothwm**: Smoothed white matter surface, created by applying
+      smoothing to the white surface for improved visualization and analysis.
+    - **pial**: Pial surface, representing the outer boundary of the cortex
+      (gray matter/CSF interface). This is commonly used for cortical thickness
+      calculations and surface-based registration.
+    - **inflated**: Inflated surface, where sulci and gyri are smoothed to
+      make visualization of the entire cortical surface easier while preserving
+      topology. Useful for visualizing data across the cortex without occlusion
+      by folding patterns.
+    - **sphere**: Spherical surface, where the cortical surface is mapped to a
+      sphere. This is essential for surface-based registration, inter-subject
+      alignment, and applying parcellations.
+
+    Each surface can be loaded with neuroimaging tools like nibabel and used
+    for surface-based analyses, visualization, or spatial transformations.
+
+    In a typical FreeSurfer installation, these template surfaces can be found
+    in the subjects directory under ``$FREESURFER_HOME/subjects/`` (e.g.,
+    ``$FREESURFER_HOME/subjects/fsaverage/surf/``). When ``use_local=True``,
+    this function will attempt to locate and use these local files instead of
+    downloading them.
+
+    Example directory tree:
+
+    ::
+
+        ~/nnt-data/tpl-fsaverage
+        ├── fsaverage
+        │   ├── LICENSE
+        │   └── surf
+        │       ├── lh.curv
+        │       ├── lh.inflated
+        │       ├── lh.inflated_avg
+        │       ├── lh.orig
+        │       ├── lh.orig_avg
+        │       ├── lh.pial
+        │       ├── lh.pial_avg
+        │       ├── lh.smoothwm
+        │       ├── lh.sphere
+        │       ├── lh.sphere.reg.avg
+        │       ├── lh.white
+        │       ├── lh.white_avg
+        │       ├── rh.curv
+        │       ├── rh.inflated
+        │       ├── rh.inflated_avg
+        │       ├── rh.orig
+        │       ├── rh.orig_avg
+        │       ├── rh.pial
+        │       ├── rh.pial_avg
+        │       ├── rh.smoothwm
+        │       ├── rh.sphere
+        │       ├── rh.sphere.reg.avg
+        │       ├── rh.white
+        │       └── rh.white_avg
+        ├── fsaverage3
+        │   ├── LICENSE
+        │   └── surf
+        │       ├── lh.curv
+        │       ├── lh.inflated
+        │       ├── lh.inflated_avg
+        │       ├── lh.orig
+        │       ├── lh.orig_avg
+        │       ├── lh.pial
+        │       ├── lh.pial_avg
+        │       ├── lh.smoothwm
+        │       ├── lh.sphere
+        │       ├── lh.sphere.reg.avg
+        │       ├── lh.white
+        │       ├── lh.white_avg
+        │       ├── rh.curv
+        │       ├── rh.inflated
+        │       ├── rh.inflated_avg
+        │       ├── rh.orig
+        │       ├── rh.orig_avg
+        │       ├── rh.pial
+        │       ├── rh.pial_avg
+        │       ├── rh.smoothwm
+        │       ├── rh.sphere
+        │       ├── rh.sphere.reg.avg
+        │       ├── rh.white
+        │       └── rh.white_avg
+        ├── fsaverage4
+        │   ├── LICENSE
+        │   └── surf
+        │       ├── lh.curv
+        │       ├── lh.inflated
+        │       ├── lh.inflated_avg
+        │       ├── lh.orig
+        │       ├── lh.orig_avg
+        │       ├── lh.pial
+        │       ├── lh.pial_avg
+        │       ├── lh.smoothwm
+        │       ├── lh.sphere
+        │       ├── lh.sphere.reg.avg
+        │       ├── lh.white
+        │       ├── lh.white_avg
+        │       ├── rh.curv
+        │       ├── rh.inflated
+        │       ├── rh.inflated_avg
+        │       ├── rh.orig
+        │       ├── rh.orig_avg
+        │       ├── rh.pial
+        │       ├── rh.pial_avg
+        │       ├── rh.smoothwm
+        │       ├── rh.sphere
+        │       ├── rh.sphere.reg.avg
+        │       ├── rh.white
+        │       └── rh.white_avg
+        ├── fsaverage5
+        │   ├── LICENSE
+        │   └── surf
+        │       ├── lh.curv
+        │       ├── lh.inflated
+        │       ├── lh.inflated_avg
+        │       ├── lh.orig
+        │       ├── lh.orig_avg
+        │       ├── lh.pial
+        │       ├── lh.pial_avg
+        │       ├── lh.smoothwm
+        │       ├── lh.sphere
+        │       ├── lh.sphere.reg.avg
+        │       ├── lh.white
+        │       ├── lh.white_avg
+        │       ├── rh.curv
+        │       ├── rh.inflated
+        │       ├── rh.inflated_avg
+        │       ├── rh.orig
+        │       ├── rh.orig_avg
+        │       ├── rh.pial
+        │       ├── rh.pial_avg
+        │       ├── rh.smoothwm
+        │       ├── rh.sphere
+        │       ├── rh.sphere.reg.avg
+        │       ├── rh.white
+        │       └── rh.white_avg
+        └── fsaverage6
+            ├── LICENSE
+            └── surf
+                ├── lh.curv
+                ├── lh.inflated
+                ├── lh.inflated_avg
+                ├── lh.orig
+                ├── lh.orig_avg
+                ├── lh.pial
+                ├── lh.pial_avg
+                ├── lh.smoothwm
+                ├── lh.sphere
+                ├── lh.sphere.reg.avg
+                ├── lh.white
+                ├── lh.white_avg
+                ├── rh.curv
+                ├── rh.inflated
+                ├── rh.inflated_avg
+                ├── rh.orig
+                ├── rh.orig_avg
+                ├── rh.pial
+                ├── rh.pial_avg
+                ├── rh.smoothwm
+                ├── rh.sphere
+                ├── rh.sphere.reg.avg
+                ├── rh.white
+                └── rh.white_avg
+
+        10 directories, 125 files
+
+    Examples
+    --------
+    Load the fsaverage template surfaces:
+
+    >>> surfaces = fetch_fsaverage(version='fsaverage')  # doctest: +SKIP
+    >>> surfaces.keys()  # doctest: +SKIP
+    dict_keys(['orig', 'white', 'smoothwm', 'pial', 'inflated', 'sphere'])
+
+    Access the pial surface paths for left and right hemispheres:
+
+    >>> surfaces.pial  # doctest: +SKIP
+    Surface(L=PosixPath('~/nnt-data/tpl-fsaverage/fsaverage/surf/lh.pial'),
+            R=PosixPath('~/nnt-data/tpl-fsaverage/fsaverage/surf/rh.pial'))
+
+    Load the left pial surface with nibabel to examine its structure:
+
+    >>> import nibabel as nib  # doctest: +SKIP
+    >>> pial_left = nib.freesurfer.read_geometry(surfaces.pial.L)  # doctest: +SKIP
+    >>> vertices, faces = pial_left  # doctest: +SKIP
+    >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
+    Vertices: (163842, 3), Faces: (327680, 3)
 
     References
     ----------
@@ -108,22 +307,26 @@ def fetch_fsaverage_curated(version="fsaverage", force=False, data_dir=None, ver
     """
     Download files for fsaverage FreeSurfer template.
 
-    Curated by neuromaps.
-
-    This dataset contains
+    This dataset contains surface geometry files (white, pial, inflated,
+    sphere), medial wall labels, and surface shape files (sulcal depth and
+    vertex area) in GIFTI format for the fsaverage template at various
+    densities.
 
     If you used this data, please cite 1_, 2_, 3_, 4_.
 
     Parameters
     ----------
     version : str, optional
-        One of {'fsaverage', 'fsaverage4', 'fsaverage5',
-        'fsaverage6'}. Default: 'fsaverage'
+        One of {'fsaverage', 'fsaverage4', 'fsaverage5', 'fsaverage6'}.
+        Default: 'fsaverage'
 
     Returns
     -------
     filenames : :class:`sklearn.utils.Bunch`
-        Dictionary-like object with template files.
+        Dictionary-like object with keys ['white', 'pial', 'inflated',
+        'sphere', 'medial', 'sulc', 'vaavg'], where corresponding values are
+        Surface namedtuples containing filepaths for the left (L) and right
+        (R) hemisphere files in GIFTI format.
 
     Other Parameters
     ----------------
@@ -136,6 +339,140 @@ def fetch_fsaverage_curated(version="fsaverage", force=False, data_dir=None, ver
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
+
+    Notes
+    -----
+    This function fetches curated fsaverage surfaces from the neuromaps
+    package (see `neuromaps.datasets.fetch_fsaverage <https://netneurolab.github.io/neuromaps/generated/neuromaps.datasets.fetch_fsaverage.html>`_).
+    All files are provided in GIFTI format (.gii) rather than FreeSurfer's
+    native format.
+
+    The returned files include:
+
+    - **white**: White matter surface geometry (.surf.gii), representing the
+        boundary between white matter and gray matter. Corresponds to FreeSurfer
+        surfaces 'lh.white' and 'rh.white'.
+    - **pial**: Pial surface geometry (.surf.gii), representing the outer
+        cortical boundary. Corresponds to FreeSurfer surfaces 'lh.pial' and
+        'rh.pial'.
+    - **inflated**: Inflated surface geometry (.surf.gii) for improved
+        visualization of sulci and gyri. Corresponds to FreeSurfer surfaces
+        'lh.inflated' and 'rh.inflated'.
+    - **sphere**: Spherical surface geometry (.surf.gii) used for surface-based
+        registration and applying parcellations. Corresponds to FreeSurfer
+        surfaces 'lh.sphere' and 'rh.sphere'.
+    - **medial**: Medial wall mask (.label.gii) indicating vertices to exclude
+        from analyses (vertices with no cortex). Not a standard FreeSurfer
+        output; derived by neuromaps to mark the no-medial-wall vertices.
+    - **sulc**: Sulcal depth map (.shape.gii) providing sulcal/gyral patterns
+        on the midthickness surface. Corresponds to FreeSurfer 'lh.sulc' and
+        'rh.sulc' values resampled to the midthickness surface.
+    - **vaavg**: Vertex area map (.shape.gii) representing the average vertex
+        area on the midthickness surface. Not a standard FreeSurfer output;
+        computed from mesh triangle areas and averaged per vertex.
+
+    The vertex density varies by version: fsaverage (164k vertices),
+    fsaverage6 (41k), fsaverage5 (10k), and fsaverage4 (3k).
+
+    Example directory tree:
+
+    ::
+
+        ~/nnt-data/tpl-fsaverage_curated
+        ├── fsaverage
+        │   ├── tpl-fsaverage_den-164k_hemi-L_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-L_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-L_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-L_inflated.surf.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-L_pial.surf.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-L_sphere.surf.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-L_white.surf.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-R_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-R_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-R_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-R_inflated.surf.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-R_pial.surf.gii
+        │   ├── tpl-fsaverage_den-164k_hemi-R_sphere.surf.gii
+        │   └── tpl-fsaverage_den-164k_hemi-R_white.surf.gii
+        ├── fsaverage4
+        │   ├── tpl-fsaverage_den-3k_hemi-L_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-L_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-L_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-L_inflated.surf.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-L_pial.surf.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-L_sphere.surf.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-L_white.surf.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-R_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-R_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-R_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-R_inflated.surf.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-R_pial.surf.gii
+        │   ├── tpl-fsaverage_den-3k_hemi-R_sphere.surf.gii
+        │   └── tpl-fsaverage_den-3k_hemi-R_white.surf.gii
+        ├── fsaverage5
+        │   ├── tpl-fsaverage_den-10k_hemi-L_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-L_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-L_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-L_inflated.surf.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-L_pial.surf.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-L_sphere.surf.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-L_white.surf.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-R_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-R_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-R_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-R_inflated.surf.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-R_pial.surf.gii
+        │   ├── tpl-fsaverage_den-10k_hemi-R_sphere.surf.gii
+        │   └── tpl-fsaverage_den-10k_hemi-R_white.surf.gii
+        └── fsaverage6
+            ├── tpl-fsaverage_den-41k_hemi-L_desc-nomedialwall_dparc.label.gii
+            ├── tpl-fsaverage_den-41k_hemi-L_desc-sulc_midthickness.shape.gii
+            ├── tpl-fsaverage_den-41k_hemi-L_desc-vaavg_midthickness.shape.gii
+            ├── tpl-fsaverage_den-41k_hemi-L_inflated.surf.gii
+            ├── tpl-fsaverage_den-41k_hemi-L_pial.surf.gii
+            ├── tpl-fsaverage_den-41k_hemi-L_sphere.surf.gii
+            ├── tpl-fsaverage_den-41k_hemi-L_white.surf.gii
+            ├── tpl-fsaverage_den-41k_hemi-R_desc-nomedialwall_dparc.label.gii
+            ├── tpl-fsaverage_den-41k_hemi-R_desc-sulc_midthickness.shape.gii
+            ├── tpl-fsaverage_den-41k_hemi-R_desc-vaavg_midthickness.shape.gii
+            ├── tpl-fsaverage_den-41k_hemi-R_inflated.surf.gii
+            ├── tpl-fsaverage_den-41k_hemi-R_pial.surf.gii
+            ├── tpl-fsaverage_den-41k_hemi-R_sphere.surf.gii
+            └── tpl-fsaverage_den-41k_hemi-R_white.surf.gii
+
+        4 directories, 56 files
+
+
+    Examples
+    --------
+    Load the fsaverage curated template surfaces:
+
+    >>> surfaces = fetch_fsaverage_curated(version='fsaverage')  # doctest: +SKIP
+    >>> surfaces.keys()  # doctest: +SKIP
+    dict_keys(['white', 'pial', 'inflated', 'sphere', 'medial', 'sulc', 'vaavg'])
+
+    Access the pial surface GIFTI files:
+
+    >>> surfaces.pial  # doctest: +SKIP
+    Surface(L=PosixPath('~/nnt-data/tpl-fsaverage_curated/fsaverage/tpl-fsaverage_den-164k_hemi-L_pial.surf.gii'),
+            R=PosixPath('~/nnt-data/tpl-fsaverage_curated/fsaverage/tpl-fsaverage_den-164k_hemi-R_pial.surf.gii'))
+
+    Load the left pial surface with nibabel:
+
+    >>> import nibabel as nib  # doctest: +SKIP
+    >>> pial_left = nib.load(surfaces.pial.L)  # doctest: +SKIP
+    >>> vertices = pial_left.agg_data('pointset')  # doctest: +SKIP
+    >>> faces = pial_left.agg_data('triangle')  # doctest: +SKIP
+    >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
+    Vertices: (163842, 3), Faces: (327680, 3)
+
+    Load and examine the sulcal depth data:
+
+    >>> sulc_left = nib.load(surfaces.sulc.L)  # doctest: +SKIP
+    >>> sulc_data = sulc_left.agg_data()  # doctest: +SKIP
+    >>> sulc_min, sulc_max = sulc_data.min(), sulc_data.max()  # doctest: +SKIP
+    >>> print(f"Sulcal depth range: {sulc_min:.2f} to {sulc_max:.2f}")  # doctest: +SKIP
+    Sulcal depth range: -1.78 to 1.88
 
     References
     ----------
@@ -208,7 +545,12 @@ def fetch_hcp_standards(force=False, data_dir=None, verbose=1):
     """
     Fetch HCP standard mesh atlases for converting between FreeSurfer and HCP.
 
-    This dataset contains
+    This dataset contains standard mesh atlases used by Connectome Workbench
+    to convert and register data between FreeSurfer fsaverage space and HCP
+    fsLR space. It includes spherical templates for fsaverage and fsLR at
+    multiple vertex densities (e.g., 164k, 59k, 32k), mapping spheres between
+    fs (hemisphere-specific) and fsLR, and midthickness vertex area averages
+    (``va_avg``) for resampling and area-preserving operations.
 
     The original file was from 3_, but is no longer available. The archived
     file is available from 4_.
@@ -231,6 +573,85 @@ def fetch_hcp_standards(force=False, data_dir=None, verbose=1):
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
+
+    Notes
+    -----
+    Returns the path to the `standard_mesh_atlases` directory containing
+    curated GIFTI files used for conversions between FreeSurfer fsaverage and
+    HCP fsLR spaces, including spherical templates and midthickness vertex-area
+    maps at multiple densities.
+
+    Example directory tree:
+
+    ::
+
+        ~/nnt-data/tpl-hcp_standards/standard_mesh_atlases
+        ├── fsaverage.L_LR.spherical_std.164k_fs_LR.surf.gii
+        ├── fsaverage.R_LR.spherical_std.164k_fs_LR.surf.gii
+        ├── fs_L
+        │   ├── fsaverage.L.sphere.164k_fs_L.surf.gii
+        │   └── fs_L-to-fs_LR_fsaverage.L_LR.spherical_std.164k_fs_L.surf.gii
+        ├── fs_R
+        │   ├── fsaverage.R.sphere.164k_fs_R.surf.gii
+        │   └── fs_R-to-fs_LR_fsaverage.R_LR.spherical_std.164k_fs_R.surf.gii
+        ├── L.sphere.32k_fs_LR.surf.gii
+        ├── L.sphere.59k_fs_LR.surf.gii
+        ├── resample_fsaverage
+        │   ├── fsaverage4.L.midthickness_va_avg.3k_fsavg_L.shape.gii
+        │   ├── fsaverage4.R.midthickness_va_avg.3k_fsavg_R.shape.gii
+        │   ├── fsaverage4_std_sphere.L.3k_fsavg_L.surf.gii
+        │   ├── fsaverage4_std_sphere.R.3k_fsavg_R.surf.gii
+        │   ├── fsaverage5.L.midthickness_va_avg.10k_fsavg_L.shape.gii
+        │   ├── fsaverage5.R.midthickness_va_avg.10k_fsavg_R.shape.gii
+        │   ├── fsaverage5_std_sphere.L.10k_fsavg_L.surf.gii
+        │   ├── fsaverage5_std_sphere.R.10k_fsavg_R.surf.gii
+        │   ├── fsaverage6.L.midthickness_va_avg.41k_fsavg_L.shape.gii
+        │   ├── fsaverage6.R.midthickness_va_avg.41k_fsavg_R.shape.gii
+        │   ├── fsaverage6_std_sphere.L.41k_fsavg_L.surf.gii
+        │   ├── fsaverage6_std_sphere.R.41k_fsavg_R.surf.gii
+        │   ├── fsaverage.L.midthickness_va_avg.164k_fsavg_L.shape.gii
+        │   ├── fsaverage.R.midthickness_va_avg.164k_fsavg_R.shape.gii
+        │   ├── fsaverage_std_sphere.L.164k_fsavg_L.surf.gii
+        │   ├── fsaverage_std_sphere.R.164k_fsavg_R.surf.gii
+        │   ├── fs_LR-deformed_to-fsaverage.L.sphere.164k_fs_LR.surf.gii
+        │   ├── fs_LR-deformed_to-fsaverage.L.sphere.32k_fs_LR.surf.gii
+        │   ├── fs_LR-deformed_to-fsaverage.L.sphere.59k_fs_LR.surf.gii
+        │   ├── fs_LR-deformed_to-fsaverage.R.sphere.164k_fs_LR.surf.gii
+        │   ├── fs_LR-deformed_to-fsaverage.R.sphere.32k_fs_LR.surf.gii
+        │   ├── fs_LR-deformed_to-fsaverage.R.sphere.59k_fs_LR.surf.gii
+        │   ├── fs_LR.L.midthickness_va_avg.164k_fs_LR.shape.gii
+        │   ├── fs_LR.L.midthickness_va_avg.32k_fs_LR.shape.gii
+        │   ├── fs_LR.L.midthickness_va_avg.59k_fs_LR.shape.gii
+        │   ├── fs_LR.R.midthickness_va_avg.164k_fs_LR.shape.gii
+        │   ├── fs_LR.R.midthickness_va_avg.32k_fs_LR.shape.gii
+        │   └── fs_LR.R.midthickness_va_avg.59k_fs_LR.shape.gii
+        ├── R.sphere.32k_fs_LR.surf.gii
+        └── R.sphere.59k_fs_LR.surf.gii
+
+        3 directories, 38 files
+
+    Examples
+    --------
+    Load the standards directory and inspect contents:
+
+    >>> standards = fetch_hcp_standards()  # doctest: +SKIP
+    >>> print(standards)  # doctest: +SKIP
+    PosixPath('~/nnt-data/tpl-hcp_standards/standard_mesh_atlases')
+
+    List the fsLR 32k spherical templates:
+
+    >>> import pathlib  # doctest: +SKIP
+    >>> list((standards).glob('L.sphere.32k_fs_LR.surf.gii'))  # doctest: +SKIP
+    [PosixPath('~/nnt-data/tpl-hcp_standards/standard_mesh_atlases/L.sphere.32k_fs_LR.surf.gii')]
+
+    Load a sphere surface with nibabel and examine geometry:
+
+    >>> import nibabel as nib  # doctest: +SKIP
+    >>> gii = nib.load(standards / 'L.sphere.32k_fs_LR.surf.gii')  # doctest: +SKIP
+    >>> vertices = gii.agg_data('pointset')  # doctest: +SKIP
+    >>> faces = gii.agg_data('triangle')  # doctest: +SKIP
+    >>> vertices.shape, faces.shape  # doctest: +SKIP
+    ((32492, 3), (64980, 3))
 
     References
     ----------
@@ -265,9 +686,10 @@ def fetch_fslr_curated(version="fslr32k", force=False, data_dir=None, verbose=1)
     """
     Download files for HCP fsLR template.
 
-    Curated by neuromaps.
-
-    This dataset contains
+    This dataset contains surface geometry files (midthickness, inflated,
+    veryinflated [where available], sphere), medial wall labels, and surface
+    shape files (sulcal depth and vertex area) in GIFTI format for the HCP fsLR
+    template at various densities.
 
     If you used this data, please cite 1_, 2_, 3_.
 
@@ -279,7 +701,11 @@ def fetch_fslr_curated(version="fslr32k", force=False, data_dir=None, verbose=1)
     Returns
     -------
     filenames : :class:`sklearn.utils.Bunch`
-        Dictionary-like object with template files.
+        Dictionary-like object with keys ['midthickness', 'inflated',
+        'veryinflated' (except for 'fslr4k'/'fslr8k'), 'sphere', 'medial',
+        'sulc', 'vaavg'], where corresponding values are Surface namedtuples
+        containing filepaths for the left (L) and right (R) hemisphere files
+        in GIFTI format.
 
     Other Parameters
     ----------------
@@ -292,6 +718,139 @@ def fetch_fslr_curated(version="fslr32k", force=False, data_dir=None, verbose=1)
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
+
+    Notes
+    -----
+    This function fetches curated fsLR surfaces from the neuromaps
+    package (see `neuromaps.datasets.fetch_fslr <https://netneurolab.github.io/neuromaps/generated/neuromaps.datasets.fetch_fslr.html>`_).
+    All files are provided in GIFTI format (.gii). The fsLR template is the
+    HCP standard mesh used for group analyses and cross-subject alignment.
+
+
+    The returned files include:
+
+    - **midthickness**: Midthickness surface geometry (.surf.gii), halfway
+        between white and pial surfaces; often preferred for data mapping.
+    - **inflated**: Inflated surface geometry (.surf.gii) for improved
+        visualization of sulci and gyri.
+    - **veryinflated**: Very inflated surface geometry (.surf.gii) providing
+        additional smoothing; not available for 'fslr4k'/'fslr8k'.
+    - **sphere**: Spherical surface geometry (.surf.gii) used for surface-based
+        registration and applying parcellations.
+    - **medial**: Medial wall mask (.label.gii) indicating vertices to exclude
+        from analyses (vertices with no cortex).
+    - **sulc**: Sulcal depth map (.shape.gii) providing sulcal/gyral patterns
+        on the midthickness surface.
+    - **vaavg**: Vertex area map (.shape.gii) representing the average vertex
+        area on the midthickness surface.
+
+    The vertex density varies by version: fslr4k (≈4k vertices), fslr8k (≈8k),
+    fslr32k (≈32k), and fslr164k (≈164k) per hemisphere.
+
+    Example directory tree:
+
+    ::
+
+        ~/nnt-data/tpl-fslr_curated
+        ├── fslr164k
+        │   ├── README.md
+        │   ├── tpl-fsLR_den-164k_hemi-L_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsLR_den-164k_hemi-L_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-164k_hemi-L_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-164k_hemi-L_inflated.surf.gii
+        │   ├── tpl-fsLR_den-164k_hemi-L_midthickness.surf.gii
+        │   ├── tpl-fsLR_den-164k_hemi-L_sphere.surf.gii
+        │   ├── tpl-fsLR_den-164k_hemi-L_veryinflated.surf.gii
+        │   ├── tpl-fsLR_den-164k_hemi-R_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsLR_den-164k_hemi-R_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-164k_hemi-R_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-164k_hemi-R_inflated.surf.gii
+        │   ├── tpl-fsLR_den-164k_hemi-R_midthickness.surf.gii
+        │   ├── tpl-fsLR_den-164k_hemi-R_sphere.surf.gii
+        │   ├── tpl-fsLR_den-164k_hemi-R_veryinflated.surf.gii
+        │   ├── tpl-fsLR_space-fsaverage_den-164k_hemi-L_sphere.surf.gii
+        │   └── tpl-fsLR_space-fsaverage_den-164k_hemi-R_sphere.surf.gii
+        ├── fslr32k
+        │   ├── README.md
+        │   ├── tpl-fsLR_den-32k_hemi-L_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsLR_den-32k_hemi-L_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-32k_hemi-L_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-32k_hemi-L_inflated.surf.gii
+        │   ├── tpl-fsLR_den-32k_hemi-L_midthickness.surf.gii
+        │   ├── tpl-fsLR_den-32k_hemi-L_sphere.surf.gii
+        │   ├── tpl-fsLR_den-32k_hemi-L_veryinflated.surf.gii
+        │   ├── tpl-fsLR_den-32k_hemi-R_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsLR_den-32k_hemi-R_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-32k_hemi-R_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-32k_hemi-R_inflated.surf.gii
+        │   ├── tpl-fsLR_den-32k_hemi-R_midthickness.surf.gii
+        │   ├── tpl-fsLR_den-32k_hemi-R_sphere.surf.gii
+        │   ├── tpl-fsLR_den-32k_hemi-R_veryinflated.surf.gii
+        │   ├── tpl-fsLR_space-fsaverage_den-32k_hemi-L_sphere.surf.gii
+        │   └── tpl-fsLR_space-fsaverage_den-32k_hemi-R_sphere.surf.gii
+        ├── fslr4k
+        │   ├── tpl-fsLR_den-4k_hemi-L_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsLR_den-4k_hemi-L_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-4k_hemi-L_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-4k_hemi-L_inflated.surf.gii
+        │   ├── tpl-fsLR_den-4k_hemi-L_midthickness.surf.gii
+        │   ├── tpl-fsLR_den-4k_hemi-L_sphere.surf.gii
+        │   ├── tpl-fsLR_den-4k_hemi-R_desc-nomedialwall_dparc.label.gii
+        │   ├── tpl-fsLR_den-4k_hemi-R_desc-sulc_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-4k_hemi-R_desc-vaavg_midthickness.shape.gii
+        │   ├── tpl-fsLR_den-4k_hemi-R_inflated.surf.gii
+        │   ├── tpl-fsLR_den-4k_hemi-R_midthickness.surf.gii
+        │   ├── tpl-fsLR_den-4k_hemi-R_sphere.surf.gii
+        │   ├── tpl-fsLR_space-fsaverage_den-4k_hemi-L_sphere.surf.gii
+        │   └── tpl-fsLR_space-fsaverage_den-4k_hemi-R_sphere.surf.gii
+        └── fslr8k
+            ├── tpl-fsLR_den-8k_hemi-L_desc-nomedialwall_dparc.label.gii
+            ├── tpl-fsLR_den-8k_hemi-L_desc-sulc_midthickness.shape.gii
+            ├── tpl-fsLR_den-8k_hemi-L_desc-vaavg_midthickness.shape.gii
+            ├── tpl-fsLR_den-8k_hemi-L_inflated.surf.gii
+            ├── tpl-fsLR_den-8k_hemi-L_midthickness.surf.gii
+            ├── tpl-fsLR_den-8k_hemi-L_sphere.surf.gii
+            ├── tpl-fsLR_den-8k_hemi-R_desc-nomedialwall_dparc.label.gii
+            ├── tpl-fsLR_den-8k_hemi-R_desc-sulc_midthickness.shape.gii
+            ├── tpl-fsLR_den-8k_hemi-R_desc-vaavg_midthickness.shape.gii
+            ├── tpl-fsLR_den-8k_hemi-R_inflated.surf.gii
+            ├── tpl-fsLR_den-8k_hemi-R_midthickness.surf.gii
+            ├── tpl-fsLR_den-8k_hemi-R_sphere.surf.gii
+            ├── tpl-fsLR_space-fsaverage_den-8k_hemi-L_sphere.surf.gii
+            └── tpl-fsLR_space-fsaverage_den-8k_hemi-R_sphere.surf.gii
+
+        4 directories, 62 files
+
+    Examples
+    --------
+    Load the fsLR curated template surfaces:
+
+    >>> surfaces = fetch_fslr_curated(version='fslr32k')  # doctest: +SKIP
+    >>> surfaces.keys()  # doctest: +SKIP
+    dict_keys(['midthickness', 'inflated', 'veryinflated', 'sphere', 'medial',
+               'sulc', 'vaavg'])
+
+    Access the midthickness surface GIFTI files:
+
+    >>> surfaces.midthickness  # doctest: +SKIP
+    Surface(L=PosixPath('~/nnt-data/tpl-fslr_curated/fslr32k/tpl-fsLR_den-32k_hemi-L_midthickness.surf.gii'),
+            R=PosixPath('~/nnt-data/tpl-fslr_curated/fslr32k/tpl-fsLR_den-32k_hemi-R_midthickness.surf.gii'))
+
+    Load the left midthickness surface with nibabel:
+
+    >>> import nibabel as nib  # doctest: +SKIP
+    >>> gii = nib.load(surfaces.midthickness.L)  # doctest: +SKIP
+    >>> vertices = gii.agg_data('pointset')  # doctest: +SKIP
+    >>> faces = gii.agg_data('triangle')  # doctest: +SKIP
+    >>> print(vertices.shape, faces.shape)  # doctest: +SKIP
+    (32492, 3) (64980, 3)
+
+    Load and examine the sulcal depth data:
+
+    >>> sulc_left = nib.load(surfaces.sulc.L)  # doctest: +SKIP
+    >>> sulc_data = sulc_left.agg_data()  # doctest: +SKIP
+    >>> float(sulc_data.min()), float(sulc_data.max())  # doctest: +SKIP
+    (-1.6234848499298096, 1.1611071825027466)
 
     References
     ----------
@@ -375,7 +934,10 @@ def fetch_civet(density="41k", version="v1", force=False, data_dir=None, verbose
     """
     Fetch CIVET surface files.
 
-    This dataset contains
+    This dataset contains midthickness and white matter surface files for the
+    CIVET template in OBJ format, registered to ICBM152 space. CIVET is a
+    fully automated structural image processing pipeline developed at the
+    Montreal Neurological Institute.
 
     If you used this data, please cite 1_, 2_, 3_.
 
@@ -390,9 +952,10 @@ def fetch_civet(density="41k", version="v1", force=False, data_dir=None, verbose
     Returns
     -------
     filenames : :class:`sklearn.utils.Bunch`
-        Dictionary-like object with keys ['mid', 'white'] containing geometry
-        files for CIVET surface. Note for version 'v1' the 'mid' and 'white'
-        files are identical.
+        Dictionary-like object with keys ['mid', 'white'], where corresponding
+        values are Surface namedtuples containing filepaths for the left (L)
+        and right (R) hemisphere surface files in OBJ format. Note: for version
+        'v1', the 'mid' and 'white' files are identical.
 
     Other Parameters
     ----------------
@@ -408,7 +971,68 @@ def fetch_civet(density="41k", version="v1", force=False, data_dir=None, verbose
 
     Notes
     -----
+    The CIVET template surfaces are provided in OBJ format and registered to
+    ICBM152 stereotaxic space.
+
+    The returned files include:
+
+    - **mid**: Midthickness surface (.obj), representing the surface halfway
+      between white and gray matter boundaries. For version 'v1', this is
+      identical to the white surface.
+    - **white**: White matter surface (.obj), representing the boundary between
+      white matter and gray matter.
+
+    The vertex density varies by option: 41k (≈41k vertices) or 164k (≈164k)
+    per hemisphere. The high-resolution 164k surface is only available for
+    version 'v2'.
+
+    Example directory tree:
+
+    ::
+
+        ~/nnt-data/tpl-civet
+        ├── v1
+        │   └── civet41k
+        │       ├── tpl-civet_space-ICBM152_hemi-L_den-41k_mid.obj
+        │       ├── tpl-civet_space-ICBM152_hemi-L_den-41k_white.obj
+        │       ├── tpl-civet_space-ICBM152_hemi-R_den-41k_mid.obj
+        │       └── tpl-civet_space-ICBM152_hemi-R_den-41k_white.obj
+        └── v2
+            ├── civet164k
+            │   ├── tpl-civet_space-ICBM152_hemi-L_den-164k_mid.obj
+            │   ├── tpl-civet_space-ICBM152_hemi-L_den-164k_white.obj
+            │   ├── tpl-civet_space-ICBM152_hemi-R_den-164k_mid.obj
+            │   └── tpl-civet_space-ICBM152_hemi-R_den-164k_white.obj
+            └── civet41k
+                ├── tpl-civet_space-ICBM152_hemi-L_den-41k_mid.obj
+                ├── tpl-civet_space-ICBM152_hemi-L_den-41k_white.obj
+                ├── tpl-civet_space-ICBM152_hemi-R_den-41k_mid.obj
+                └── tpl-civet_space-ICBM152_hemi-R_den-41k_white.obj
+
+        5 directories, 12 files
+
     License: https://github.com/aces/CIVET_Full_Project/blob/master/LICENSE
+
+    Examples
+    --------
+    Load the CIVET template surfaces:
+
+    >>> surfaces = fetch_civet(density='41k', version='v2')  # doctest: +SKIP
+    >>> surfaces.keys()  # doctest: +SKIP
+    dict_keys(['mid', 'white'])
+
+    Access the midthickness surface paths:
+
+    >>> surfaces.mid  # doctest: +SKIP
+    Surface(L=PosixPath('~/nnt-data/tpl-civet/v2/civet41k/tpl-civet_space-ICBM152_hemi-L_den-41k_mid.obj'),
+            R=PosixPath('~/nnt-data/tpl-civet/v2/civet41k/tpl-civet_space-ICBM152_hemi-R_den-41k_mid.obj'))
+
+    Load the left midthickness surface with nibabel:
+
+    >>> import nibabel as nib  # doctest: +SKIP
+    >>> vertices, faces = nib.freesurfer.read_geometry(surfaces.mid.L)  # doctest: +SKIP
+    >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
+    Vertices: (40962, 3), Faces: (81920, 3)
 
     References
     ----------
@@ -470,9 +1094,10 @@ def fetch_civet_curated(version="civet41k", force=False, data_dir=None, verbose=
     """
     Download files for CIVET template.
 
-    Curated by neuromaps.
-
-    This dataset contains
+    This dataset contains surface geometry files (white, midthickness, inflated,
+    veryinflated, sphere), medial wall labels, and surface shape files (sulcal
+    depth and vertex area) in GIFTI format for the CIVET template at multiple
+    densities.
 
     If you used this data, please cite 1_, 2_, 3_, 4_.
 
@@ -484,7 +1109,10 @@ def fetch_civet_curated(version="civet41k", force=False, data_dir=None, verbose=
     Returns
     -------
     filenames : :class:`sklearn.utils.Bunch`
-        Dictionary-like object with template files.
+        Dictionary-like object with keys ['white', 'midthickness', 'inflated',
+        'veryinflated', 'sphere', 'medial', 'sulc', 'vaavg'], where
+        corresponding values are Surface namedtuples containing filepaths for
+        the left (L) and right (R) hemisphere files in GIFTI format.
 
     Other Parameters
     ----------------
@@ -500,7 +1128,119 @@ def fetch_civet_curated(version="civet41k", force=False, data_dir=None, verbose=
 
     Notes
     -----
+    This function fetches curated CIVET surfaces from the neuromaps
+    package (see `neuromaps.datasets.fetch_civet <https://netneurolab.github.io/neuromaps/generated/neuromaps.datasets.fetch_civet.html>`_).
+    All files are provided in GIFTI format (.gii). The CIVET template is
+    registered to ICBM152 stereotaxic space.
+
+    The returned files include:
+
+    - **white**: White matter surface geometry (.surf.gii), representing the
+      boundary between white matter and gray matter.
+    - **midthickness**: Midthickness surface geometry (.surf.gii), halfway
+      between white and pial surfaces.
+    - **inflated**: Inflated surface geometry (.surf.gii) for improved
+      visualization of sulci and gyri.
+    - **veryinflated**: Very inflated surface geometry (.surf.gii) providing
+      additional smoothing for visualization.
+    - **sphere**: Spherical surface geometry (.surf.gii) used for surface-based
+      registration and applying parcellations.
+    - **medial**: Medial wall mask (.label.gii) indicating vertices to exclude
+      from analyses (vertices with no cortex).
+    - **sulc**: Sulcal depth map (.shape.gii) providing sulcal/gyral patterns
+      on the midthickness surface.
+    - **vaavg**: Vertex area map (.shape.gii) representing the average vertex
+      area on the midthickness surface.
+
+    The vertex density varies by version: civet41k (≈41k vertices) and
+    civet164k (≈164k) per hemisphere.
+
+    Example directory tree:
+
+    ::
+
+        ~/nnt-data/tpl-civet_curated
+        └── v2
+            ├── civet164k
+            │   ├── tpl-civet_den-164k_hemi-L_desc-nomedialwall_dparc.label.gii
+            │   ├── tpl-civet_den-164k_hemi-L_desc-sulc_midthickness.shape.gii
+            │   ├── tpl-civet_den-164k_hemi-L_desc-vaavg_midthickness.shape.gii
+            │   ├── tpl-civet_den-164k_hemi-L_inflated.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-L_midthickness.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-L_sphere.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-L_veryinflated.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-L_white.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-R_desc-nomedialwall_dparc.label.gii
+            │   ├── tpl-civet_den-164k_hemi-R_desc-sulc_midthickness.shape.gii
+            │   ├── tpl-civet_den-164k_hemi-R_desc-vaavg_midthickness.shape.gii
+            │   ├── tpl-civet_den-164k_hemi-R_inflated.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-R_midthickness.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-R_sphere.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-R_veryinflated.surf.gii
+            │   ├── tpl-civet_den-164k_hemi-R_white.surf.gii
+            │   ├── tpl-civet_space-fsaverage_den-164k_hemi-L_sphere.surf.gii
+            │   ├── tpl-civet_space-fsaverage_den-164k_hemi-R_sphere.surf.gii
+            │   ├── tpl-civet_space-fsLR_den-164k_hemi-L_sphere.surf.gii
+            │   └── tpl-civet_space-fsLR_den-164k_hemi-R_sphere.surf.gii
+            └── civet41k
+                ├── README.md
+                ├── tpl-civet_den-41k_hemi-L_desc-nomedialwall_dparc.label.gii
+                ├── tpl-civet_den-41k_hemi-L_desc-sulc_midthickness.shape.gii
+                ├── tpl-civet_den-41k_hemi-L_desc-vaavg_midthickness.shape.gii
+                ├── tpl-civet_den-41k_hemi-L_inflated.surf.gii
+                ├── tpl-civet_den-41k_hemi-L_midthickness.surf.gii
+                ├── tpl-civet_den-41k_hemi-L_sphere.surf.gii
+                ├── tpl-civet_den-41k_hemi-L_veryinflated.surf.gii
+                ├── tpl-civet_den-41k_hemi-L_white.surf.gii
+                ├── tpl-civet_den-41k_hemi-R_desc-nomedialwall_dparc.label.gii
+                ├── tpl-civet_den-41k_hemi-R_desc-sulc_midthickness.shape.gii
+                ├── tpl-civet_den-41k_hemi-R_desc-vaavg_midthickness.shape.gii
+                ├── tpl-civet_den-41k_hemi-R_inflated.surf.gii
+                ├── tpl-civet_den-41k_hemi-R_midthickness.surf.gii
+                ├── tpl-civet_den-41k_hemi-R_sphere.surf.gii
+                ├── tpl-civet_den-41k_hemi-R_veryinflated.surf.gii
+                ├── tpl-civet_den-41k_hemi-R_white.surf.gii
+                ├── tpl-civet_space-fsaverage_den-41k_hemi-L_sphere.surf.gii
+                ├── tpl-civet_space-fsaverage_den-41k_hemi-R_sphere.surf.gii
+                ├── tpl-civet_space-fsLR_den-41k_hemi-L_sphere.surf.gii
+                └── tpl-civet_space-fsLR_den-41k_hemi-R_sphere.surf.gii
+
+        3 directories, 41 files
+
     License: https://github.com/aces/CIVET_Full_Project/blob/master/LICENSE
+
+    Examples
+    --------
+    Load the CIVET curated template surfaces:
+
+    >>> surfaces = fetch_civet_curated(version='civet41k')  # doctest: +SKIP
+    >>> surfaces.keys()  # doctest: +SKIP
+    dict_keys([
+        'white', 'midthickness', 'inflated', 'veryinflated',
+        'sphere', 'medial', 'sulc', 'vaavg'
+    ])
+
+    Access the midthickness surface GIFTI files:
+
+    >>> surfaces.midthickness  # doctest: +SKIP
+    Surface(L=PosixPath('~/nnt-data/tpl-civet_curated/v2/civet41k/tpl-civet_den-41k_hemi-L_midthickness.surf.gii'),
+            R=PosixPath('~/nnt-data/tpl-civet_curated/v2/civet41k/tpl-civet_den-41k_hemi-R_midthickness.surf.gii'))
+
+    Load the left midthickness surface with nibabel:
+
+    >>> import nibabel as nib  # doctest: +SKIP
+    >>> gii = nib.load(surfaces.midthickness.L)  # doctest: +SKIP
+    >>> vertices = gii.agg_data('pointset')  # doctest: +SKIP
+    >>> faces = gii.agg_data('triangle')  # doctest: +SKIP
+    >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
+    Vertices: (40962, 3), Faces: (81920, 3)
+
+    Load and examine the sulcal depth data:
+
+    >>> sulc_left = nib.load(surfaces.sulc.L)  # doctest: +SKIP
+    >>> sulc_data = sulc_left.agg_data()  # doctest: +SKIP
+    >>> float(sulc_data.min()), float(sulc_data.max())  # doctest: +SKIP
+    (-27.601072311401367, 20.54990005493164)
 
     References
     ----------
@@ -588,7 +1328,9 @@ def fetch_conte69(force=False, data_dir=None, verbose=1):
     """
     Download files for Van Essen et al., 2012 Conte69 template.
 
-    This dataset contains
+    This dataset contains midthickness, inflated, and very inflated surface
+    files in GIFTI format for the Conte69 atlas, a population-average surface
+    template in fsLR32k space registered to MNI305 volumetric space.
 
     If you used this data, please cite 1_, 2_.
 
@@ -596,8 +1338,10 @@ def fetch_conte69(force=False, data_dir=None, verbose=1):
     -------
     filenames : :class:`sklearn.utils.Bunch`
         Dictionary-like object with keys ['midthickness', 'inflated',
-        'vinflated'], where corresponding values are lists of filepaths to
-        downloaded template files.
+        'vinflated', 'info'], where 'midthickness', 'inflated', and
+        'vinflated' are Surface namedtuples containing filepaths for the left
+        (L) and right (R) hemisphere GIFTI files, and 'info' is a dictionary
+        containing template metadata from template_description.json.
 
     Other Parameters
     ----------------
@@ -610,6 +1354,67 @@ def fetch_conte69(force=False, data_dir=None, verbose=1):
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
+
+    Notes
+    -----
+    The Conte69 template is a population-average surface atlas registered to
+    MNI305 volumetric space using the fsLR32k mesh (approximately 32k vertices
+    per hemisphere).
+
+    The returned files include:
+
+    - **midthickness**: Midthickness surface geometry (.surf.gii), halfway
+      between white and pial surfaces.
+    - **inflated**: Inflated surface geometry (.surf.gii) for improved
+      visualization of sulci and gyri.
+    - **vinflated**: Very inflated surface geometry (.surf.gii) providing
+      additional smoothing for visualization.
+    - **info**: Metadata dictionary containing template name, BIDS version,
+      and references.
+
+    Example directory tree:
+
+    ::
+
+        ~/nnt-data/tpl-conte69
+        ├── CHANGES
+        ├── template_description.json
+        ├── tpl-conte69_space-MNI305_variant-fsLR32k_inflated.L.surf.gii
+        ├── tpl-conte69_space-MNI305_variant-fsLR32k_inflated.R.surf.gii
+        ├── tpl-conte69_space-MNI305_variant-fsLR32k_midthickness.L.surf.gii
+        ├── tpl-conte69_space-MNI305_variant-fsLR32k_midthickness.R.surf.gii
+        ├── tpl-conte69_space-MNI305_variant-fsLR32k_vinflated.L.surf.gii
+        └── tpl-conte69_space-MNI305_variant-fsLR32k_vinflated.R.surf.gii
+
+        0 directories, 8 files
+
+    Examples
+    --------
+    Load the Conte69 template surfaces:
+
+    >>> surfaces = fetch_conte69()  # doctest: +SKIP
+    >>> surfaces.keys()  # doctest: +SKIP
+    dict_keys(['midthickness', 'inflated', 'vinflated', 'info'])
+
+    Access the midthickness surface GIFTI files:
+
+    >>> surfaces.midthickness  # doctest: +SKIP
+    Surface(L=PosixPath('~/nnt-data/tpl-conte69/tpl-conte69_space-MNI305_variant-fsLR32k_midthickness.L.surf.gii'),
+            R=PosixPath('~/nnt-data/tpl-conte69/tpl-conte69_space-MNI305_variant-fsLR32k_midthickness.R.surf.gii'))
+
+    Load the left midthickness surface with nibabel:
+
+    >>> import nibabel as nib  # doctest: +SKIP
+    >>> gii = nib.load(surfaces.midthickness.L)  # doctest: +SKIP
+    >>> vertices = gii.agg_data('pointset')  # doctest: +SKIP
+    >>> faces = gii.agg_data('triangle')  # doctest: +SKIP
+    >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
+    Vertices: (32492, 3), Faces: (64980, 3)
+
+    Examine template metadata:
+
+    >>> surfaces.info['Name']  # doctest: +SKIP
+    "The 'Conte-69' template"
 
     References
     ----------
@@ -646,7 +1451,10 @@ def fetch_yerkes19(force=False, data_dir=None, verbose=1):
     """
     Download files for Donahue et al., 2016 Yerkes19 template.
 
-    This dataset contains
+    This dataset contains midthickness, inflated, and very inflated surface
+    files in GIFTI format for the Yerkes19 macaque template in fsLR32k space.
+    The Yerkes19 atlas is a population-average surface template for macaque
+    monkeys derived from high-resolution anatomical scans.
 
     If you used this data, please cite 1_.
 
@@ -654,8 +1462,9 @@ def fetch_yerkes19(force=False, data_dir=None, verbose=1):
     -------
     filenames : :class:`sklearn.utils.Bunch`
         Dictionary-like object with keys ['midthickness', 'inflated',
-        'vinflated'], where corresponding values are lists of filepaths to
-        downloaded template files.
+        'vinflated'], where corresponding values are Surface namedtuples
+        containing filepaths for the left (L) and right (R) hemisphere GIFTI
+        surface files.
 
     Other Parameters
     ----------------
@@ -668,6 +1477,59 @@ def fetch_yerkes19(force=False, data_dir=None, verbose=1):
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 1
+
+    Notes
+    -----
+    The Yerkes19 template is a macaque cortical surface atlas using the fsLR32k
+    mesh (approximately 32k vertices per hemisphere). It was developed to
+    facilitate comparative neuroanatomy studies between human and non-human
+    primates.
+
+    The returned files include:
+
+    - **midthickness**: Midthickness surface geometry (.surf.gii), halfway
+      between white and pial surfaces.
+    - **inflated**: Inflated surface geometry (.surf.gii) for improved
+      visualization of sulci and gyri.
+    - **vinflated**: Very inflated surface geometry (.surf.gii) providing
+      additional smoothing for visualization.
+
+    Example directory tree:
+
+    ::
+
+        ~/nnt-data/tpl-yerkes19
+        ├── tpl-yerkes19_space-fsLR32k_inflated.L.surf.gii
+        ├── tpl-yerkes19_space-fsLR32k_inflated.R.surf.gii
+        ├── tpl-yerkes19_space-fsLR32k_midthickness.L.surf.gii
+        ├── tpl-yerkes19_space-fsLR32k_midthickness.R.surf.gii
+        ├── tpl-yerkes19_space-fsLR32k_vinflated.L.surf.gii
+        └── tpl-yerkes19_space-fsLR32k_vinflated.R.surf.gii
+
+        0 directories, 6 files
+
+    Examples
+    --------
+    Load the Yerkes19 template surfaces:
+
+    >>> surfaces = fetch_yerkes19()  # doctest: +SKIP
+    >>> surfaces.keys()  # doctest: +SKIP
+    dict_keys(['midthickness', 'inflated', 'vinflated'])
+
+    Access the midthickness surface GIFTI files:
+
+    >>> surfaces.midthickness  # doctest: +SKIP
+    Surface(L=PosixPath('~/nnt-data/tpl-yerkes19/tpl-yerkes19_space-fsLR32k_midthickness.L.surf.gii'),
+            R=PosixPath('~/nnt-data/tpl-yerkes19/tpl-yerkes19_space-fsLR32k_midthickness.R.surf.gii'))
+
+    Load the left midthickness surface with nibabel:
+
+    >>> import nibabel as nib  # doctest: +SKIP
+    >>> gii = nib.load(surfaces.midthickness.L)  # doctest: +SKIP
+    >>> vertices = gii.agg_data('pointset')  # doctest: +SKIP
+    >>> faces = gii.agg_data('triangle')  # doctest: +SKIP
+    >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
+    Vertices: (32492, 3), Faces: (64980, 3)
 
     References
     ----------

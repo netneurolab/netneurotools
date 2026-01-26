@@ -135,10 +135,11 @@ def match_length_degree_distribution(
     -----
     Takes a weighted, symmetric connectivity matrix `data` and Euclidean/fiber
     length matrix `distance` and generates a randomized network with:
-        1. exactly the same degree sequence
-        2. approximately the same edge length distribution
-        3. exactly the same edge weight distribution
-        4. approximately the same weight-length relationship
+
+    1. exactly the same degree sequence
+    2. approximately the same edge length distribution
+    3. exactly the same edge weight distribution
+    4. approximately the same weight-length relationship
 
     Reference
     ---------
@@ -314,13 +315,14 @@ def strength_preserving_rand_sa(
     frac : float, optional
         Fractional decrease in temperature per stage. Default = 0.5.
     energy_type: str, optional
-        Energy function to minimize. Can be either:
-            'sse': Sum of squared errors between strength sequence vectors
-                   of the original network and the randomized network
-            'max': Maximum absolute error
-            'mae': Mean absolute error
-            'mse': Mean squared error
-            'rmse': Root mean squared error
+        Energy function to minimize. Can be one of:
+
+        - 'sse': Sum of squared errors between strength sequence vectors of the original network and the randomized network
+        - 'max': Maximum absolute error
+        - 'mae': Mean absolute error
+        - 'mse': Mean squared error
+        - 'rmse': Root mean squared error
+
         Default = 'sse'.
     energy_func: callable, optional
         Callable with two positional arguments corresponding to
@@ -366,7 +368,7 @@ def strength_preserving_rand_sa(
     on the Human Connectome. Neuron.
     Milisav, F. et al. (2024) A simulated annealing algorithm for
     randomizing weighted networks.
-    """
+    """  # noqa: E501
     try:
         A = np.asarray(A)
     except TypeError as err:
@@ -686,13 +688,14 @@ def strength_preserving_rand_sa_dir(
     frac : float, optional
         Fractional decrease in temperature per stage. Default = 0.5.
     energy_type: str, optional
-        Energy function to minimize. Can be either:
-            'sse': Sum of squared errors between strength sequence vectors
-                   of the original network and the randomized network
-            'max': Maximum absolute error
-            'mae': Mean absolute error
-            'mse': Mean squared error
-            'rmse': Root mean squared error
+        Energy function to minimize. Can be one of:
+
+        - 'sse': Sum of squared errors between strength sequence vectors of the original network and the randomized network
+        - 'max': Maximum absolute error
+        - 'mae': Mean absolute error
+        - 'mse': Mean squared error
+        - 'rmse': Root mean squared error
+
         Default = 'sse'.
     energy_func: callable, optional
         Callable with two positional arguments corresponding to
@@ -736,7 +739,7 @@ def strength_preserving_rand_sa_dir(
     Nature Communications.
     Milisav, F. et al. (2024) A simulated annealing algorithm for
     randomizing weighted networks.
-    """
+    """  # noqa: E501
     try:
         A = np.asarray(A)
     except TypeError as err:
