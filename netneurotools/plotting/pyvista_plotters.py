@@ -318,16 +318,16 @@ def pv_plot_surface(
 
     **Available template/surface combinations:**
 
-    >>> # fsaverage templates (all densities)  # doctest: +SKIP
+    >>> # fsaverage templates (all densities)
     >>> templates = ["fsaverage", "fsaverage6", "fsaverage5", "fsaverage4"]  # doctest: +SKIP
     >>> surfaces = ["midthickness", "pial", "white", "inflated", "sphere"]  # doctest: +SKIP
     >>>
-    >>> # fslr templates  # doctest: +SKIP
+    >>> # fslr templates
     >>> templates = ["fslr4k", "fslr8k", "fslr32k", "fslr164k"]  # doctest: +SKIP
     >>> surfaces = ["midthickness", "pial", "white", "inflated",  # doctest: +SKIP
     ...             "veryinflated", "sphere"]
     >>>
-    >>> # civet templates  # doctest: +SKIP
+    >>> # civet templates
     >>> templates = ["civet41k", "civet164k"]  # doctest: +SKIP
     >>> surfaces = ["midthickness", "white", "inflated"]  # doctest: +SKIP
 
@@ -491,7 +491,7 @@ def pv_plot_surface(
     ...     surf="inflated",
     ...     show_plot=False,  # Don't show yet
     ... )
-    >>> # Add custom annotations, lights, etc.  # doctest: +SKIP
+    >>> # Add custom annotations, lights, etc.
     >>> pl.add_text("Custom Title", position="upper_edge")  # doctest: +SKIP
     >>> pl.show()  # doctest: +SKIP
     """  # noqa: E501
