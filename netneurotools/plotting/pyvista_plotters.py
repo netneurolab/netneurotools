@@ -118,71 +118,100 @@ def pv_plot_surface(
     """
     Plot surface data using PyVista.
 
+    This function provides a flexible interface for visualizing cortical surface
+    data on standard neuroimaging templates. It supports multiple hemispheres,
+    layouts, lighting styles, and customization options.
+
     Parameters
     ----------
     vertex_data : array-like or tuple of array-like
         Data array(s) to be plotted on the surface. If `hemi` is "both", this
-        should be a tuple of two arrays. Otherwise, a single array.
+        should be a tuple of two arrays (left, right) or a single concatenated
+        array. For single hemisphere, provide a single array matching the number
+        of vertices in that hemisphere.
     template : str
         Template to use for plotting. Options include 'fsaverage', 'fsaverage6',
         'fsaverage5', 'fsaverage4', 'fslr4k', 'fslr8k', 'fslr32k', 'fslr164k',
         'civet41k', 'civet164k'.
     surf : str, optional
-        Surface to plot. Default is 'inflated'.
+        Surface type to plot. Available options depend on template:
+
+        - fsaverage templates: 'midthickness', 'pial', 'white', 'inflated', 'sphere'
+        - fslr templates: 'midthickness', 'pial', 'white', 'inflated', 'veryinflated', 'sphere'
+        - civet templates: 'midthickness', 'white', 'inflated'
+
+        Default is 'inflated'.
     hemi : str, optional
-        Hemisphere to plot. Options include 'L', 'R', 'both'. Default is 'both'.
+        Hemisphere to plot. Options: 'L' (left), 'R' (right), 'both'.
+        Default is 'both'.
     layout : str, optional
-        Layout of the plot. Options include 'default', 'single', 'row', 'column'.
+        Layout of the plot panels:
+
+        - 'default': 2x2 grid for both hemispheres, 1x2 for single hemisphere
+        - 'single': Single panel (useful for custom views)
+        - 'row': Horizontal arrangement of all views
+        - 'column': Vertical arrangement of all views
+
         Default is 'default'.
     mask_medial : bool, optional
-        Mask medial wall. Default is True.
+        Whether to mask the medial wall (set to NaN). Only applies to templates
+        with medial wall annotations. Default is True.
     cmap : str, optional
-        Colormap to use. Default is 'viridis'.
-    clim : tuple, optional
-        Colorbar limits. If None, will be set to 2.5th and 97.5th percentiles.
-        Default is None.
+        Matplotlib colormap name. Default is 'viridis'.
+    clim : tuple of float, optional
+        Colorbar limits as (vmin, vmax). If None, will be set to 2.5th and
+        97.5th percentiles of the data. Default is None.
     zoom_ratio : float, optional
-        Zoom ratio for the camera. Default is 1.25.
+        Camera zoom level. Values > 1.0 zoom in, < 1.0 zoom out.
+        Default is 1.25.
     show_colorbar : bool, optional
-        Whether to show the colorbar. Default is True.
+        Whether to display the colorbar. Default is True.
     cbar_title : str, optional
-        Title for the colorbar. Default is None.
+        Title text for the colorbar. Default is None.
     show_plot : bool, optional
-        Whether to show the plot. Default is True.
+        Whether to display the plot immediately. Set to False to return the
+        plotter object for further customization. Default is True.
     jupyter_backend : str, optional
-        Jupyter backend to use. See `PyVista documentation
+        Backend for Jupyter notebook rendering. See `PyVista documentation
         <https://docs.pyvista.org/user-guide/jupyter/index.html#pyvista.set_jupyter_backend>`_
-        for more details. Default is 'html'.
+        for available options ('html', 'static', 'trame', etc.).
+        Set to None for non-notebook environments. Default is 'html'.
     lighting_style : str, optional
-        Lighting style to use. Options include 'default', 'lightkit', 'threelights',
-        'silhouette', 'metallic', 'plastic', 'shiny', 'glossy', 'ambient', 'plain'.
+        Lighting style preset:
+
+        - 'default', 'lightkit': Standard three-point lighting
+        - 'threelights': Alternative three-light setup
+        - 'silhouette': High-contrast silhouette rendering
+        - 'metallic', 'plastic', 'shiny', 'glossy': Material presets
+        - 'ambient', 'plain': Flat lighting styles
+
         Default is 'default'.
     save_fig : str or Path, optional
-        Path (include file name) to save the figure. Default is None.
+        Path to save the figure. Supported formats: .png, .jpeg, .jpg, .bmp,
+        .tif, .tiff (raster); .svg, .eps, .ps, .pdf, .tex (vector).
+        Default is None (no save).
 
     Returns
     -------
     pl : :class:`pyvista.Plotter`
-        PyVista plotter object.
+        PyVista plotter object. Can be further customized before calling
+        `pl.show()` if `show_plot=False`.
 
     Other Parameters
     ----------------
     plotter_kws : dict, optional
-        Additional keyword arguments to pass to the `PyVista plotter
-        <https://docs.pyvista.org/api/plotting/_autosummary/pyvista.plotter>`_.
-        Default is None.
+        Additional keyword arguments to pass to
+        :class:`pyvista.Plotter`. Default is None.
     mesh_kws : dict, optional
-        Additional keyword arguments to pass to the `PyVista mesh
-        <https://docs.pyvista.org/api/plotting/_autosummary/pyvista.plotter.add_mesh>`_.
-        Default is None.
+        Additional keyword arguments to pass to
+        :meth:`pyvista.Plotter.add_mesh`. Default is None.
     cbar_kws : dict, optional
-        Additional keyword arguments to pass to the `PyVista colorbar
-        <https://docs.pyvista.org/api/plotting/_autosummary/pyvista.plotter.add_scalar_bar>`_.
-        Default is None.
+        Additional keyword arguments to pass to
+        :meth:`pyvista.Plotter.add_scalar_bar`. Default is None.
     silhouette_kws : dict, optional
-        Additional keyword arguments to pass to the `PyVista silhouette
-        <https://docs.pyvista.org/api/plotting/_autosummary/pyvista.plotter.add_silhouette>`_.
-        Default is None.
+        Additional keyword arguments to pass to
+        :meth:`pyvista.Plotter.add_silhouette`. Only used when
+        `lighting_style='silhouette'`. Default is None.
     data_dir : str or Path, optional
         Path to use as data directory. If not specified, will check for
         environmental variable 'NNT_DATA'; if that is not set, will use
@@ -190,7 +219,282 @@ def pv_plot_surface(
     verbose : int, optional
         Modifies verbosity of download, where higher numbers mean more updates.
         Default: 0
-    """
+
+    Notes
+    -----
+    **Template and surface compatibility:**
+
+    Not all surface types are available for all templates. The function will
+    automatically fetch the appropriate template data from neuromaps or use
+    locally cached data.
+
+    **Layouts:**
+
+    - 'default': Shows medial and lateral views for each hemisphere
+    - 'single': Shows only one view (useful for custom camera angles)
+    - 'row'/'column': Linear arrangements of all standard views
+
+    **Data format:**
+
+    The `vertex_data` array(s) must match the number of vertices in the surface
+    template. For example, fsaverage5 has 10,242 vertices per hemisphere.
+
+    When `hemi='both'`, vertex_data can be:
+
+    - A tuple/list: (left_data, right_data)
+    - A concatenated array: np.concatenate([left_data, right_data])
+
+    The function automatically handles data splitting based on template vertex
+    counts.
+
+    **Parcellated data:**
+
+    If you have parcellated/regional data rather than vertex-wise data, use
+    :func:`netneurotools.interface.parcels_to_vertices` to convert it to
+    vertex-level data before plotting. Always verify the data before and after
+    transformation to ensure correct mapping.
+
+    **Lighting styles:**
+
+    Different lighting presets affect surface appearance through ambient,
+    diffuse, specular, and specular_power parameters:
+
+    - Metallic: Low ambient (0.1), high specular (1.0)
+    - Plastic: Balanced properties, moderate specular (0.3)
+    - Shiny: High specular (0.8), high specular_power (50)
+    - Silhouette: Adds white edge outlines for enhanced contrast. Note that
+      silhouette rendering often needs tuning based on data geometry to achieve
+      the best result, which can be done via `silhouette_kws` (e.g., adjusting
+      `feature_angle` or `color`).
+
+    **Jupyter notebooks:**
+
+    When using in Jupyter, the function automatically sets `notebook=True` and
+    `off_screen=True` for proper rendering.
+
+    There can be various issues when plotting in Jupyter notebooks depending on
+    your environment. For troubleshooting and detailed configuration options, see:
+
+    - `Trame Jupyter Guide <https://kitware.github.io/trame/guide/jupyter/intro.html>`_
+    - `PyVista Jupyter Documentation
+      <https://docs.pyvista.org/user-guide/jupyter/>`_
+
+    **Backend selection:**
+
+    Choose the appropriate `jupyter_backend` for your use case:
+
+    - `'trame'`: Best performance and interactivity (recommended)
+    - `'html'`: Good interactivity, works in most environments
+    - `'static'`: No interactivity but reliable fallback option
+
+    If trame does not work in your environment, try html. The static option
+    should always work as a last resort.
+
+    **Customization with keyword arguments:**
+
+    The `plotter_kws`, `mesh_kws`, `cbar_kws`, and `silhouette_kws` parameters
+    allow flexible overriding of default settings. For example:
+
+    - `plotter_kws={'window_size': (2000, 1500)}` for higher resolution
+    - `mesh_kws={'smooth_shading': False}` to disable smooth shading
+    - `cbar_kws={'n_labels': 5}` for more colorbar labels
+    - `silhouette_kws={'feature_angle': 30}` to adjust edge detection sensitivity
+
+    Examples
+    --------
+    **Basic usage:**
+
+    Plot random data on fsaverage5 pial surface:
+
+    >>> from netneurotools.plotting import pv_plot_surface  # doctest: +SKIP
+    >>> import numpy as np  # doctest: +SKIP
+    >>> data_L = np.random.random((10242,))  # doctest: +SKIP
+    >>> data_R = np.random.random((10242,))  # doctest: +SKIP
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="pial"
+    ... )
+
+    **Available template/surface combinations:**
+
+    >>> # fsaverage templates (all densities)  # doctest: +SKIP
+    >>> templates = ["fsaverage", "fsaverage6", "fsaverage5", "fsaverage4"]  # doctest: +SKIP
+    >>> surfaces = ["midthickness", "pial", "white", "inflated", "sphere"]  # doctest: +SKIP
+    >>>
+    >>> # fslr templates  # doctest: +SKIP
+    >>> templates = ["fslr4k", "fslr8k", "fslr32k", "fslr164k"]  # doctest: +SKIP
+    >>> surfaces = ["midthickness", "pial", "white", "inflated",  # doctest: +SKIP
+    ...             "veryinflated", "sphere"]
+    >>>
+    >>> # civet templates  # doctest: +SKIP
+    >>> templates = ["civet41k", "civet164k"]  # doctest: +SKIP
+    >>> surfaces = ["midthickness", "white", "inflated"]  # doctest: +SKIP
+
+    **Different layouts:**
+
+    Compare all layout options:
+
+    >>> for layout in ["default", "single", "row", "column"]:  # doctest: +SKIP
+    ...     pl = pv_plot_surface(
+    ...         (data_L, data_R),
+    ...         template="fsaverage5",
+    ...         surf="inflated",
+    ...         layout=layout,
+    ...         cbar_title=f"Layout: {layout}"
+    ...     )
+
+    **Adjusting zoom:**
+
+    Control the camera zoom level:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     zoom_ratio=1.7,  # Closer view
+    ... )
+
+    **Colorbar control:**
+
+    Customize colorbar display and title:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     show_colorbar=True,
+    ...     cbar_title="Activation (z-score)",
+    ... )
+
+    Hide the colorbar:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     show_colorbar=False,
+    ... )
+
+    **Colormap and limits:**
+
+    Use different colormaps and set explicit color limits:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     cmap="RdBu_r",  # Reverse red-blue colormap
+    ...     clim=(-3, 3),   # Symmetric limits
+    ... )
+
+    Sequential colormap for positive-only data:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     cmap="plasma",
+    ...     clim=(0, 1),
+    ... )
+
+    **Saving figures:**
+
+    Save as high-resolution PNG:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     save_fig="brain_plot.png",
+    ... )
+
+    Save as vector graphics (SVG):
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     save_fig="brain_plot.svg",
+    ... )
+
+    **Lighting styles:**
+
+    Explore different lighting presets:
+
+    >>> for style in ["metallic", "plastic", "shiny", "glossy"]:  # doctest: +SKIP
+    ...     pl = pv_plot_surface(
+    ...         (data_L, data_R),
+    ...         template="fsaverage5",
+    ...         surf="inflated",
+    ...         lighting_style=style,
+    ...         cbar_title=f"Style: {style}",
+    ...         save_fig=f"brain_{style}.png",
+    ...     )
+
+    Silhouette style for presentations (often needs tuning):
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     lighting_style="silhouette",  # High-contrast edges
+    ...     cmap="coolwarm",
+    ...     silhouette_kws={'feature_angle': 30, 'color': 'black'},
+    ... )
+
+    **Customizing with keyword arguments:**
+
+    Override default settings for higher resolution figures:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     plotter_kws={'window_size': (2000, 1500)},  # Higher resolution
+    ... )
+
+    Disable smooth shading for sharper vertex transitions:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     mesh_kws={'smooth_shading': False},
+    ... )
+
+    **Advanced customization:**
+
+    Combine multiple options:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fslr32k",
+    ...     surf="veryinflated",
+    ...     layout="row",
+    ...     mask_medial=True,
+    ...     cmap="viridis",
+    ...     clim=(0.2, 0.8),
+    ...     zoom_ratio=1.5,
+    ...     show_colorbar=True,
+    ...     cbar_title="Correlation",
+    ...     lighting_style="shiny",
+    ...     save_fig="publication_figure.png",
+    ...     jupyter_backend=None,  # For script usage
+    ... )
+
+    Use plotter object for further customization:
+
+    >>> pl = pv_plot_surface(  # doctest: +SKIP
+    ...     (data_L, data_R),
+    ...     template="fsaverage5",
+    ...     surf="inflated",
+    ...     show_plot=False,  # Don't show yet
+    ... )
+    >>> # Add custom annotations, lights, etc.  # doctest: +SKIP
+    >>> pl.add_text("Custom Title", position="upper_edge")  # doctest: +SKIP
+    >>> pl.show()  # doctest: +SKIP
+    """  # noqa: E501
     if not _has_pyvista:
         raise ImportError("PyVista is required for this function")
 
