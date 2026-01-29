@@ -1,22 +1,104 @@
-/* wide form */
+/* Layout tweaks */
 .wy-nav-content {
-   max-width: 1200px !important;
+    max-width: 1200px !important;
 }
 
-/* override table width restrictions */
+/* Make wide tables readable on desktop */
 @media screen and (min-width: 767px) {
+    .wy-table-responsive table td {
+        /* Prevent later stylesheets from re-wrapping cells */
+        white-space: normal !important;
+    }
 
-   .wy-table-responsive table td {
-      /* !important prevents the common CSS stylesheets from overriding
-         this as on RTD they are loaded after this stylesheet */
-      white-space: normal !important;
-   }
-
-   .wy-table-responsive {
-      overflow: visible !important;
-   }
+    .wy-table-responsive {
+        overflow: visible !important;
+    }
 }
 
+/* Hide the hash icon that appears on hover in headings */
 .headerlink::after {
-    font-size: 0px;
+    font-size: 0;
+}
+
+/* Call attention to API signatures */
+dl.py.function dt,
+dl.py.class dt,
+dl.py.method dt {
+    background: #f8f8f8;
+    padding: 8px;
+}
+
+/* Paragraph readability */
+.wy-nav-content p {
+    line-height: 1.5;
+}
+
+/* Cleaner parameter/field lists */
+.rst-content dl.field-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0 1em;
+    align-items: baseline;
+}
+
+.rst-content dl.field-list > dd {
+    align-self: center;
+}
+
+/* Emphasize parameter names */
+.rst-content dl.field-list dt {
+    font-weight: 600;
+    color: #555;
+}
+
+/* Signature parameter styling */
+.rst-content .sig-param .n {
+    color: #333;
+}
+
+.rst-content .sig-param .default_value {
+    color: #666;
+}
+
+/* Link styling */
+.rst-content a {
+    color: #2980b9;
+}
+
+.rst-content a:hover {
+    color: #1a5276;
+}
+
+/* Tighter list spacing inside field-list items */
+.rst-content dl.field-list dd ul li > p,
+.rst-content dl.field-list dd ul li > ul {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Highlight the current page in the sidebar */
+.wy-menu-vertical li.current > a {
+    background: #fcfcfc;
+    border-left: 3px solid #2980b9;
+}
+
+/* Inline code styling */
+.rst-content code.literal {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: none;
+    font-size: 85%;
+}
+
+/* Code block styling */
+.rst-content div[class^="highlight"] {
+    background: #f8f8f8;
+    border-radius: 4px;
+}
+
+.rst-content div[class^="highlight"] pre {
+    font-size: 13px;
+    line-height: 1.5;
+    border-radius: 4px;
 }
