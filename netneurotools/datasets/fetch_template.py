@@ -1557,3 +1557,26 @@ def fetch_yerkes19(force=False, data_dir=None, verbose=1):
     }
 
     return Bunch(**data)
+
+
+def _fetch_subcortex_surface(
+    force=False, data_dir=None, verbose=1
+):
+    dataset_name = "tpl-subcortex_surface"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    fetched = fetch_file(
+        dataset_name,
+        force=force,
+        data_dir=data_dir,
+        verbose=verbose,
+    )
+
+    data = {
+        k: fetched / f"{k}_surfaces.vtm"
+        for k in [
+            "aseg", "tianS1", "tianS2", "tianS3", "tianS4"
+        ]
+    }
+
+    return data
