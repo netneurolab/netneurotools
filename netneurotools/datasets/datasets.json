@@ -92,6 +92,16 @@
         "uncompress": true,
         "rel-path": "tpl-yerkes19"
     },
+    "tpl-subcortex_surface": {
+        "url-type": "osf",
+        "url": [
+            "udpv8",
+            "697cd8e78f022caaf9a67baa"
+        ],
+        "md5": "07ee560e58ada4d851c59751bcfd10cc",
+        "uncompress": true,
+        "rel-path": "tpl-subcortex_surface"
+    },
     "tpl-fsaverage": {
         "fsaverage": {
             "url-type": "osf",

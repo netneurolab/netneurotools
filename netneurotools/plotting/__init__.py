@@ -7,7 +7,8 @@ from .pysurfer_plotters import (
 
 
 from .pyvista_plotters import (
-    pv_plot_surface
+    pv_plot_surface, pv_plot_subcortex,
+    _pv_make_subcortex_surfaces
 )
 
 
@@ -25,7 +26,7 @@ __all__ = [
     # pysurfer_plotters
     'plot_conte69', 'plot_fslr', 'plot_fsaverage', 'plot_fsvertex',
     # pyvista_plotters
-    'pv_plot_surface',
+    'pv_plot_surface', 'pv_plot_subcortex', '_pv_make_subcortex_surfaces',
     # mpl_plotters
     '_grid_communities', '_sort_communities',
     'plot_point_brain', 'plot_mod_heatmap',

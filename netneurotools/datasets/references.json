@@ -35,6 +35,14 @@
             }
         ]
     },
+    "tpl-subcortex_surface": {
+        "primary": [
+            {
+                "citation": "",
+                "bibkey": ""
+            }
+        ]
+    },
     "tpl-fsaverage": {
         "primary": [
             {
