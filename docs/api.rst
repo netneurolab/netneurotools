@@ -127,6 +127,8 @@ Pyvista
    :toctree: generated/
 
    pv_plot_surface
+   pv_plot_subcortical
+   _pv_make_subcortex_surfaces
 
 PySurfer (deprecated)
 
