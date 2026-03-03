@@ -171,8 +171,7 @@ def _pv_update_settings(
         n_labels=2,
         label_font_size=20,
         title_font_size=24,
-        font_family="arial",
-        height=0.15,
+        font_family="arial"
     )
 
     silhouette_settings = {}
