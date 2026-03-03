@@ -226,6 +226,18 @@ def fetch_fsaverage(
 
         10 directories, 125 files
 
+    References
+    ----------
+    .. [1] Anders M Dale, Bruce Fischl, and Martin I Sereno. Cortical
+        surface-based analysis: i. segmentation and surface reconstruction.
+        Neuroimage, 9(2):179\u2013194, 1999.
+    .. [2] Bruce Fischl, Martin I Sereno, and Anders M Dale. Cortical
+        surface-based analysis: ii: inflation, flattening, and a surface-based
+        coordinate system. Neuroimage, 9(2):195\u2013207, 1999.
+    .. [3] Bruce Fischl, Martin I Sereno, Roger BH Tootell, and Anders M Dale.
+        High-resolution intersubject averaging and a coordinate system for the
+        cortical surface. Human brain mapping, 8(4):272\u2013284, 1999.
+
     Examples
     --------
     Load the fsaverage template surfaces:
@@ -247,18 +259,6 @@ def fetch_fsaverage(
     >>> vertices, faces = pial_left  # doctest: +SKIP
     >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
     Vertices: (163842, 3), Faces: (327680, 3)
-
-    References
-    ----------
-    .. [1] Anders M Dale, Bruce Fischl, and Martin I Sereno. Cortical
-        surface-based analysis: i. segmentation and surface reconstruction.
-        Neuroimage, 9(2):179\u2013194, 1999.
-    .. [2] Bruce Fischl, Martin I Sereno, and Anders M Dale. Cortical
-        surface-based analysis: ii: inflation, flattening, and a surface-based
-        coordinate system. Neuroimage, 9(2):195\u2013207, 1999.
-    .. [3] Bruce Fischl, Martin I Sereno, Roger BH Tootell, and Anders M Dale.
-        High-resolution intersubject averaging and a coordinate system for the
-        cortical surface. Human brain mapping, 8(4):272\u2013284, 1999.
     """
     versions = ["fsaverage", "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage6"]
     if version not in versions:
@@ -442,6 +442,22 @@ def fetch_fsaverage_curated(version="fsaverage", force=False, data_dir=None, ver
 
         4 directories, 56 files
 
+    References
+    ----------
+    .. [1] Anders M Dale, Bruce Fischl, and Martin I Sereno. Cortical
+        surface-based analysis: i. segmentation and surface reconstruction.
+        Neuroimage, 9(2):179\u2013194, 1999.
+    .. [2] Bruce Fischl, Martin I Sereno, and Anders M Dale. Cortical
+        surface-based analysis: ii: inflation, flattening, and a surface-based
+        coordinate system. Neuroimage, 9(2):195\u2013207, 1999.
+    .. [3] Bruce Fischl, Martin I Sereno, Roger BH Tootell, and Anders M Dale.
+        High-resolution intersubject averaging and a coordinate system for the
+        cortical surface. Human brain mapping, 8(4):272\u2013284, 1999.
+    .. [4] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
+        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
+        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
+        structural and functional interpretation of brain maps. Nature Methods,
+        19(11):1472\u20131479, 2022.
 
     Examples
     --------
@@ -473,23 +489,6 @@ def fetch_fsaverage_curated(version="fsaverage", force=False, data_dir=None, ver
     >>> sulc_min, sulc_max = sulc_data.min(), sulc_data.max()  # doctest: +SKIP
     >>> print(f"Sulcal depth range: {sulc_min:.2f} to {sulc_max:.2f}")  # doctest: +SKIP
     Sulcal depth range: -1.78 to 1.88
-
-    References
-    ----------
-    .. [1] Anders M Dale, Bruce Fischl, and Martin I Sereno. Cortical
-        surface-based analysis: i. segmentation and surface reconstruction.
-        Neuroimage, 9(2):179\u2013194, 1999.
-    .. [2] Bruce Fischl, Martin I Sereno, and Anders M Dale. Cortical
-        surface-based analysis: ii: inflation, flattening, and a surface-based
-        coordinate system. Neuroimage, 9(2):195\u2013207, 1999.
-    .. [3] Bruce Fischl, Martin I Sereno, Roger BH Tootell, and Anders M Dale.
-        High-resolution intersubject averaging and a coordinate system for the
-        cortical surface. Human brain mapping, 8(4):272\u2013284, 1999.
-    .. [4] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
-        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
-        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
-        structural and functional interpretation of brain maps. Nature Methods,
-        19(11):1472\u20131479, 2022.
     """
     versions = ["fsaverage", "fsaverage6", "fsaverage5", "fsaverage4"]
     if version not in versions:
@@ -630,6 +629,21 @@ def fetch_hcp_standards(force=False, data_dir=None, verbose=1):
 
         3 directories, 38 files
 
+    References
+    ----------
+    .. [1] David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna
+        Barch,Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen,
+        Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome
+        project: a data acquisition perspective. Neuroimage,
+        62(4):2222\u20132231, 2012.
+    .. [2] Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson,
+        Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad
+        Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal
+        preprocessing pipelines for the human connectome project. Neuroimage,
+        80:105\u2013124, 2013.
+    .. [3] http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip
+    .. [4] https://web.archive.org/web/20220121035833/http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip
+
     Examples
     --------
     Load the standards directory and inspect contents:
@@ -652,21 +666,6 @@ def fetch_hcp_standards(force=False, data_dir=None, verbose=1):
     >>> faces = gii.agg_data('triangle')  # doctest: +SKIP
     >>> vertices.shape, faces.shape  # doctest: +SKIP
     ((32492, 3), (64980, 3))
-
-    References
-    ----------
-    .. [1] David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna
-        Barch,Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen,
-        Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome
-        project: a data acquisition perspective. Neuroimage,
-        62(4):2222\u20132231, 2012.
-    .. [2] Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson,
-        Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad
-        Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal
-        preprocessing pipelines for the human connectome project. Neuroimage,
-        80:105\u2013124, 2013.
-    .. [3] http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip
-    .. [4] https://web.archive.org/web/20220121035833/http://brainvis.wustl.edu/workbench/standard_mesh_atlases.zip
     """
     dataset_name = "tpl-hcp_standards"
     _get_reference_info(dataset_name, verbose=verbose)
@@ -821,6 +820,24 @@ def fetch_fslr_curated(version="fslr32k", force=False, data_dir=None, verbose=1)
 
         4 directories, 62 files
 
+    References
+    ----------
+    .. [1] David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna
+        Barch,Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen,
+        Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome
+        project: a data acquisition perspective. Neuroimage,
+        62(4):2222\u20132231, 2012.
+    .. [2] Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson,
+        Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad
+        Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal
+        preprocessing pipelines for the human connectome project. Neuroimage,
+        80:105\u2013124, 2013.
+    .. [3] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
+        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
+        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
+        structural and functional interpretation of brain maps. Nature Methods,
+        19(11):1472\u20131479, 2022.
+
     Examples
     --------
     Load the fsLR curated template surfaces:
@@ -851,24 +868,6 @@ def fetch_fslr_curated(version="fslr32k", force=False, data_dir=None, verbose=1)
     >>> sulc_data = sulc_left.agg_data()  # doctest: +SKIP
     >>> float(sulc_data.min()), float(sulc_data.max())  # doctest: +SKIP
     (-1.6234848499298096, 1.1611071825027466)
-
-    References
-    ----------
-    .. [1] David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna
-        Barch,Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen,
-        Maurizio Corbetta, Sandra W Curtiss, and others. The human connectome
-        project: a data acquisition perspective. Neuroimage,
-        62(4):2222\u20132231, 2012.
-    .. [2] Matthew F Glasser, Stamatios N Sotiropoulos, J Anthony Wilson,
-        Timothy S Coalson, Bruce Fischl, Jesper L Andersson, Junqian Xu, Saad
-        Jbabdi, Matthew Webster, Jonathan R Polimeni, and others. The minimal
-        preprocessing pipelines for the human connectome project. Neuroimage,
-        80:105\u2013124, 2013.
-    .. [3] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
-        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
-        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
-        structural and functional interpretation of brain maps. Nature Methods,
-        19(11):1472\u20131479, 2022.
     """
     versions = ["fslr4k", "fslr8k", "fslr32k", "fslr164k"]
     if version not in versions:
@@ -1013,6 +1012,21 @@ def fetch_civet(density="41k", version="v1", force=False, data_dir=None, verbose
 
     License: https://github.com/aces/CIVET_Full_Project/blob/master/LICENSE
 
+    References
+    ----------
+    .. [1] Oliver Lyttelton, Maxime Boucher, Steven Robbins, and Alan Evans. An
+        unbiased iterative group registration template for cortical surface
+        analysis. Neuroimage, 34(4):1535\u20131544, 2007.
+    .. [2] Vladimir S Fonov, Alan C Evans, Robert C McKinstry, C Robert Almli,
+        and DL Collins. Unbiased nonlinear average age-appropriate brain
+        templates from birth to adulthood. NeuroImage, 47:S102, 2009.
+    .. [3] Y Ad-Dab'bagh, O Lyttelton, J Muehlboeck, C Lepage, D Einarson, K
+        Mok, O Ivanov, R Vincent, J Lerch, and E Fombonne. The civet
+        image-processing environment: a fully automated comprehensive pipeline
+        for anatomical neuroimaging research. proceedings of the 12th annual
+        meeting of the organization for human brain mapping. Florence, Italy,
+        pages 2266, 2006.
+
     Examples
     --------
     Load the CIVET template surfaces:
@@ -1033,21 +1047,6 @@ def fetch_civet(density="41k", version="v1", force=False, data_dir=None, verbose
     >>> vertices, faces = nib.freesurfer.read_geometry(surfaces.mid.L)  # doctest: +SKIP
     >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
     Vertices: (40962, 3), Faces: (81920, 3)
-
-    References
-    ----------
-    .. [1] Oliver Lyttelton, Maxime Boucher, Steven Robbins, and Alan Evans. An
-        unbiased iterative group registration template for cortical surface
-        analysis. Neuroimage, 34(4):1535\u20131544, 2007.
-    .. [2] Vladimir S Fonov, Alan C Evans, Robert C McKinstry, C Robert Almli,
-        and DL Collins. Unbiased nonlinear average age-appropriate brain
-        templates from birth to adulthood. NeuroImage, 47:S102, 2009.
-    .. [3] Y Ad-Dab'bagh, O Lyttelton, J Muehlboeck, C Lepage, D Einarson, K
-        Mok, O Ivanov, R Vincent, J Lerch, and E Fombonne. The civet
-        image-processing environment: a fully automated comprehensive pipeline
-        for anatomical neuroimaging research. proceedings of the 12th annual
-        meeting of the organization for human brain mapping. Florence, Italy,
-        pages 2266, 2006.
     """
     densities = ["41k", "164k"]
     if density not in densities:
@@ -1209,6 +1208,26 @@ def fetch_civet_curated(version="civet41k", force=False, data_dir=None, verbose=
 
     License: https://github.com/aces/CIVET_Full_Project/blob/master/LICENSE
 
+    References
+    ----------
+    .. [1] Oliver Lyttelton, Maxime Boucher, Steven Robbins, and Alan Evans. An
+        unbiased iterative group registration template for cortical surface
+        analysis. Neuroimage, 34(4):1535\u20131544, 2007.
+    .. [2] Vladimir S Fonov, Alan C Evans, Robert C McKinstry, C Robert Almli,
+        and DL Collins. Unbiased nonlinear average age-appropriate brain
+        templates from birth to adulthood. NeuroImage, 47:S102, 2009.
+    .. [3] Y Ad-Dab'bagh, O Lyttelton, J Muehlboeck, C Lepage, D Einarson, K
+        Mok, O Ivanov, R Vincent, J Lerch, and E Fombonne. The civet
+        image-processing environment: a fully automated comprehensive pipeline
+        for anatomical neuroimaging research. proceedings of the 12th annual
+        meeting of the organization for human brain mapping. Florence, Italy,
+        pages 2266, 2006.
+    .. [4] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
+        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
+        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
+        structural and functional interpretation of brain maps. Nature Methods,
+        19(11):1472\u20131479, 2022.
+
     Examples
     --------
     Load the CIVET curated template surfaces:
@@ -1241,26 +1260,6 @@ def fetch_civet_curated(version="civet41k", force=False, data_dir=None, verbose=
     >>> sulc_data = sulc_left.agg_data()  # doctest: +SKIP
     >>> float(sulc_data.min()), float(sulc_data.max())  # doctest: +SKIP
     (-27.601072311401367, 20.54990005493164)
-
-    References
-    ----------
-    .. [1] Oliver Lyttelton, Maxime Boucher, Steven Robbins, and Alan Evans. An
-        unbiased iterative group registration template for cortical surface
-        analysis. Neuroimage, 34(4):1535\u20131544, 2007.
-    .. [2] Vladimir S Fonov, Alan C Evans, Robert C McKinstry, C Robert Almli,
-        and DL Collins. Unbiased nonlinear average age-appropriate brain
-        templates from birth to adulthood. NeuroImage, 47:S102, 2009.
-    .. [3] Y Ad-Dab'bagh, O Lyttelton, J Muehlboeck, C Lepage, D Einarson, K
-        Mok, O Ivanov, R Vincent, J Lerch, and E Fombonne. The civet
-        image-processing environment: a fully automated comprehensive pipeline
-        for anatomical neuroimaging research. proceedings of the 12th annual
-        meeting of the organization for human brain mapping. Florence, Italy,
-        pages 2266, 2006.
-    .. [4] Ross D Markello, Justine Y Hansen, Zhen-Qi Liu, Vincent Bazinet,
-        Golia Shafiei, Laura E Su\u00e1rez, Nadia Blostein, Jakob Seidlitz,
-        Sylvain Baillet, Theodore D Satterthwaite, and others. Neuromaps:
-        structural and functional interpretation of brain maps. Nature Methods,
-        19(11):1472\u20131479, 2022.
     """
     versions = ["civet41k", "civet164k"]
     if version not in versions:
@@ -1388,6 +1387,18 @@ def fetch_conte69(force=False, data_dir=None, verbose=1):
 
         0 directories, 8 files
 
+    References
+    ----------
+    .. [1] David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna Barch,
+        Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen, Maurizio
+        Corbetta, Sandra W Curtiss, and others. The human connectome project: a
+        data acquisition perspective. Neuroimage, 62(4):2222\u20132231, 2012.
+    .. [2] David C Van Essen, Matthew F Glasser, Donna L Dierker, John Harwell,
+        and Timothy Coalson. Parcellations and hemispheric asymmetries of human
+        cerebral cortex analyzed on surface-based atlases. Cerebral cortex,
+        22(10):2241\u20132262, 2012.
+    .. [3] http://brainvis.wustl.edu/wiki/index.php//Caret:Atlases/Conte69_Atlas
+
     Examples
     --------
     Load the Conte69 template surfaces:
@@ -1415,18 +1426,6 @@ def fetch_conte69(force=False, data_dir=None, verbose=1):
 
     >>> surfaces.info['Name']  # doctest: +SKIP
     "The 'Conte-69' template"
-
-    References
-    ----------
-    .. [1] David C Van Essen, Kamil Ugurbil, Edward Auerbach, Deanna Barch,
-        Timothy EJ Behrens, Richard Bucholz, Acer Chang, Liyong Chen, Maurizio
-        Corbetta, Sandra W Curtiss, and others. The human connectome project: a
-        data acquisition perspective. Neuroimage, 62(4):2222\u20132231, 2012.
-    .. [2] David C Van Essen, Matthew F Glasser, Donna L Dierker, John Harwell,
-        and Timothy Coalson. Parcellations and hemispheric asymmetries of human
-        cerebral cortex analyzed on surface-based atlases. Cerebral cortex,
-        22(10):2241\u20132262, 2012.
-    .. [3] http://brainvis.wustl.edu/wiki/index.php//Caret:Atlases/Conte69_Atlas
     """
     dataset_name = "tpl-conte69"
     _get_reference_info(dataset_name, verbose=verbose)
@@ -1508,6 +1507,16 @@ def fetch_yerkes19(force=False, data_dir=None, verbose=1):
 
         0 directories, 6 files
 
+    References
+    ----------
+    .. [1] Chad J Donahue, Stamatios N Sotiropoulos, Saad Jbabdi, Moises
+        Hernandez-Fernandez, Timothy E Behrens, Tim B Dyrby, Timothy Coalson,
+        Henry Kennedy, Kenneth Knoblauch, David C Van Essen, and others. Using
+        diffusion tractography to predict cortical connection strength and
+        distance: a quantitative comparison with tracers in the monkey. Journal
+        of Neuroscience, 36(25):6758\u20136770, 2016.
+    .. [2] https://balsa.wustl.edu/reference/show/976nz
+
     Examples
     --------
     Load the Yerkes19 template surfaces:
@@ -1530,16 +1539,6 @@ def fetch_yerkes19(force=False, data_dir=None, verbose=1):
     >>> faces = gii.agg_data('triangle')  # doctest: +SKIP
     >>> print(f"Vertices: {vertices.shape}, Faces: {faces.shape}")  # doctest: +SKIP
     Vertices: (32492, 3), Faces: (64980, 3)
-
-    References
-    ----------
-    .. [1] Chad J Donahue, Stamatios N Sotiropoulos, Saad Jbabdi, Moises
-        Hernandez-Fernandez, Timothy E Behrens, Tim B Dyrby, Timothy Coalson,
-        Henry Kennedy, Kenneth Knoblauch, David C Van Essen, and others. Using
-        diffusion tractography to predict cortical connection strength and
-        distance: a quantitative comparison with tracers in the monkey. Journal
-        of Neuroscience, 36(25):6758\u20136770, 2016.
-    .. [2] https://balsa.wustl.edu/reference/show/976nz
     """
     dataset_name = "tpl-yerkes19"
     _get_reference_info(dataset_name, verbose=verbose)

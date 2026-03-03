@@ -80,6 +80,10 @@ def distance_wei_floyd(D):
     p_mat : (N, N) array_like
         Predecessor matrix returned from `scipy.sparse.csgraph.shortest_path`
 
+    See Also
+    --------
+    netneurotools.metrics.retrieve_shortest_path
+
     Notes
     -----
     This function is a wrapper for `scipy.sparse.csgraph.shortest_path`.
@@ -95,10 +99,6 @@ def distance_wei_floyd(D):
     .. [3] Warshall, S. (1962). A theorem on boolean matrices. Journal of the
        ACM (JACM), 9(1), 11-12.
     .. [4] https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
-
-    See Also
-    --------
-    netneurotools.metrics.retrieve_shortest_path
     """
     spl_mat, p_mat = shortest_path(
         D,
@@ -172,11 +172,9 @@ def navigation_wu(nav_dist_mat, sc_mat):
         List of tuples containing source node, target node, path length,
         path hops, and the full path.
 
-    References
-    ----------
-    Seguin, C., Van Den Heuvel, M. P., & Zalesky, A. (2018). Navigation
-    of brain networks. Proceedings of the National Academy of Sciences,
-    115(24), 6297-6302.
+    See Also
+    --------
+    netneurotools.metrics.get_navigation_path_length
 
     Notes
     -----
@@ -186,9 +184,11 @@ def navigation_wu(nav_dist_mat, sc_mat):
     Use :meth:`netneurotools.metrics.get_navigation_path_length`
     to get path length in other metrics.
 
-    See Also
-    --------
-    netneurotools.metrics.get_navigation_path_length
+    References
+    ----------
+    Seguin, C., Van Den Heuvel, M. P., & Zalesky, A. (2018). Navigation
+    of brain networks. Proceedings of the National Academy of Sciences,
+    115(24), 6297-6302.
     """
     nav_paths = []  # (source, target, distance, hops, path)
     # navigate to the node that is closest to target
@@ -260,6 +260,10 @@ def get_navigation_path_length(nav_paths, alt_dist_mat):
     nav_path_len : (N, N) array_like
         Navigation path length matrix, in the alternative distance metric.
 
+    See Also
+    --------
+    netneurotools.metrics.navigation_wu
+
     Notes
     -----
     Following the original BCT function.
@@ -267,10 +271,6 @@ def get_navigation_path_length(nav_paths, alt_dist_mat):
     L is strength-to-length remapping of the connection weight matrix.
     `pl_dis = get_navigation_path_length(nav_paths, D)`
     D is Euclidean distance between node centroids.
-
-    See Also
-    --------
-    netneurotools.metrics.navigation_wu
     """
     nav_path_len = np.zeros_like(alt_dist_mat)
     for nav_item in nav_paths:
@@ -822,6 +822,10 @@ def assortativity_und(x, W, use_numba=False):
     assortativity : float
         Assortativity of the network
 
+    See Also
+    --------
+    netneurotools.metrics.assortativity_dir
+
     Notes
     -----
     Assortativity is defined as the Pearson correlation between the local
@@ -861,10 +865,6 @@ def assortativity_und(x, W, use_numba=False):
         Communications, 14(1), 2850.
     .. [2] Newman, M. E. (2003). Mixing patterns in networks. Physical review E,
         67(2), 026126.
-
-    See Also
-    --------
-    netneurotools.metrics.assortativity_dir
     """
     if use_numba:
         if not has_numba:
@@ -936,6 +936,10 @@ def assortativity_dir(x, W, use_numba=False):
     assortativity : float
         Assortativity of the network
 
+    See Also
+    --------
+    netneurotools.metrics.assortativity_und
+
     Notes
     -----
     For a directed adjacency matrix :math:`A`, and an annotation vector
@@ -982,10 +986,6 @@ def assortativity_dir(x, W, use_numba=False):
         Communications, 14(1), 2850.
     .. [2] Newman, M. E. (2003). Mixing patterns in networks. Physical review E,
         67(2), 026126.
-
-    See Also
-    --------
-    netneurotools.metrics.assortativity_und
     """
     if use_numba:
         if not has_numba:
