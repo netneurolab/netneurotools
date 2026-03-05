@@ -10,3 +10,4 @@ Contents
    installation
    auto_examples/index.rst
    api
+   comparison

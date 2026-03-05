@@ -1,6 +1,6 @@
 .. _installation_setup:
 
-Installation and setup
+Installation and Setup
 ======================
 
 .. _python_installation:
