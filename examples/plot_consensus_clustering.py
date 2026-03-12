@@ -87,6 +87,27 @@ consensus = modularity.find_consensus(np.column_stack(ci), seed=1234)
 plotting.plot_mod_heatmap(corr, consensus, cmap='viridis')
 
 ###############################################################################
+# The same workflow can also be run with
+# :func:`netneurotools.modularity.consensus_modularity`, which bundles repeated
+# Louvain optimization, consensus finding, and quality summaries into a single
+# call:
+
+consensus_auto, q_all, zrand_all = modularity.consensus_modularity(
+      nonegative,
+      gamma=1.5,
+      repeats=100,
+      seed=1234,
+)
+print('single-call consensus clusters: {}'.format(len(np.unique(consensus_auto))))
+print('mean modularity across runs: {:.2f}'.format(q_all.mean()))
+print('mean z-Rand across runs: {:.2f}'.format(zrand_all.mean()))
+
+###############################################################################
+# This example highlights one of the practical advantages of
+# ``netneurotools``: it can sit on top of lower-level community detection code
+# and provide a concise, reproducible analysis layer.
+
+###############################################################################
 # The :func:`netneurotools.modularity.consensus_modularity` function provides a
 # wrapper for this process of generating multiple community assignmenta via the
 # Louvain algorithm and finding a consensus. It also generates and returns some

@@ -233,7 +233,7 @@ targeting newer methods. **We are very happy to add your newly developed method 
 netneurotools.**
 
 Brain connectivity toolbox (BCT) / bctpy / brainconn
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 BCT is the most widely used reference implementation for graph-theoretic
 measures for brain networks, and bctpy and brainconn provide Python ports of its
@@ -244,10 +244,21 @@ Python scientific ecosystem. **Let us know if there are specific BCT functions y
 would like to see implemented or optimized in netneurotools.**
 
 NetworkX
-~~~~~~~~~
+~~~~~~~~
 
 NetworkX is a general-purpose network analysis library not tailored to brain
 data. netneurotools complements rather than competes with NetworkX, and is in
 fact compatible with it -- the shortest path routine makes use of the
 high-quality implementation in NetworkX while preserving an API interface
 convenient and familiar for brain network researchers.
+
+Comet Toolbox
+~~~~~~~~~~~~~
+
+Comet Toolbox aims at combining functional connectivity estimation and
+graph-theoretical analysis into a unified multiverse workflow. netneurotools, in
+contrast, provides modular, preprocessing-agnostic functions that are not tied
+to a particular analysis paradigm. The two toolboxes are largely complementary:
+Comet Toolbox can be used for comprehensive robustness testing across analysis
+choices, while netneurotools can be used for more flexible, modular analyses and
+visualizations with cutting-edge network metrics and brain surface rendering.

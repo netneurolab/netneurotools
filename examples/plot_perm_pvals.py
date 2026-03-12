@@ -142,5 +142,38 @@ print(nnstats.permtest_pearsonr(arr1, arr2))
 print(nnstats.permtest_pearsonr(arr1, arr2, n_perm=500, seed=2222))
 
 ###############################################################################
+# The correlation test can also work with externally supplied resampling
+# schemes through the ``resamples`` argument. This is the key interface point
+# for spatially constrained null models: in cortical map analyses the columns
+# of ``resamples`` could come from spin tests or other geometry-aware
+# permutations generated upstream by another package.
+
+rng = np.random.default_rng(2222)
+resamples = np.column_stack([rng.permutation(len(x)) for _ in range(250)])
+print(nnstats.permtest_pearsonr(x, y, n_perm=250, resamples=resamples))
+
+###############################################################################
+# In other words, ``netneurotools`` does not need to generate every null model
+# itself to be useful in a reproducible workflow. It can act as the testing
+# engine once a valid resampling scheme has been defined. The comparison below
+# shows the difference between wiring together the pieces manually and passing
+# precomputed resamples directly into a single call.
+
+# Explicit resampling loop (e.g., spin indices generated upstream):
+# spins = external_spin_generator(coords)
+
+# null_corr = np.zeros(spins.shape[1])
+# for perm in range(spins.shape[1]):
+#     x_perm = x[spins[:, perm]]
+#     null_corr[perm] = sstats.pearsonr(x_perm, y)[0]
+#
+# p = (np.abs(null_corr) >= abs(r_obs)).mean()
+
+# Equivalent call once resamples already exist:
+# r_obs, p = nnstats.permtest_pearsonr(
+#     x, y, n_perm=spins.shape[1], resamples=spins
+# )
+
+###############################################################################
 # Note that currently the `axis` parameter does not apply to
 # :func:`~.permtest_pearsonr`.

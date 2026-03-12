@@ -98,7 +98,7 @@ exclude = [
   "versioneer.py",
   "netneurotools/_version.py",
   "docs/conf.py",
-  "examples/*",
+  # "examples/*",
 ]
 target-version = "py38"
 

@@ -124,6 +124,8 @@ np.random.seed(1234)\
 """
 
 sphinx_gallery_conf = {
+    'examples_dirs': '../examples',
+    'gallery_dirs': 'auto_examples',
     'doc_module': 'netneurotools',
     'backreferences_dir': os.path.join('generated', 'modules'),
     'reference_url': {
