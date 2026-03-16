@@ -11,6 +11,12 @@
 import os
 import sys
 
+import pyvista as pv
+
+# necessary when building the sphinx gallery
+pv.BUILDING_GALLERY = True
+pv.OFF_SCREEN = True
+
 # -- Project information -----------------------------------------------------
 
 # Add project name, copyright holder, and author(s)
@@ -114,7 +120,7 @@ intersphinx_mapping = {
     'numpy': ('https://numpy.org/doc/stable/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy', None),
     'sklearn': ('https://scikit-learn.org/stable', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+    'pandas': ('https://pandas.pydata.org/docs', None),
     'pyvista': ('https://docs.pyvista.org/', None),
 }
 
@@ -131,5 +137,6 @@ sphinx_gallery_conf = {
     'reference_url': {
         'netneurotools': None
     },
-    'thumbnail_size': (250, 250)
+    'thumbnail_size': (250, 250),
+    "image_scrapers": ('pyvista', 'matplotlib'),
 }

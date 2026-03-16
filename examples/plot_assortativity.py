@@ -59,20 +59,24 @@ myelin_vertex, _, _ = parcels_to_vertices(myelin_hemi, parc, hemi='both')
 # Now we can plot the myelin data on the inflated cortical surface using
 # PyVista:
 
-# This is not run in the example to avoid issues with PyVista dependencies, but
-# you can run this code in your local environment if you have PyVista installed.
+from netneurotools.plotting import pv_plot_surface
 
-# from netneurotools.plotting import pv_plot_surface
+# This is necessary for headless rendering when building the sphinx gallery.
+# If you are running this code locally, you might not need this line.
+import os
+os.environ["VTK_DEFAULT_OPENGL_WINDOW"] = "vtkOSOpenGLRenderWindow"
 
-# pv_plot_surface(
-#     myelin_vertex,
-#     'fsaverage',
-#     'inflated',
-#     hemi='both',
-#     cmap="Spectral_r",
-#     clim=[np.nanmin(myelin_vertex), np.nanmax(myelin_vertex)],
-#     cbar_title='T1w/T2w ratio'
-# )
+pv_plot_surface(
+    myelin_vertex,
+    'fsaverage',
+    'inflated',
+    hemi='both',
+    cmap="Spectral_r",
+    clim=[np.nanmin(myelin_vertex), np.nanmax(myelin_vertex)],
+    cbar_title='T1w/T2w ratio',
+    lighting_style='plastic',
+    jupyter_backend="static"
+)
 
 ###############################################################################
 # Network assortativity measures the tendency for nodes with similar features

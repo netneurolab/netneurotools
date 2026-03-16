@@ -222,36 +222,37 @@ for i, (ci, label) in enumerate(zip(ci_all, mode_labels)):
 axes[-1].axis("off")
 
 ###############################################################################
-# Optional: visualize communities on the brain surface (requires ``pyvista``)
-#
 # You can project parcel-wise community assignments to fsaverage vertices and
-# render them on an inflated surface. This block is intentionally commented out
-# so the gallery example remains lightweight and does not require optional
-# plotting dependencies.
+# render them on an inflated surface.
 
-# from netneurotools.datasets import fetch_schaefer2018
-# from netneurotools.interface import parcels_to_vertices
-# from netneurotools.plotting import pv_plot_surface
-#
-# parc = fetch_schaefer2018("fsaverage")["400Parcels7Networks"]
-#
-# for i, (ci, label) in enumerate(zip(ci_all, mode_labels)):
-#     ci_best = ci[:, y_best[i]]
-#     ci_hemi = (ci_best[:200], ci_best[200:])
-#     ci_vertex, _, _ = parcels_to_vertices(ci_hemi, parc, hemi="both")
-#
-#     pv_plot_surface(
-#         ci_vertex,
-#         "fsaverage",
-#         "inflated",
-#         hemi="both",
-#         cmap="Spectral",
-#         cbar_title=f"{label} communities",
-#         show_plot=True,
-#     )
-#
-# In headless environments, you may also need:
-# os.environ["VTK_DEFAULT_OPENGL_WINDOW"] = "vtkOSOpenGLRenderWindow"
+from netneurotools.datasets import fetch_schaefer2018
+from netneurotools.interface import parcels_to_vertices
+from netneurotools.plotting import pv_plot_surface
+
+# This is necessary for headless rendering when building the sphinx gallery.
+# If you are running this code locally, you might not need this line.
+import os
+os.environ["VTK_DEFAULT_OPENGL_WINDOW"] = "vtkOSOpenGLRenderWindow"
+
+parc = fetch_schaefer2018("fsaverage")["400Parcels7Networks"]
+
+for i, (ci, label) in enumerate(zip(ci_all, mode_labels)):
+    ci_best = ci[:, y_best[i]]
+    ci_hemi = (ci_best[:200], ci_best[200:])
+    ci_vertex, _, _ = parcels_to_vertices(ci_hemi, parc, hemi="both")
+
+    pv_plot_surface(
+        ci_vertex,
+        "fsaverage",
+        "inflated",
+        hemi="both",
+        cmap="Spectral",
+        cbar_title=f"{label} communities",
+        layout="row",
+        show_plot=True,
+        lighting_style='plastic',
+        jupyter_backend="static"
+    )
 
 ###############################################################################
 # Similar to the consensus-clustering example, we can also visualize each mode
