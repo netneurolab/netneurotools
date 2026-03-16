@@ -171,8 +171,72 @@ for i, (A, label) in enumerate(zip(A_all, mode_labels)):
 axes[-1].axis("off")
 
 ###############################################################################
-# Next, load precomputed community assignments across a range of resolution
-# parameters and inspect the number of detected communities per mode.
+# Next, we'll run community detection across a range of resolution parameters.
+# The workflow below applies consensus modularity clustering with negative
+# asymmetry null model across 60 resolution parameters (gamma from 0.1 to 6.0).
+# We leave it in comments to avoid running a long analysis in the example, but
+# you can run it locally if you have the resources. The results are saved to
+# disk and loaded in the next section for visualization.
+
+# from netneurotools.modularity import consensus_modularity
+# from joblib import Parallel, delayed
+
+# def community_detection(A, gamma_range):
+#     """Run consensus modularity clustering for a range of gamma values."""
+#     nnodes = len(A)
+#     ngamma = len(gamma_range)
+#     consensus = np.zeros((nnodes, ngamma))
+#     qall = []
+#     zrand = []
+#     for i, g in enumerate(gamma_range):
+#         consensus[:, i], q, z = consensus_modularity(
+#             A, g, B='negative_asym'
+#         )
+#         qall.append(q)
+#         zrand.append(z)
+#     return consensus, qall, zrand
+
+# # Load and preprocess connectivity matrices
+# networks = {
+#     "gc": np.load(data_dir / "gene_coexpression.npy"),
+#     "rs": np.load(data_dir / "receptor_similarity.npy"),
+#     "ls": np.load(data_dir / "laminar_similarity.npy"),
+#     "mc": np.load(data_dir / "metabolic_connectivity.npy"),
+#     "hc": np.load(data_dir / "haemodynamic_connectivity.npy"),
+#     "ec": np.load(data_dir / "electrophysiological_connectivity.npy"),
+#     "ts": np.load(data_dir / "temporal_similarity.npy"),
+# }
+# # Fisher's z-transform and zero diagonal
+# for network in networks.keys():
+#     networks[network] = np.arctanh(networks[network])
+#     networks[network][np.eye(len(networks[network])).astype(bool)] = 0
+
+# # Run community detection in parallel
+# gamma_range = [x / 10.0 for x in range(1, 61, 1)]
+# output = Parallel(n_jobs=36)(
+#     delayed(community_detection)(networks[network], gamma_range)
+#     for network in networks.keys()
+# )
+
+# # Save results
+# results_dir.mkdir(parents=True, exist_ok=True)
+# for network_idx, network_name in enumerate(networks.keys()):
+#     np.save(
+#         results_dir / f"community_assignments_{network_name}.npy",
+#         output[network_idx][0]
+#     )
+#     np.save(
+#         results_dir / f"community_qall_{network_name}.npy",
+#         np.array(output[network_idx][1])
+#     )
+#     np.save(
+#         results_dir / f"community_zrand_{network_name}.npy",
+#         np.array(output[network_idx][2])
+#     )
+
+###############################################################################
+# To save time, we load precomputed community assignments across a range of
+# resolution parameters and inspect the number of detected communities per mode.
 
 results_dir = (
     dataset_root
