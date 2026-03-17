@@ -173,6 +173,7 @@ from netneurotools.metrics import (
     distance_wei_floyd,
     navigation_wu,
     search_information,
+    mean_first_passage_time
 )
 
 # Load parcel centroids for Euclidean distance
@@ -204,8 +205,6 @@ sri_mat = (sri_asym + sri_asym.T) / 2.0
 cmc_mat = communicability_wei(SC)
 
 # Diffusion efficiency from mean first passage time
-from netneurotools.metrics import mean_first_passage_time
-
 mfpt_asym = mean_first_passage_time(SC)
 dfe_asym = np.zeros_like(mfpt_asym)
 finite = np.isfinite(mfpt_asym) & (mfpt_asym > 0)

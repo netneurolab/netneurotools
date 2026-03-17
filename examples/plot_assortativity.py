@@ -208,7 +208,6 @@ for i, ax in enumerate(axes):
     ax.set_title(f'Surrogate {i + 1}')
     ax.set(xlabel='ROI', ylabel='ROI')
 fig.colorbar(im, ax=axes.ravel().tolist(), label='Connection strength')
-plt.tight_layout()
 
 ###############################################################################
 # Now we'll calculate the assortativity for each surrogate network to create

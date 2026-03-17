@@ -109,10 +109,10 @@ print('mean z-Rand across runs: {:.2f}'.format(zrand_all.mean()))
 
 ###############################################################################
 # The :func:`netneurotools.modularity.consensus_modularity` function provides a
-# wrapper for this process of generating multiple community assignmenta via the
+# wrapper for this process of generating multiple community assignments via the
 # Louvain algorithm and finding a consensus. It also generates and returns some
 # metrics for assessing the quality of the community assignments.
 #
 # Nevertheless, the :func:`~.cluster.find_consensus` function is useful for
-# generating a consensus clustering solution from the results of _any_
+# generating a consensus clustering solution from the results of *any*
 # clustering algorithm (not just Louvain).
