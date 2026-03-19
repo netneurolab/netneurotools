@@ -1054,7 +1054,8 @@ def pv_plot_subcortex(
         the region identifiers in the selected template atlas (e.g., '10' for
         a specific region in aseg template).
     template : str
-        Atlas template to use for subcortical visualization. Options:
+        Atlas template to use for subcortical visualization. A pre-computed
+        subcortical surface or a `custom` surface can be used. Options:
 
         - 'aseg': FreeSurfer automatic segmentation
         - 'tianS1', 'tianS2', 'tianS3', 'tianS4': Tian et al. subcortical atlas
@@ -1163,7 +1164,7 @@ def pv_plot_subcortex(
       from TemplateFlow. See `FreeSurferColorLUT
       <https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/AnatomicalROI/FreeSurferColorLUT>`_
       for region IDs.
-    - 'tianS1-S4': Multi-level atlases from Tian et al. providing finer
+    - 'tianS1-S4': Multi-level atlases from Tian et al. [1]_ providing finer
       subdivisions of subcortical structures. Generated from
       ``Group-Parcellation/3T/Subcortex-Only/Tian_Subcortex_S{1,2,3,4}_3T_2009cAsym.nii.gz``.
     - 'custom': User-provided atlas generated from volumetric data using
@@ -1260,6 +1261,13 @@ def pv_plot_subcortex(
     - `cbar_kws={'n_labels': 5}` for more colorbar labels
     - `silhouette_kws={'feature_angle': 30}` to adjust edge detection sensitivity
 
+    References
+    ----------
+    .. [1] Tian, Y., Margulies, D. S., Breakspear, M., & Zalesky, A. (2020).
+        Topographic organization of the human subcortex unveiled with
+        functional connectivity gradients. Nature neuroscience, 23(11),
+        1421-1432.
+
     Examples
     --------
     **Basic usage:**
@@ -1281,7 +1289,7 @@ def pv_plot_subcortex(
 
     Use Tian atlas with finer subcortical subdivisions:
 
-    >>> parcel_data_tian = {str(k): v for k, v in enumerate(  # doctest: +SKIP
+    >>> parcel_data_tian = {str(k+1): v for k, v in enumerate(  # doctest: +SKIP
     ...     np.random.random(16)
     ... )}
     >>> pl = pv_plot_subcortex(  # doctest: +SKIP
