@@ -25,6 +25,10 @@ from netneurotools.datasets.fetch_template import (
     _fetch_subcortex_surface
 )
 
+from netneurotools.interface import (
+    parcels_to_vertices
+)
+
 
 def _pv_fetch_template(template, surf="inflated", data_dir=None, verbose=0):
     if template in ["fsaverage", "fsaverage6", "fsaverage5", "fsaverage4"]:
@@ -812,6 +816,60 @@ def pv_plot_surface(
         _pv_save_fig(pl, save_fig)
 
     return pl
+
+
+def pv_plot_parcellated_data(data, parcellation, template='fsaverage',
+                             hemi="both", **kwargs):
+    """
+    Plots parcellated data on the surface of the cortex.
+
+    This function converts parcel-level `data` into vertex-level data using
+    `parcels_to_vertices`, and then visualizes it on a cortical surface using
+    `pv_plot_surface`.
+
+    Parameters
+    ----------
+    data: array-like or tuple of array-like
+        Parcellated data. If `hemi` is `both`, this can be a tuple of two
+        arrays (left, right) or a single concatenated array. If
+        `hemi` is `L` or `R`, then it must be a single array.
+    parcellation : str or Path or tuple/list
+        Parcellation file(s). If `hemi` is `both`, this can be a tuple/list of
+        two files (left, right), or a single CIFTI (.dlabel.nii) file. If
+        `hemi` is `L` or `R`, then it must be a single file.
+    template : str, optional
+        Surface template to use for plotting. It must match the template of
+        the parcellation file. See `pv_plot_surface` for available options.
+        Default is 'fsaverage'.
+    hemi : str, optional
+        Hemisphere to plot. Options: 'L' (left), 'R' (right), 'both'.
+        Default is 'both'.
+    **kwargs
+        Additional keyword arguments passed directly to `pv_plot_surface`.
+
+    Returns
+    -------
+    pl : :class:`pyvista.Plotter`
+        PyVista plotter object returned by :func:`pv_plot_surface`.
+
+    Examples
+    --------
+    Plot Schaefer parcellated data on fsaverage:
+
+    >>> from netneurotools.plotting import pv_plot_parcellated_data  # doctest: +SKIP
+    >>> from netneurotools.datasets import fetch_schaefer2018  # doctest: +SKIP
+    >>> import numpy as np  # doctest: +SKIP
+    >>> parc = fetch_schaefer2018('fsaverage')['400Parcels7Networks']
+    >>> data = np.random.rand(400)  # doctest: +SKIP
+    >>> pl = pv_plot_parcellated_data(data, parc, template="fsaverage")
+    """
+    if hemi not in ["L", "R", "both"]:
+        raise ValueError(f"Unknown hemi: {hemi}")
+    kwargs['hemi'] = hemi
+
+    vertex_data, _, _ = parcels_to_vertices(data, parcellation, hemi=hemi)
+
+    return pv_plot_surface(vertex_data, template, **kwargs)
 
 
 def _pv_make_subcortex_surfaces(
