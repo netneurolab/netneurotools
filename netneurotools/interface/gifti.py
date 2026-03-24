@@ -26,7 +26,6 @@ def extract_gifti_labels(gifti_file, parc_ignore=PARCIGNORE):
     labels : tuple
         Labels.
     """
-
     # Load gifti image
     if isinstance(gifti_file, (str, os.PathLike)):
         image = nib.load(str(gifti_file))
