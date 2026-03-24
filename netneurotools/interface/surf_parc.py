@@ -59,7 +59,6 @@ def load_surf_parc_file(parc_file, cifti_structure=None, parc_ignore=PARCIGNORE)
     labels : tuple
         Labels.
     """
-
     # convert path objects to strings
     if isinstance(parc_file, (str, os.PathLike)):
         parc_file = str(parc_file)
