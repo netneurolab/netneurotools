@@ -1,5 +1,6 @@
 """Transforms for datasets."""
 
+import os
 import numpy as np
 import nibabel as nib
 
@@ -37,12 +38,13 @@ def _check_vertices_to_parcels_parc_file(parc_file, hemi):
 
 def load_surf_parc_file(parc_file, cifti_structure=None, parc_ignore=PARCIGNORE):
     """
-    Load surface parcellation file with vertices and labels.
+    Load surface parcellation file with vertices and labels. The parcellation
+    can also be a pre-loaded image (`nib.GiftiImage` or `nib.Cifti2Image`).
 
     Parameters
     ----------
-    parc_file : str or Path
-        Path to parcellation file.
+    parc_file : str or os.PathLike or nib.GiftiImage or nib.Cifti2Image
+        Path to a parcellation file or a pre-loaded image.
     cifti_structure : str, optional
         CIFTI structure for dlabel.nii files.
     parc_ignore : list, optional
@@ -57,31 +59,45 @@ def load_surf_parc_file(parc_file, cifti_structure=None, parc_ignore=PARCIGNORE)
     labels : tuple
         Labels.
     """
-    if str(parc_file).endswith("gii"):
+
+    # convert path objects to strings
+    if isinstance(parc_file, (str, os.PathLike)):
+        parc_file = str(parc_file)
+
+        # if `.annot` file, extract labels (and Return)
+        if parc_file.lower().endswith('.annot'):
+            return extract_annot_labels(parc_file, parc_ignore=parc_ignore)
+
+        # else load nibabel object (GiftiImage or Cifti2Image)
+        parc = nib.load(parc_file)
+
+    else:  # image was pre-loaded
+        parc = parc_file
+
+    # if a GiftiImage
+    if isinstance(parc, nib.gifti.GiftiImage):
         surf_data, keys, labels = extract_gifti_labels(
-            parc_file, parc_ignore=parc_ignore
-        )
-    elif str(parc_file).endswith("dlabel.nii"):
+            parc, parc_ignore=parc_ignore)
+
+    # if a Cifti2Image
+    elif isinstance(parc, nib.cifti2.Cifti2Image):
         if cifti_structure is None:
             raise ValueError("cifti_structure must be specified for dlabel.nii files")
         else:
-            cifti = nib.load(parc_file)
             surf_data, keys, labels = extract_cifti_surface_labels(
-                cifti.get_fdata(),
-                cifti.header.get_axis(0),
-                cifti.header.get_axis(1),
+                parc.get_fdata(),
+                parc.header.get_axis(0),
+                parc.header.get_axis(1),
                 cifti_structure,
                 parc_ignore=parc_ignore,
             )
-    elif str(parc_file).endswith("annot"):
-        surf_data, keys, labels = extract_annot_labels(
-            parc_file, parc_ignore=parc_ignore
-        )
+
     else:
         raise ValueError(
             "Unsupported parcellation file format, "
             "only gii, dlabel.nii, and annot are supported."
         )
+
     return surf_data, keys, labels
 
 
