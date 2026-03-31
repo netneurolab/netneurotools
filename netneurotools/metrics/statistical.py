@@ -59,6 +59,10 @@ def network_pearsonr(annot1, annot2, weight, use_numba=has_numba):
     corr : float
         Network correlation between `annot1` and `annot2`
 
+    See Also
+    --------
+    netneurotools.stats.network_pearsonr_pairwise
+
     Notes
     -----
     If Pearson correlation is represented as
@@ -109,11 +113,6 @@ def network_pearsonr(annot1, annot2, weight, use_numba=has_numba):
     .. [1] Coscia, M. (2021). Pearson correlations on complex networks.
        Journal of Complex Networks, 9(6), cnab036.
        https://doi.org/10.1093/comnet/cnab036
-
-
-    See Also
-    --------
-    netneurotools.stats.network_pearsonr_pairwise
     """
     if use_numba:
         if not has_numba:
@@ -208,15 +207,15 @@ def network_pearsonr_pairwise(annot_mat, weight):
     corr_mat : (N, N) numpy.ndarray
         Pairwise network correlation matrix
 
+    See Also
+    --------
+    netneurotools.stats.network_pearsonr
+
     Notes
     -----
     This is a faster version of :meth:`netneurotools.stats.network_pearsonr`
     for calculating pairwise network correlation between rows of `annot_mat`.
     Check :meth:`netneurotools.stats.network_pearsonr` for details.
-
-    See Also
-    --------
-    netneurotools.stats.network_pearsonr
     """
     annot_mat_demean = annot_mat - np.mean(annot_mat, axis=1, keepdims=True)
     if has_numba:
@@ -286,6 +285,10 @@ def effective_resistance(W, directed=True):
     R_eff : (N, N) numpy.ndarray
         Effective resistance matrix
 
+    See Also
+    --------
+    netneurotools.stats.network_polarisation
+
     Notes
     -----
     The effective resistance between two nodes :math:`i` and :math:`j` is defined as
@@ -301,10 +304,6 @@ def effective_resistance(W, directed=True):
     .. [1] Ellens, W., Spieksma, F. M., Van Mieghem, P., Jamakovic, A., & Kooij,
        R. E. (2011). Effective graph resistance. Linear Algebra and Its Applications,
        435(10), 2491–2506. https://doi.org/10.1016/j.laa.2011.02.024
-
-    See Also
-    --------
-    netneurotools.stats.network_polarisation
     """
     L = _graph_laplacian(W)
     Q_star = np.linalg.pinv(L, hermitian=not directed)
@@ -422,6 +421,10 @@ def network_polarisation(vec, W, directed=True):
     polariz : float
         Polarization of `vec` on `W`
 
+    See Also
+    --------
+    netneurotools.stats.effective_resistance
+
     Notes
     -----
     The measure is based on the genralized Eucledian distance, defined as
@@ -439,10 +442,6 @@ def network_polarisation(vec, W, directed=True):
     .. [1] Hohmann, M., Devriendt, K., & Coscia, M. (2023). Quantifying ideological
        polarization on a network using generalized Euclidean distance. Science Advances,
        9(9), eabq2044. https://doi.org/10.1126/sciadv.abq2044
-
-    See Also
-    --------
-    netneurotools.stats.effective_resistance
     """
     L = _graph_laplacian(W)
     Q_star = np.linalg.pinv(L, hermitian=not directed)
@@ -494,6 +493,10 @@ def network_variance(vec, D, use_numba=has_numba):
     network_variance : float
         Network variance of `vec` on `D`
 
+    See Also
+    --------
+    netneurotools.stats.network_covariance
+
     Notes
     -----
     The network variance is defined as
@@ -519,10 +522,6 @@ def network_variance(vec, D, use_numba=has_numba):
     .. [1] Devriendt, K., Martin-Gutierrez, S., & Lambiotte, R. (2022).
        Variance and covariance of distributions on graphs. SIAM Review, 64(2),
        343–359. https://doi.org/10.1137/20M1361328
-
-    See Also
-    --------
-    netneurotools.stats.network_covariance
     """
     if use_numba:
         if not has_numba:
@@ -595,6 +594,10 @@ def network_covariance(joint_pmat, D, calc_marginal=True, use_numba=has_numba):
         Marginal variance of `joint_pmat` on `D`.
         Will be 0 if :code:`calc_marginal=False`
 
+    See Also
+    --------
+    netneurotools.stats.network_variance
+
     Notes
     -----
     The network variance is defined as
@@ -613,10 +616,6 @@ def network_covariance(joint_pmat, D, calc_marginal=True, use_numba=has_numba):
     .. [1] Devriendt, K., Martin-Gutierrez, S., & Lambiotte, R. (2022).
        Variance and covariance of distributions on graphs. SIAM Review, 64(2),
        343–359. https://doi.org/10.1137/20M1361328
-
-    See Also
-    --------
-    netneurotools.stats.network_variance
     """
     if use_numba:
         if not has_numba:

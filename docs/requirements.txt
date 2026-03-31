@@ -5,3 +5,5 @@ sphinx-gallery
 pillow
 pytest-doctestplus
 sphinx_design
+neuromaps
+pyvista

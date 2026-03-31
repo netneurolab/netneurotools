@@ -52,6 +52,10 @@ def morans_i(annot, weight, use_numba=has_numba):
     morans_i : float
         Moran's I value for the given annotations and weight matrix.
 
+    See Also
+    --------
+    netneurotools.spatial.spatial_stats.local_morans_i
+
     Notes
     -----
     Moran's I is calculated as:
@@ -76,10 +80,6 @@ def morans_i(annot, weight, use_numba=has_numba):
         moran(v, w, 100, Szero(w))
         # or
         moran.test(x, w)
-
-    See Also
-    --------
-    netneurotools.spatial.spatial_stats.local_morans_i
     """
     if use_numba:
         if not has_numba:
@@ -108,6 +108,10 @@ def local_morans_i(annot, weight, use_sampvar=True):
     local_morans_i : array, shape (n,)
         Local Moran's I values for the given annotations and weight matrix.
 
+    See Also
+    --------
+    netneurotools.spatial.spatial_stats.morans_i
+
     Notes
     -----
     Local Moran's I is calculated as:
@@ -128,10 +132,6 @@ def local_morans_i(annot, weight, use_sampvar=True):
             x <- rnorm(100)
             m <- matrix(runif(100*100), nrow=100)
             localmoran(x, mat2listw(m), mlvar=TRUE)
-
-    See Also
-    --------
-    netneurotools.spatial.spatial_stats.morans_i
     """
     n = annot.shape[0]
     annot_demean = annot - np.mean(annot)
