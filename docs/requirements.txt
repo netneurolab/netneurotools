@@ -5,5 +5,6 @@ sphinx-gallery
 pillow
 pytest-doctestplus
 sphinx_design
-neuromaps
+neuromaps @ git+https://github.com/netneurolab/neuromaps
 pyvista
+ipython
