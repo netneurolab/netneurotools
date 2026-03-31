@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.colors as mcolors
 
+from neuromaps.images import relabel_gifti
+
 try:
     import pyvista as pv
 except ImportError:
@@ -19,10 +21,17 @@ from netneurotools.datasets import (
     fetch_civet_curated,
     fetch_fsaverage_curated,
     fetch_fslr_curated,
+    fetch_cammoun2012,
+    fetch_schaefer2018,
+    fetch_mmpall
 )
 
 from netneurotools.datasets.fetch_template import (
     _fetch_subcortex_surface
+)
+
+from netneurotools.interface import (
+    parcels_to_vertices
 )
 
 
@@ -812,6 +821,145 @@ def pv_plot_surface(
         _pv_save_fig(pl, save_fig)
 
     return pl
+
+
+def _resolve_parcellation(parcellation, template):
+    """
+    Resolve string-based parcellation specifications into file paths.
+    """
+    if not isinstance(parcellation, str):
+        return parcellation
+
+    parc_str = parcellation.lower()
+
+    # Schaefer
+    if parc_str.startswith("schaefer"):
+        rest = parc_str[len("schaefer"):]
+        if "x" not in rest:
+            n_parcels = rest
+            n_networks = "7"
+            if not n_parcels.isdigit():
+                raise ValueError(
+                    f"Invalid Schaefer format '{parcellation}'. "
+                    "Expected 'schaefer{n}x{k}' or 'schaefer{n}' (e.g., "
+                    "'schaefer400')."
+                )
+        else:
+            n_parcels, n_networks = rest.split("x", 1)
+            if not (n_parcels.isdigit() and n_networks.isdigit()):
+                raise ValueError("Invalid Schaefer specification: "
+                                 f"{parcellation}")
+
+        key = f"{n_parcels}Parcels{n_networks}Networks"
+
+        atlas = fetch_schaefer2018(template)
+        if key not in atlas:
+            raise ValueError(
+                f"Schaefer key '{key}' not found for template '{template}'. "
+                f"Available: {list(atlas.keys())}"
+            )
+
+        return atlas[key]
+
+    # Cammoun
+    elif parc_str.startswith("cammoun"):
+        scale = parc_str[len("cammoun"):]
+
+        if not scale.isdigit():
+            raise ValueError(
+                f"Invalid Cammoun format '{parcellation}'. "
+                "Expected 'cammoun{scale}' (e.g., 'cammoun033')."
+            )
+
+        key = f"scale{scale}"
+
+        atlas = fetch_cammoun2012(template)
+        if key not in atlas:
+            raise ValueError(
+                f"Cammoun key '{key}' not found for template '{template}'. "
+                f"Available: {list(atlas.keys())}"
+            )
+
+        return atlas[key]
+
+    # MMP (Glasser)
+    elif parc_str == 'mmpall':
+        atlas = fetch_mmpall(version=template)
+
+        return relabel_gifti((atlas[0], atlas[1]))
+
+    # else, the `parcellation` string is a normal path (presumably)
+    return parcellation
+
+
+def pv_plot_parcellated_data(data, parcellation, template='fsaverage',
+                             hemi="both", **kwargs):
+    """
+    Plots parcellated data on the surface of the cortex.
+
+    This function converts parcel-level `data` into vertex-level data using
+    `parcels_to_vertices`, and then visualizes it on a cortical surface using
+    `pv_plot_surface`.
+
+    Parameters
+    ----------
+    data: array-like or tuple of array-like
+        Parcellated data. If `hemi` is `both`, this can be a tuple of two
+        arrays (left, right) or a single concatenated array. If
+        `hemi` is `L` or `R`, then it must be a single array.
+    parcellation : str or Path or tuple/list
+        Parcellation file(s). If `hemi` is `both`, this can be a tuple/list of
+        two files (left, right), or a single CIFTI (.dlabel.nii) file. If
+        `hemi` is `L` or `R`, then it must be a single file. If a string is
+        provided, it can also specify a built-in atlas:
+
+        - "schaefer{n}x{k}" (e.g., "schaefer400x7")
+        - "cammoun{scale}" (e.g., "cammoun033")
+        - "mmpall"
+
+        Use `netneurotools.datasets.fetch_schaefer2018`, `fetch_cammoun2012`
+        and `fetch_mmpall` to see available resolutions.
+    template : str, optional
+        Surface template to use for plotting. It must match the template of
+        the parcellation file. See `pv_plot_surface` for available options.
+        Default is 'fsaverage'.
+    hemi : str, optional
+        Hemisphere to plot. Options: 'L' (left), 'R' (right), 'both'.
+        Default is 'both'.
+    **kwargs
+        Additional keyword arguments passed directly to `pv_plot_surface`.
+
+    Returns
+    -------
+    pl : :class:`pyvista.Plotter`
+        PyVista plotter object returned by :func:`pv_plot_surface`.
+
+    Examples
+    --------
+    Plot Schaefer parcellated data:
+
+    >>> from netneurotools.plotting import pv_plot_parcellated_data  # doctest: +SKIP
+    >>> data = np.random.rand(400)  # doctest: +SKIP
+    >>> pl = pv_plot_parcellated_data(data, 'schaefer400x7')
+
+    Plot Schaefer parcellated data using a manually fetched parcellation:
+
+    >>> from netneurotools.plotting import pv_plot_parcellated_data  # doctest: +SKIP
+    >>> from netneurotools.datasets import fetch_schaefer2018  # doctest: +SKIP
+    >>> import numpy as np  # doctest: +SKIP
+    >>> parc = fetch_schaefer2018('fslr32k')['400Parcels7Networks']
+    >>> data = np.random.rand(400)  # doctest: +SKIP
+    >>> pl = pv_plot_parcellated_data(data, parc, template="fslr32k")
+    """
+    if hemi not in ["L", "R", "both"]:
+        raise ValueError(f"Unknown hemi: {hemi}")
+    kwargs['hemi'] = hemi
+
+    parcellation = _resolve_parcellation(parcellation, template)
+
+    vertex_data, _, _ = parcels_to_vertices(data, parcellation, hemi=hemi)
+
+    return pv_plot_surface(vertex_data, template, **kwargs)
 
 
 def _pv_make_subcortex_surfaces(
