@@ -18,8 +18,6 @@ Data fetching
 
 A set of project fetching functions in :mod:`netneurotools.datasets` download
 the data and associated code used in a number of publications from our lab.
-Their citations total to XX and GitHub stars total to XX, showing their
-relevance.
 
 The package includes carefully curated data fetching functions covering common
 templates (:func:`~netneurotools.datasets.fetch_fsaverage`,
