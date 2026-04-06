@@ -222,14 +222,9 @@ def _pv_add_colorbar(
     cmap,
     cbar_settings
 ):
-    if layout == "default":
-        pl.subplot(1, 1)
-    elif layout == "row":
-        pl.subplot(0, 3)
-    elif layout == "column":
-        pl.subplot(3, 0)
-    elif layout == "single":
-        pl.subplot(0, 0)
+    # Plot colorbar under the last existing subplot
+    n_rows, n_cols = pl.shape
+    pl.subplot(n_rows - 1, n_cols - 1)
 
     _mesh = pv.PolyData(np.zeros((2, 3)))
     _mesh['data'] = (_vmin, _vmax)
@@ -823,14 +818,26 @@ def pv_plot_surface(
     return pl
 
 
-def _resolve_parcellation(parcellation, template):
-    """
-    Resolve string-based parcellation specifications into file paths.
-    """
+def _resolve_parcellation(parcellation, template, hemi="both"):
+    """Resolve string-based parcellation specifications into file paths."""
+    # Return as-is if `parcellation` is not a string
     if not isinstance(parcellation, str):
         return parcellation
 
     parc_str = parcellation.lower()
+    if hemi not in ["L", "R", "both"]:
+        raise ValueError(f"Unknown hemi: {hemi}")
+
+    # Helper to select hemisphere from tuple/list of two files (for .gii or .annot)
+    def _select_hemi(files):
+        if isinstance(files, (list, tuple)) and len(files) == 2:
+            if hemi == "both":
+                return files
+            elif hemi == "L":
+                return files[0]
+            else:  # "R"
+                return files[1]
+        return files  # single file (e.g., .dlabel)
 
     # Schaefer
     if parc_str.startswith("schaefer"):
@@ -859,7 +866,7 @@ def _resolve_parcellation(parcellation, template):
                 f"Available: {list(atlas.keys())}"
             )
 
-        return atlas[key]
+        return _select_hemi(atlas[key])
 
     # Cammoun
     elif parc_str.startswith("cammoun"):
@@ -880,13 +887,13 @@ def _resolve_parcellation(parcellation, template):
                 f"Available: {list(atlas.keys())}"
             )
 
-        return atlas[key]
+        return _select_hemi(atlas[key])
 
     # MMP (Glasser)
     elif parc_str == 'mmpall':
         atlas = fetch_mmpall(version=template)
-
-        return relabel_gifti((atlas[0], atlas[1]))
+        atlas = relabel_gifti((atlas[0], atlas[1]))
+        return _select_hemi(atlas[key])
 
     # else, the `parcellation` string is a normal path (presumably)
     return parcellation
@@ -895,7 +902,7 @@ def _resolve_parcellation(parcellation, template):
 def pv_plot_parcellated_data(data, parcellation, template='fsaverage',
                              hemi="both", **kwargs):
     """
-    Plots parcellated data on the surface of the cortex.
+    Plot parcellated data on the surface of the cortex.
 
     This function converts parcel-level `data` into vertex-level data using
     `parcels_to_vertices`, and then visualizes it on a cortical surface using
@@ -955,7 +962,7 @@ def pv_plot_parcellated_data(data, parcellation, template='fsaverage',
         raise ValueError(f"Unknown hemi: {hemi}")
     kwargs['hemi'] = hemi
 
-    parcellation = _resolve_parcellation(parcellation, template)
+    parcellation = _resolve_parcellation(parcellation, template, hemi=hemi)
 
     vertex_data, _, _ = parcels_to_vertices(data, parcellation, hemi=hemi)
 

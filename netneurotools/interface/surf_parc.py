@@ -38,8 +38,10 @@ def _check_vertices_to_parcels_parc_file(parc_file, hemi):
 
 def load_surf_parc_file(parc_file, cifti_structure=None, parc_ignore=PARCIGNORE):
     """
-    Load surface parcellation file with vertices and labels. The parcellation
-    can also be a pre-loaded image (`nib.GiftiImage` or `nib.Cifti2Image`).
+    Load surface parcellation file with vertices and labels.
+
+    The parcellation can also be a pre-loaded image (`nib.GiftiImage` or
+    `nib.Cifti2Image`).
 
     Parameters
     ----------
