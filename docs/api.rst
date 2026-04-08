@@ -127,6 +127,7 @@ Pyvista
    :toctree: generated/
 
    pv_plot_surface
+   pv_plot_parcellated_data
    pv_plot_subcortex
    _pv_make_subcortex_surfaces
 
