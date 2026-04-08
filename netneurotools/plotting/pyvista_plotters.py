@@ -947,16 +947,16 @@ def pv_plot_parcellated_data(data, parcellation, template='fsaverage',
 
     >>> from netneurotools.plotting import pv_plot_parcellated_data  # doctest: +SKIP
     >>> data = np.random.rand(400)  # doctest: +SKIP
-    >>> pl = pv_plot_parcellated_data(data, 'schaefer400x7')
+    >>> pl = pv_plot_parcellated_data(data, 'schaefer400x7')  # doctest: +SKIP
 
     Plot Schaefer parcellated data using a manually fetched parcellation:
 
     >>> from netneurotools.plotting import pv_plot_parcellated_data  # doctest: +SKIP
     >>> from netneurotools.datasets import fetch_schaefer2018  # doctest: +SKIP
     >>> import numpy as np  # doctest: +SKIP
-    >>> parc = fetch_schaefer2018('fslr32k')['400Parcels7Networks']
+    >>> parc = fetch_schaefer2018('fslr32k')['400Parcels7Networks']  # doctest: +SKIP
     >>> data = np.random.rand(400)  # doctest: +SKIP
-    >>> pl = pv_plot_parcellated_data(data, parc, template="fslr32k")
+    >>> pl = pv_plot_parcellated_data(data, parc, template="fslr32k")  # doctest: +SKIP
     """
     if hemi not in ["L", "R", "both"]:
         raise ValueError(f"Unknown hemi: {hemi}")
