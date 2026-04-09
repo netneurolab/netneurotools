@@ -154,6 +154,58 @@
             "rel-path": "tpl-fsaverage/fsaverage6"
         }
     },
+    "atl-aparc": {
+        "fsaverage": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "69ccfba989f2a9b18651e10d"
+            ],
+            "md5": "7939a6b0d36e3437b3e8bc0f4d552fc3",
+            "uncompress": true,
+            "rel-path": "atl-aparc/fsaverage"
+        },
+        "fsaverage3": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "69ccfbab188fb482e751e09e"
+            ],
+            "md5": "e052d1943dd8c65a0c4aa44aacdab7e1",
+            "uncompress": true,
+            "rel-path": "atl-aparc/fsaverage3"
+        },
+        "fsaverage4": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "69ccfbaa3058e2f6082a46cb"
+            ],
+            "md5": "9acf115ea20c3f871f054ed8f20e5172",
+            "uncompress": true,
+            "rel-path": "atl-aparc/fsaverage4"
+        },
+        "fsaverage5": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "69ccfbab936bb1b6e5744dc8"
+            ],
+            "md5": "3aa7d3a6c4fc8c9a68b889f9defff099",
+            "uncompress": true,
+            "rel-path": "atl-aparc/fsaverage5"
+        },
+        "fsaverage6": {
+            "url-type": "osf",
+            "url": [
+                "udpv8",
+                "69ccfba9abc36879e751e089"
+            ],
+            "md5": "d7cedff9250c744d75552dc9844936dc",
+            "uncompress": true,
+            "rel-path": "atl-aparc/fsaverage6"
+        }
+    },
     "tpl-fsaverage_curated": {
         "fsaverage": {
             "url-type": "osf",

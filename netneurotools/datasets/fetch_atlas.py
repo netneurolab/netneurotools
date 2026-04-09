@@ -2,10 +2,137 @@
 
 import itertools
 
-
 from sklearn.utils import Bunch
 
-from .datasets_utils import SURFACE, _get_reference_info, fetch_file
+from .datasets_utils import (
+    SURFACE,
+    _get_reference_info,
+    _check_freesurfer_subjid,
+    fetch_file,
+)
+
+
+def fetch_aparc(
+    version="fsaverage", use_local=False, force=False, data_dir=None, verbose=1
+):
+    """
+    Download FreeSurfer `aparc` annotation files.
+
+    This dataset provides Desikan-Killiany cortical parcellation annotation
+    files (`lh.aparc.annot`, `rh.aparc.annot`) for fsaverage templates.
+
+    If you used this data, please cite FreeSurfer 1_, 2_.
+
+    Parameters
+    ----------
+    version : str, optional
+        One of {'fsaverage', 'fsaverage3', 'fsaverage4', 'fsaverage5',
+        'fsaverage6'}. Default: 'fsaverage'
+    use_local : bool, optional
+        If True, attempt to use local FreeSurfer subject files instead of
+        downloading from the dataset store. Default: False
+
+    Returns
+    -------
+    filenames : :class:`netneurotools.datasets.datasets_utils.SURFACE`
+        Surface namedtuple with fields ('L', 'R') corresponding to the left
+        and right hemisphere aparc annotation files.
+
+    Other Parameters
+    ----------------
+    force : bool, optional
+        If True, overwrite existing downloaded dataset files. Default: False
+    data_dir : str, optional
+        Path to use as data directory. If not specified, will check for
+        environmental variable 'NNT_DATA'; if that is not set, will use
+        `~/nnt-data` instead. Default: None
+    verbose : int, optional
+        Modifies verbosity of download, where higher numbers mean more updates.
+        Default: 1
+
+    Notes
+    -----
+    - With ``use_local=False``, this function fetches the packaged
+      ``atl-aparc`` dataset and returns paths under ``label/lh.aparc.annot``
+      and ``label/rh.aparc.annot``.
+    - With ``use_local=True``, this function resolves files from the local
+      FreeSurfer subject directory for the selected fsaverage version.
+
+    Example direcotry tree:
+
+    ::
+
+        ~/nnt-data/atl-aparc
+        ├── fsaverage
+        │   ├── label
+        │   │   ├── lh.aparc.annot
+        │   │   └── rh.aparc.annot
+        │   └── LICENSE
+        ├── fsaverage3
+        │   ├── label
+        │   │   ├── lh.aparc.annot
+        │   │   └── rh.aparc.annot
+        │   └── LICENSE
+        ├── fsaverage4
+        │   ├── label
+        │   │   ├── lh.aparc.annot
+        │   │   └── rh.aparc.annot
+        │   └── LICENSE
+        ├── fsaverage5
+        │   ├── label
+        │   │   ├── lh.aparc.annot
+        │   │   └── rh.aparc.annot
+        │   └── LICENSE
+        └── fsaverage6
+            ├── label
+            │   ├── lh.aparc.annot
+            │   └── rh.aparc.annot
+            └── LICENSE
+
+        10 directories, 15 files
+
+    References
+    ----------
+    # TODO
+    """
+    versions = [
+        "fsaverage",
+        "fsaverage6",
+        "fsaverage5",
+        "fsaverage4",
+        "fsaverage3"
+    ]
+    if version not in versions:
+        raise ValueError(
+            f"The version of FreeSurfer aparc parcellation "
+            f"requested {version} does not exist. Must be one of {versions}"
+        )
+
+    dataset_name = "atl-aparc"
+    _get_reference_info(dataset_name, verbose=verbose)
+
+    if use_local:
+        try:
+            data_dir = _check_freesurfer_subjid(version)[1]
+            data = SURFACE(
+                data_dir / f"{version}/label/lh.aparc.annot",
+                data_dir / f"{version}/label/rh.aparc.annot",
+            )
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"Local FreeSurfer data for {version} not found. "
+                "Please ensure FreeSurfer is installed and properly set up."
+            ) from None
+    else:
+        fetched = fetch_file(
+            dataset_name, keys=version, force=force, data_dir=data_dir, verbose=verbose
+        )
+        data = SURFACE(
+            fetched / "label/lh.aparc.annot",
+            fetched / "label/rh.aparc.annot",
+        )
+
+    return data
 
 
 def fetch_cammoun2012(

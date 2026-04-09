@@ -11,7 +11,7 @@ from .fetch_template import (
 
 from .fetch_atlas import (
     # cortical
-    fetch_cammoun2012, fetch_schaefer2018, fetch_mmpall,
+    fetch_cammoun2012, fetch_schaefer2018, fetch_mmpall, fetch_aparc,
     # subcortical
     fetch_pauli2018, fetch_tian2020msa,
     # annotation
@@ -45,7 +45,7 @@ __all__ = [
     'fetch_civet', 'fetch_civet_curated',
     'fetch_conte69', 'fetch_yerkes19',
     # fetch_atlas
-    'fetch_cammoun2012', 'fetch_schaefer2018', 'fetch_mmpall',
+    'fetch_cammoun2012', 'fetch_schaefer2018', 'fetch_mmpall', 'fetch_aparc',
     'fetch_pauli2018', 'fetch_tian2020msa',
     'fetch_voneconomo',
     # fetch_project
@@ -53,7 +53,7 @@ __all__ = [
     'fetch_hansen_manynetworks', 'fetch_hansen_receptors',
     'fetch_hansen_genescognition', 'fetch_hansen_brainstemfc',
     'fetch_shafiei_megfmrimapping', 'fetch_shafiei_megdynamics',
-    'fetch_suarez_mami',
+    'fetch_suarez_mami', 'fetch_bazinet_assortativity',
     'fetch_famous_gmat',
     'fetch_neurosynth',
     # datasets_utils
