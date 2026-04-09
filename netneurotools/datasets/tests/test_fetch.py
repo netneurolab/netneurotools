@@ -112,6 +112,17 @@ class TestFetchAtlas:
     """Test fetching of atlas datasets."""
 
     @pytest.mark.parametrize(
+        "version", ["fsaverage", "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage6"]
+    )
+    def test_fetch_aparc(self, tmp_path, version):
+        """Test fetching of FreeSurfer aparc parcellations."""
+        aparc = datasets.fetch_aparc(version=version, data_dir=tmp_path, verbose=0)
+
+        assert len(aparc) == 2
+        assert all(os.path.isfile(hemi) for hemi in aparc)
+        assert all(hasattr(aparc, attr) for attr in ("L", "R"))
+
+    @pytest.mark.parametrize(
         "version, expected",
         [
             ("MNI152NLin2009aSym", [1, 1, 1, 1, 1]),
