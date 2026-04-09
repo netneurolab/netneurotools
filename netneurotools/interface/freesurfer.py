@@ -27,7 +27,7 @@ def extract_annot_labels(annot_file, parc_ignore=PARCIGNORE):
     """
     surf_data, _, labels = nib.freesurfer.read_annot(annot_file)
     labels = [label.decode() for label in labels]
-    keys = np.sort(np.unique(surf_data))
+    keys = np.arange(len(labels))
     keys, labels = zip(
         *[
             (key, label)
