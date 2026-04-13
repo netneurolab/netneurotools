@@ -124,6 +124,7 @@ convention = "numpy"
 addopts = "--strict-markers --pyargs"
 markers = [
   "fetcher: mark test to fetch data from the internet",
+  "numba: mark test that requires numba",
   "pyvista: mark test that requires pyvista",
   "pysurfer: mark test that requires pysurfer"
 ]

@@ -60,6 +60,20 @@ def test_morans_i(generate_test_data):
     """Test Moran's I calculation."""
     annot_1, _, weight, expected = generate_test_data
     assert np.isclose(morans_i(annot_1, weight, use_numba=False), expected)
+
+
+@pytest.mark.numba
+@pytest.mark.parametrize(
+    "generate_test_data",
+    [
+        pytest.param({"n": n, "which": "morans_i"}, id=f"morans_i-{n}")
+        for n in [3, 4]
+    ],
+    indirect=True,
+)
+def test_morans_i_numba(generate_test_data):
+    """Test Moran's I calculation with numba."""
+    annot_1, _, weight, expected = generate_test_data
     assert np.isclose(morans_i(annot_1, weight, use_numba=True), expected)
 
 
@@ -89,6 +103,20 @@ def test_gearys_c(generate_test_data):
     """Test Geary's C calculation."""
     annot_1, _, weight, expected = generate_test_data
     assert np.isclose(gearys_c(annot_1, weight, use_numba=False), expected)
+
+
+@pytest.mark.numba
+@pytest.mark.parametrize(
+    "generate_test_data",
+    [
+        pytest.param({"n": n, "which": "gearys_c"}, id=f"gearys_c-{n}")
+        for n in [3, 4]
+    ],
+    indirect=True,
+)
+def test_gearys_c_numba(generate_test_data):
+    """Test Geary's C calculation with numba."""
+    annot_1, _, weight, expected = generate_test_data
     assert np.isclose(gearys_c(annot_1, weight, use_numba=True), expected)
 
 
@@ -118,6 +146,20 @@ def test_lees_l(generate_test_data):
     """Test Lee's L calculation."""
     annot_1, annot_2, weight, expected = generate_test_data
     assert np.isclose(lees_l(annot_1, annot_2, weight, use_numba=False), expected)
+
+
+@pytest.mark.numba
+@pytest.mark.parametrize(
+    "generate_test_data",
+    [
+        pytest.param({"n": n, "which": "lees_l"}, id=f"lees_l-{n}")
+        for n in [3, 4]
+    ],
+    indirect=True,
+)
+def test_lees_l_numba(generate_test_data):
+    """Test Lee's L calculation with numba."""
+    annot_1, annot_2, weight, expected = generate_test_data
     assert np.isclose(lees_l(annot_1, annot_2, weight, use_numba=True), expected)
 
 
