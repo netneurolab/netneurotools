@@ -836,12 +836,10 @@ def assortativity_und(x, W, use_numba=False):
     is defined as:
 
     .. math::
-        \begin{align}
         r & = \sum_{ij} \frac{a_{ij}}{2m} \tilde{x}_i \tilde{x}_j \\
           & = \sum_{ij} \frac{a_{ij}}{2m}
           (\frac{x_i-\bar{\mathbf{x}}}{\sigma_{\mathbf{x}}})
           (\frac{x_j-\bar{\mathbf{x}}}{\sigma_{\mathbf{x}}})
-        \end{align}
 
     where :math:`a_{ij}` is the weight of the connection between nodes :math:`i`
     and :math:`j`, :math:`2m` is the total weight of the network.
@@ -849,11 +847,9 @@ def assortativity_und(x, W, use_numba=False):
     standard deviation of the annotation, defined as:
 
     .. math::
-        \begin{align}
         \bar{\mathbf{x}} & = \frac{1}{2m} \sum_i k_i x_i \\
         \sigma_{\mathbf{x}} & = \sqrt{\frac{1}{2m}
         \sum_i k_i (x_i - \bar{\mathbf{x}})^2}
-        \end{align}
 
     in which :math:`k_i` is the sum of the weights of the connections to node :math:`i`.
 
@@ -947,13 +943,11 @@ def assortativity_dir(x, W, use_numba=False):
 
     .. math::
 
-        \begin{align}
         r & = \sum_{ij} \frac{a_{ij}}{m}
         \tilde{x}_i^{\text{out}} \tilde{x}_j^{\text{in}} \\
         & = \sum_{ij} \frac{a_{ij}}{m}
         (\frac{x_i-\bar{\mathbf{x}}^{\text{out}}}{\sigma_{\mathbf{x}}^{\text{out}}})
         (\frac{x_j-\bar{\mathbf{x}}^{\text{in}}}{\sigma_{\mathbf{x}}^{\text{in}}})
-        \end{align}
 
     where :math:`a_{ij}` is the weight of the directed connection from node
     :math:`i` to node :math:`j`, and :math:`m` is the total weight of the
@@ -965,14 +959,12 @@ def assortativity_dir(x, W, use_numba=False):
 
     .. math::
 
-        \begin{align}
         \bar{\mathbf{x}}^{\text{in}} & = \frac{1}{m} \sum_i k_i^{\text{in}} x_i \\
         \bar{\mathbf{x}}^{\text{out}} & = \frac{1}{m} \sum_i k_i^{\text{out}} x_i \\
         \sigma_{\mathbf{x}}^{\text{in}} & = \sqrt{\frac{1}{m}
         \sum_i k_i^{\text{in}} (x_i - \bar{\mathbf{x}}^{\text{in}})^2} \\
         \sigma_{\mathbf{x}}^{\text{out}} & = \sqrt{\frac{1}{m}
         \sum_i k_i^{\text{out}} (x_i - \bar{\mathbf{x}}^{\text{out}})^2}
-        \end{align}
 
     in which :math:`k_i^{\text{in}}` is the sum of incoming weights to node
     :math:`i` and :math:`k_i^{\text{out}}` is the sum of outgoing weights from
