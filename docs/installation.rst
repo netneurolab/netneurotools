@@ -23,6 +23,22 @@ Alternatively, you can install ``netneurotools`` directly from PyPi with:
     pip install netneurotools
 
 
+Minimum tested dependency versions
+----------------------------------
+
+In continuous integration, we also run a minimum-dependencies test job on
+Python 3.9 to check compatibility with older supported package versions.
+The currently tested minimum versions are:
+
+- ``numpy==1.22.0``
+- ``scipy==1.8.0``
+- ``scikit-learn==1.0.0``
+- ``networkx==2.8``
+- ``nibabel==3.2.0``
+- ``nilearn==0.9.0``
+- ``matplotlib==3.5.0``
+
+
 Optional dependencies for surface plotting
 ------------------------------------------
 
