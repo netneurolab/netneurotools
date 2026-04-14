@@ -45,11 +45,27 @@ def test_efficient_pearsonr_errors():
 def test_weighted_pearsonr(x, y, w, expected):
     """Test weighted_pearsonr function."""
     assert np.allclose(
-        stats.weighted_pearsonr(x, y, w, use_numba=True),
+        stats.weighted_pearsonr(x, y, w, use_numba=False),
         expected,
     )
+
+
+@pytest.mark.numba
+@pytest.mark.parametrize(
+    "x, y, w, expected",
+    [
+        (
+            np.array([3, 5, 6, 8, 3, 2, 6]),
+            np.array([3, 5, 2, 8, 3, 3, 6]),
+            np.array([7, 3, 3, 2, 4, 5, 7]),
+            0.7356763090950997,
+        )
+    ],
+)
+def test_weighted_pearsonr_numba(x, y, w, expected):
+    """Test weighted_pearsonr function with numba."""
     assert np.allclose(
-        stats.weighted_pearsonr(x, y, w, use_numba=False),
+        stats.weighted_pearsonr(x, y, w, use_numba=True),
         expected,
     )
 
