@@ -6,15 +6,21 @@ from netneurotools.interface.surf_parc import (
     parcels_to_vertices,  # noqa: F401
     vertices_to_parcels,
 )
-from netneurotools.datasets import fetch_schaefer2018, fetch_cammoun2012
+from netneurotools.datasets import (
+    fetch_aparc,
+    fetch_schaefer2018,
+    fetch_cammoun2012
+)
 
 _parc_to_nvert = {
-    "annot": 10242,
+    "schaefer.annot": 10242,
+    "aparc.annot": 10242,
     "dlabel.nii": 32492,
     "gii": 32492,
 }
 _parc_to_nparc = {
-    "annot": 50,
+    "schaefer.annot": 50,
+    "aparc.annot": 34,
     "dlabel.nii": 50,
     "gii": 34,
 }
@@ -33,7 +39,7 @@ test_params, test_ids = zip(
             ),
             f"{file_type}-{hemi_type}-{data_width}d",
         )
-        for file_type in ["annot", "dlabel.nii", "gii"]
+        for file_type in ["schaefer.annot", "aparc.annot", "dlabel.nii", "gii"]
         for hemi_type in ["both", "L", "R"]
         for data_width in [0, 1, 2]
     ]
@@ -47,10 +53,12 @@ def prepare_parc_files(request, tmp_path_factory):
     hemi_type = request.param["hemi_type"]
     data_dir = tmp_path_factory.mktemp("data")
 
-    if file_type == "annot":
+    if file_type == "schaefer.annot":
         parc = fetch_schaefer2018(version="fsaverage5", data_dir=data_dir, verbose=0)[
             "100Parcels7Networks"
         ]
+    elif file_type == "aparc.annot":
+        parc = fetch_aparc(version="fsaverage5", data_dir=data_dir, verbose=0)
     elif file_type == "dlabel.nii":
         parc = fetch_schaefer2018(version="fslr32k", data_dir=data_dir, verbose=0)[
             "100Parcels7Networks"
@@ -121,10 +129,15 @@ def generate_vertices_to_parcels_data(request):
     )
 
     expected_all = {
-        "annot": {
-            "both": (100, 0.4989233),
-            "L": (50, 0.49557236),
-            "R": (50, 0.49596187),
+        "schaefer.annot": {
+            "both": (100, 0.49865978967835467),
+            "L": (50, 0.49442073975013345),
+            "R": (50, 0.5002857886733041),
+        },
+        "aparc.annot": {
+            "both": (68, 0.48879552836753687),
+            "L": (34, 0.4967423762985882),
+            "R": (34, 0.49817782398053234),
         },
         "dlabel.nii": {
             "both": (100, 0.4977689),
@@ -209,10 +222,15 @@ def generate_parcels_to_vertices_data(request):
     )
 
     expected_all = {
-        "annot": {
-            "both": (20484, 0.48047245),
-            "L": (10242, 0.5117257),
-            "R": (10242, 0.49651137),
+        "schaefer.annot": {
+            "both": (20484, 0.516352045969618),
+            "L": (10242, 0.5494668050662925),
+            "R": (10242, 0.5306912948904429),
+        },
+        "aparc.annot": {
+            "both": (20484, 0.4859113382328074),
+            "L": (10242, 0.4148066275533804),
+            "R": (10242, 0.4231815258880261),
         },
         "dlabel.nii": {
             "both": (64984, 0.52391384),
