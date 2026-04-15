@@ -199,13 +199,13 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     ----------
     data : (N,) array_like
         Data for `N` parcels as defined in `annot`
-    lhannot : str
+    lhannot : path-like
         Filepath to .annot file containing labels to parcels on the left
-        hemisphere. If a full path is not provided the file is assumed to
+        hemisphere. If an absolute path is not provided the file is assumed to
         exist inside the `subjects_dir`/`subject`/label directory.
-    rhannot : str
+    rhannot : path-like
         Filepath to .annot file containing labels to parcels on the right
-        hemisphere. If a full path is not provided the file is assumed to
+        hemisphere. If an absolute path is not provided the file is assumed to
         exist inside the `subjects_dir`/`subject`/label directory.
     order : str, optional
         Order of the hemispheres in the data vector (either 'LR' or 'RL').
