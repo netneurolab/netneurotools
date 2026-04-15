@@ -238,6 +238,14 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     brain : surfer.Brain
         Plotted PySurfer brain
 
+    Notes
+    -----
+    This function relies on PySurfer, which itself depends on Mayavi and VTK.
+    These dependencies can be difficult to install and maintain. For this
+    reason, we recommend using alternative plotting functions that rely on
+    PyVista instead (e.g., `pv_plot_parcellated_data` and
+    `pv_plot_surface`).
+
     Examples
     --------
     >>> import numpy as np
@@ -298,7 +306,7 @@ def plot_fsaverage(data, *, lhannot, rhannot, order='lr', mask=None,
     vtx_data = []
     for annot, hemi in zip((lhannot, rhannot), ('lh', 'rh')):
         # loads annotation data for hemisphere, including vertex `labels`!
-        if not annot.startswith(os.path.abspath(os.sep)):
+        if not os.path.isabs(annot):
             annot = os.path.join(subjects_dir, subject_id, 'label', annot)
         labels, _, names = nib.freesurfer.read_annot(annot)
         names = _decode_list(names)
