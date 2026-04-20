@@ -3,6 +3,7 @@
 import os
 import numpy as np
 import nibabel as nib
+import scipy.stats as sstats
 
 from netneurotools.interface.cifti import extract_cifti_surface_labels
 from netneurotools.interface.freesurfer import extract_annot_labels
@@ -103,7 +104,8 @@ def load_surf_parc_file(parc_file, cifti_structure=None, parc_ignore=PARCIGNORE)
 
 
 def _vertices_to_parcels_single_hemi(
-    vert_data, parc_file, cifti_structure=None, background=None, parc_ignore=PARCIGNORE
+    vert_data, parc_file, cifti_structure=None, background=None, parc_ignore=PARCIGNORE,
+    agg_method='mean'
 ):
     vertices, keys, labels = load_surf_parc_file(
         parc_file, cifti_structure=cifti_structure, parc_ignore=parc_ignore
@@ -126,12 +128,20 @@ def _vertices_to_parcels_single_hemi(
         if not found.any():
             reduced.append(np.empty_like(vert_data[0]) * np.nan)
         else:
-            reduced.append(np.nanmean(vert_data[found], axis=0))
+            if agg_method == 'mean':
+                reduced.append(np.nanmean(vert_data[found], axis=0))
+            elif agg_method == 'median':
+                reduced.append(np.nanmedian(vert_data[found], axis=0))
+            elif agg_method == 'mode':
+                reduced.append(sstats.mode(vert_data[found], axis=0, nan_policy='omit'
+                                           )[0]
+                               )
     return np.array(reduced), keys, labels
 
 
 def vertices_to_parcels(
-    vert_data, parc_file, hemi="both", background=None, parc_ignore=PARCIGNORE
+    vert_data, parc_file, hemi="both", background=None, parc_ignore=PARCIGNORE,
+    agg_method='mean'
 ):
     """
     Convert vertex-level data to parcel-level data.
@@ -145,9 +155,12 @@ def vertices_to_parcels(
     hemi : str, optional
         Hemisphere to process. Can be 'both', 'L', or 'R'.
     background : int, optional
-        Background value in vert_data to ignore.
+        Background value in vert_data to ignore. NaN values are always ignored.
     parc_ignore : list, optional
         List of labels to ignore.
+    agg_method : str
+        Method used to aggregate vertex-level values within each parcel. Options are:
+        'mean', 'median' and 'mode'. Default is 'mean'.
 
     Returns
     -------
@@ -197,6 +210,7 @@ def vertices_to_parcels(
             cifti_structure=cifti_structure_lh,
             background=background,
             parc_ignore=parc_ignore,
+            agg_method=agg_method
         )
         reduced_rh, keys_rh, labels_rh = _vertices_to_parcels_single_hemi(
             vert_data[1],
@@ -204,6 +218,7 @@ def vertices_to_parcels(
             cifti_structure=cifti_structure_rh,
             background=background,
             parc_ignore=parc_ignore,
+            agg_method=agg_method
         )
 
         reduced = (reduced_lh, reduced_rh)
@@ -224,6 +239,7 @@ def vertices_to_parcels(
             cifti_structure=cifti_structure_lh,
             background=background,
             parc_ignore=parc_ignore,
+            agg_method=agg_method
         )
 
     return reduced, keys, labels
