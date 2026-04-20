@@ -316,7 +316,7 @@ def parcels_to_vertices(
                 raise ValueError("Data length mismatch")
             # Split concatenated array into left and right hemispheres
             parc_data = (parc_data[:len(parc_keys[0])],
-                         parc_data[len(parc_keys[1]):])
+                         parc_data[len(parc_keys[0]):])
 
         projected_lh, keys_lh, labels_lh = _parcels_to_vertices_single_hemi(
             parc_data[0],
