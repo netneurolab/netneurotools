@@ -227,16 +227,16 @@ def vertices_to_parcels(
     else:
         # single hemisphere
         if hemi == "L":
-            cifti_structure_lh = "CIFTI_STRUCTURE_CORTEX_LEFT"
+            cifti_structure = "CIFTI_STRUCTURE_CORTEX_LEFT"
         elif hemi == "R":
-            cifti_structure_lh = "CIFTI_STRUCTURE_CORTEX_RIGHT"
+            cifti_structure = "CIFTI_STRUCTURE_CORTEX_RIGHT"
         else:
             raise ValueError(f"Unknown hemisphere: {hemi}")
 
         reduced, keys, labels = _vertices_to_parcels_single_hemi(
             vert_data,
             parc_file,
-            cifti_structure=cifti_structure_lh,
+            cifti_structure=cifti_structure,
             background=background,
             parc_ignore=parc_ignore,
             agg_method=agg_method
