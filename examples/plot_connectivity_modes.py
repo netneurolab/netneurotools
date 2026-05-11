@@ -8,16 +8,19 @@ structure across multiple cortical connectivity modes from `Hansen et al.
 (2023) <https://doi.org/10.1371/journal.pbio.3002314>`_. We load seven
 connectivity matrices, inspect how the number of
 communities changes with resolution, and summarize mode-specific community
-assignments.
+assignments:
 
-Compared with the original figure workflow, the final panel here uses
-community assignment matrices directly (instead of cortical surface renders) so
-that the full example remains lightweight and self-contained.
+.. figure:: /_static/examples/plot_connectivity_modes_workflow.png
+   :alt: Workflow
+   :width: 100%
+   :align: center
+|
 """
 
 ###############################################################################
-# First, fetch the multimodal connectivity dataset and load all Schaefer-400
-# connectivity matrices used in the comparison.
+# First, fetch the multimodal connectivity dataset from `Hansen et al.
+# (2023) <https://doi.org/10.1371/journal.pbio.3002314>`_ and load all
+# Schaefer-400 connectivity matrices used in the comparison.
 
 from pathlib import Path
 
@@ -91,48 +94,7 @@ for file_name in matrix_files:
 print(f"Loaded {len(A_all)} connectivity modes from: {data_dir}")
 
 ###############################################################################
-# The matrices in this example are the output of several upstream processing
-# streams, each harmonized to the same Schaefer-400 space before entering
-# ``netneurotools``. That division of labor is useful to show explicitly:
-# ``netneurotools`` is not re-running gene-expression preprocessing, PET map
-# alignment, MEG connectivity estimation, or fMRI preprocessing here; it is the
-# analysis layer that fetches, organizes, and visualizes the resulting matrices.
-
-fig, ax = plt.subplots(figsize=(11.5, 3.0))
-ax.axis("off")
-
-boxes = [
-    (
-        0.02,
-        0.56,
-        0.22,
-        0.24,
-        "AHBA / PET / BigBrain /\nfMRI / MEG / time-series\npreprocessing",
-        "#e9ecef",
-    ),
-    (0.29, 0.56, 0.18, 0.24, "Shared Schaefer-400\nparcel space", "#e9ecef"),
-    (0.52, 0.56, 0.18, 0.24, "fetch_hansen_\nmanynetworks", "#d8f3dc"),
-    (0.75, 0.56, 0.20, 0.24, "Community analysis\n+ heatmaps", "#d8f3dc"),
-    (0.75, 0.16, 0.20, 0.18, "Cross-modal\ncomparison", "#fff3bf"),
-]
-
-for x0, y0, width, height, label, facecolor in boxes:
-    rect = plt.Rectangle((x0, y0), width, height, facecolor=facecolor,
-                         edgecolor="black", linewidth=1.0)
-    ax.add_patch(rect)
-    ax.text(x0 + width / 2, y0 + height / 2, label,
-            ha="center", va="center", fontsize=10)
-
-arrowprops = dict(arrowstyle="->", lw=1.5, color="black")
-ax.annotate("", xy=(0.29, 0.68), xytext=(0.24, 0.68), arrowprops=arrowprops)
-ax.annotate("", xy=(0.52, 0.68), xytext=(0.47, 0.68), arrowprops=arrowprops)
-ax.annotate("", xy=(0.75, 0.68), xytext=(0.70, 0.68), arrowprops=arrowprops)
-ax.annotate("", xy=(0.85, 0.34), xytext=(0.85, 0.56), arrowprops=arrowprops)
-
-ax.set_title("Workflow context for multimodal comparison", fontsize=11)
-
-###############################################################################
-# Plot one matrix per mode using mode-specific light-to-dark colormaps.
+# We can start by plotting each matrix:
 
 base_colors = [
     "#2ca8a8",  # gene
@@ -219,6 +181,7 @@ axes[-1].axis("off")
 # )
 
 # # Save results
+# results_dir = dataset_root / "results" / "community_detection_Schaefer400"
 # results_dir.mkdir(parents=True, exist_ok=True)
 # for network_idx, network_name in enumerate(networks.keys()):
 #     np.save(
@@ -238,11 +201,7 @@ axes[-1].axis("off")
 # To save time, we load precomputed community assignments across a range of
 # resolution parameters and inspect the number of detected communities per mode.
 
-results_dir = (
-    dataset_root
-    / "results"
-    / "community_detection_Schaefer400"
-)
+results_dir = dataset_root / "results" / "community_detection_Schaefer400"
 y_grid = np.linspace(0.1, 6.0, 60)
 
 ci_all = []
@@ -289,33 +248,23 @@ axes[-1].axis("off")
 # You can project parcel-wise community assignments to fsaverage vertices and
 # render them on an inflated surface.
 
-from netneurotools.datasets import fetch_schaefer2018
-from netneurotools.interface import parcels_to_vertices
-from netneurotools.plotting import pv_plot_surface
+from netneurotools.plotting import pv_plot_parcellated_data
 
 # This is necessary for headless rendering when building the sphinx gallery.
 # If you are running this code locally, you might not need this line.
 import os
 os.environ["VTK_DEFAULT_OPENGL_WINDOW"] = "vtkOSOpenGLRenderWindow"
 
-parc = fetch_schaefer2018("fsaverage")["400Parcels7Networks"]
-
 for i, (ci, label) in enumerate(zip(ci_all, mode_labels)):
     ci_best = ci[:, y_best[i]]
-    ci_hemi = (ci_best[:200], ci_best[200:])
-    ci_vertex, _, _ = parcels_to_vertices(ci_hemi, parc, hemi="both")
 
-    pv_plot_surface(
-        ci_vertex,
-        "fsaverage",
-        "inflated",
-        hemi="both",
+    pv_plot_parcellated_data(
+        ci_best,
+        "schafer400x7",
         cmap="Spectral",
         cbar_title=f"{label} communities",
         layout="row",
-        show_plot=True,
-        lighting_style='plastic',
-        jupyter_backend="static"
+        lighting_style='plastic'
     )
 
 ###############################################################################

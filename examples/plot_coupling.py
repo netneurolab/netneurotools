@@ -10,16 +10,18 @@ while the MEG connectome input data are from `Shafiei et al. (2022)
 <https://doi.org/10.1371/journal.pbio.3001735>`_. We derive communication
 matrices from a consensus structural connectome and compute global
 structure-function coupling and dominance profiles across haemodynamic and MEG
-functional connectivity.
+functional connectivity:
+
+.. figure:: /_static/examples/plot_coupling_workflow.png
+   :alt: Workflow
+   :width: 100%
+   :align: center
+|
 """
 
 ###############################################################################
 # First, fetch the MEG-fMRI mapping dataset from `Shafiei et al.
-# (2022) <https://doi.org/10.1371/journal.pbio.3001735>`_.
-#
-# In this example, we use those data with the structure-function coupling
-# framework from `Liu et al. (2023)
-# <https://doi.org/10.1016/j.neuroimage.2023.120276>`_. The dataset
+# (2022) <https://doi.org/10.1371/journal.pbio.3001735>`_. The dataset
 # contains group-average MEG functional connectivity across six canonical
 # frequency bands and a consensus structural connectome, both parcellated
 # to the Schaefer-400 atlas.
@@ -51,76 +53,7 @@ print(f"fMRI FC shape: {fc_cons.shape}")
 print(f"SC shape: {SC.shape}")
 
 ###############################################################################
-# Before computing communication matrices, it helps to make the workflow
-# boundary explicit. The structural connectome and MEG connectivity estimates
-# come from upstream tractography and MEG preprocessing pipelines. In this
-# example, ``netneurotools`` enters at the point where harmonized matrices are
-# available in a common parcellation and the question becomes how to transform
-# SC into communication predictors and summarize coupling.
-
-fig, ax = plt.subplots(figsize=(11.5, 3.0))
-ax.axis("off")
-
-boxes = [
-    (
-        0.02,
-        0.56,
-        0.21,
-        0.24,
-        "Diffusion MRI /\ntractography /\nconnectome build",
-        "#e9ecef",
-    ),
-    (
-        0.27,
-        0.56,
-        0.19,
-        0.24,
-        "MEG preprocessing\n+ band-limited FC",
-        "#e9ecef",
-    ),
-    (
-        0.50,
-        0.56,
-        0.18,
-        0.24,
-        "Shared Schaefer-400\nrepresentation",
-        "#e9ecef",
-    ),
-    (
-        0.72,
-        0.56,
-        0.22,
-        0.24,
-        "netneurotools fetch +\ncommunication metrics +\nglobal coupling",
-        "#d8f3dc",
-    ),
-    (
-        0.72,
-        0.16,
-        0.22,
-        0.18,
-        "Band-wise coupling\nsummary",
-        "#fff3bf"
-    ),
-]
-
-for x0, y0, width, height, label, facecolor in boxes:
-    rect = plt.Rectangle((x0, y0), width, height, facecolor=facecolor,
-                         edgecolor="black", linewidth=1.0)
-    ax.add_patch(rect)
-    ax.text(x0 + width / 2, y0 + height / 2, label,
-            ha="center", va="center", fontsize=10)
-
-arrowprops = dict(arrowstyle="->", lw=1.5, color="black")
-ax.annotate("", xy=(0.50, 0.68), xytext=(0.23, 0.68), arrowprops=arrowprops)
-ax.annotate("", xy=(0.50, 0.62), xytext=(0.46, 0.62), arrowprops=arrowprops)
-ax.annotate("", xy=(0.72, 0.68), xytext=(0.68, 0.68), arrowprops=arrowprops)
-ax.annotate("", xy=(0.83, 0.34), xytext=(0.83, 0.56), arrowprops=arrowprops)
-
-ax.set_title("Workflow context for the coupling analysis", fontsize=11)
-
-###############################################################################
-# Visualize the MEG connectivity matrices across all six frequency bands.
+# Let's visualize the MEG connectivity matrices across all six frequency bands.
 # Each band reflects a distinct timescale of neural oscillatory synchrony.
 
 band_colors = ["#4793c1", "#8ab6cf", "#f5c06a", "#ea945a", "#d65f54", "#9b3f7c"]
@@ -173,7 +106,7 @@ from netneurotools.metrics import (
     distance_wei_floyd,
     navigation_wu,
     search_information,
-    mean_first_passage_time
+    diffusion_efficiency
 )
 
 # Load parcel centroids for Euclidean distance
@@ -204,11 +137,8 @@ sri_mat = (sri_asym + sri_asym.T) / 2.0
 # Communicability
 cmc_mat = communicability_wei(SC)
 
-# Diffusion efficiency from mean first passage time
-mfpt_asym = mean_first_passage_time(SC)
-dfe_asym = np.zeros_like(mfpt_asym)
-finite = np.isfinite(mfpt_asym) & (mfpt_asym > 0)
-dfe_asym[finite] = 1.0 / mfpt_asym[finite]
+# Diffusion efficiency
+dfe_asym = _, diffusion_efficiency(SC)
 dfe_mat = (dfe_asym + dfe_asym.T) / 2.0
 
 comm_mats = [dist_mat, spl_mat, npe_mat, sri_mat, cmc_mat, dfe_mat]

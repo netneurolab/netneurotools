@@ -242,44 +242,44 @@
         ],
         "gene": [
             {
-                "citation": "",
-                "bibkey": ""
+                "citation": "Hawrylycz, M. J., Lein, E. S., Guillozet-Bongaarts, A. L., Shen, E. H., Ng, L., Miller, J. A., ... & Jones, A. R. (2012). An anatomically comprehensive atlas of the adult human brain transcriptome. Nature, 489(7416), 391-399.",
+                "bibkey": "hawrylycz2012anatomically"
             }
         ],
         "receptor": [
             {
-                "citation": "",
-                "bibkey": ""
+                "citation": "Hansen, J. Y., Shafiei, G., Markello, R. D., Smart, K., Cox, S. M., Nørgaard, M., ... & Misic, B. (2022). Mapping neurotransmitter systems to the structural and functional organization of the human neocortex. Nature neuroscience, 25(11), 1569-1581.",
+                "bibkey": "hansen2022mapping"
             }
         ],
         "larminar": [
             {
-                "citation": "",
-                "bibkey": ""
+                "citation": "Paquola, C., Vos De Wael, R., Wagstyl, K., Bethlehem, R. A., Hong, S. J., Seidlitz, J., ... & Bernhardt, B. C. (2019). Microstructural and functional gradients are increasingly dissociated in transmodal cortices. PLoS biology, 17(5), e3000284.",
+                "bibkey": "paquola2019microstructural"
             }
         ],
         "metabolic": [
             {
-                "citation": "",
-                "bibkey": ""
+                "citation": "Jamadar, S. D., Ward, P. G., Close, T. G., Fornito, A., Premaratne, M., O’Brien, K., ... & Egan, G. F. (2020). Simultaneous BOLD-fMRI and constant infusion FDG-PET data of the resting human brain. Scientific data, 7(1), 363.",
+                "bibkey": "jamadar2020simultaneous"
             }
         ],
         "haemodynamic": [
             {
-                "citation": "",
-                "bibkey": ""
+                "citation": "Van Essen, D. C., Smith, S. M., Barch, D. M., Behrens, T. E., Yacoub, E., Ugurbil, K., & Wu-Minn HCP Consortium. (2013). The WU-Minn human connectome project: an overview. Neuroimage, 80, 62-79.",
+                "bibkey": "van2013wu"
             }
         ],
         "electrophysiological": [
             {
-                "citation": "",
-                "bibkey": ""
+                "citation": "Shafiei, G., Baillet, S., & Misic, B. (2022). Human electromagnetic and haemodynamic networks systematically converge in unimodal cortex and diverge in transmodal cortex. PLoS biology, 20(8), e3001735.",
+                "bibkey": "shafiei2022human"
             }
         ],
         "temporal": [
             {
-                "citation": "",
-                "bibkey": ""
+                "citation": "Shafiei, G., Markello, R. D., Vos de Wael, R., Bernhardt, B. C., Fulcher, B. D., & Misic, B. (2020). Topographic gradients of intrinsic dynamics across neocortex. elife, 9, e62116.",
+                "bibkey": "shafiei2020topographic"
             }
         ],
         "cognitive": [

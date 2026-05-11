@@ -6,17 +6,24 @@ Network assortativity and distance-preserving surrogates
 This example demonstrates how to calculate network assortativity and generate
 distance-preserving surrogate connectomes for null hypothesis testing. We'll
 use structural connectivity data and myelin maps from
-`Bazinet et al. (2023) <https://doi.org/10.1038/s41467-023-38585-4>`_ to show
-how brain network topology relates to spatial patterns of cortical features.
+`Bazinet et al. (2023) <https://doi.org/10.1038/s41467-023-38585-4>`_ to
+explore how brain network topology relates to spatial patterns of cortical
+features:
+
+.. figure:: /_static/examples/plot_assortativity_workflow.png
+   :alt: Workflow
+   :width: 100%
+   :align: center
+|
 """
 
 ###############################################################################
 # First, let's fetch the structural connectivity and myelin data from
 # `Bazinet et al. (2023) <https://doi.org/10.1038/s41467-023-38585-4>`_.
-# This dataset contains a 400-parcel structural
-# connectome and corresponding T1w/T2w myelin maps:
+# This dataset contains a 400-parcel structural connectome with a corresponding
+# distance matrix specifying the distance between parcel centroids. It also
+# contains a T1w/T2w myelin map:
 
-import importlib
 import numpy as np
 import pickle
 from netneurotools.datasets import fetch_bazinet_assortativity
@@ -26,10 +33,12 @@ bazinet_path = fetch_bazinet_assortativity()
 with open(f'{bazinet_path}/data/human_SC_s400.pickle', 'rb') as file:
     human_data = pickle.load(file)
 
-myelin = human_data['t1t2']
 SC = human_data['adj']
+dist = human_data['dist']
+myelin = human_data['t1t2']
 
 print(f'Structural connectivity shape: {SC.shape}')
+print(f'Distance matrix shape: {dist.shape}')
 print(f'Myelin data shape: {myelin.shape}')
 
 ###############################################################################
@@ -44,39 +53,24 @@ ax.set(xlabel='ROI', ylabel='ROI', title='Structural Connectivity')
 fig.colorbar(im, ax=ax)
 
 ###############################################################################
-# To visualize the myelin data on the cortical surface, we need to project
-# the parcellated data to the vertex level. We'll use the Schaefer 400-parcel
-# atlas to do this mapping:
+# Let's visualize the parcellated myelin data on the cortical surface. The
+# structural connectivity and myelin data have been parcellated with the
+# Schaefer (400 nodes) parcellation.
 
-from netneurotools.datasets import fetch_schaefer2018
-from netneurotools.interface import parcels_to_vertices
-
-parc = fetch_schaefer2018('fsaverage')['400Parcels7Networks']
-myelin_hemi = (myelin[:200], myelin[200:])
-myelin_vertex, _, _ = parcels_to_vertices(myelin_hemi, parc, hemi='both')
-
-###############################################################################
-# Now we can plot the myelin data on the inflated cortical surface using
-# PyVista:
-
-from netneurotools.plotting import pv_plot_surface
+from netneurotools.plotting import pv_plot_parcellated_data
 
 # This is necessary for headless rendering when building the sphinx gallery.
 # If you are running this code locally, you might not need this line.
 import os
 os.environ["VTK_DEFAULT_OPENGL_WINDOW"] = "vtkOSOpenGLRenderWindow"
 
-pv_plot_surface(
-    myelin_vertex,
-    'fsaverage',
-    'inflated',
-    hemi='both',
-    cmap="Spectral_r",
-    clim=[np.nanmin(myelin_vertex), np.nanmax(myelin_vertex)],
-    cbar_title='T1w/T2w ratio',
-    lighting_style='plastic',
-    jupyter_backend="static"
-)
+pv_plot_parcellated_data(myelin,
+                         'schaefer400x7',
+                         cmap='Spectral_r',
+                         clim=[np.min(myelin), np.max(myelin)],
+                         cbar_title='T1w/T2w ratio',
+                         lighting_style='plastic',
+                         jupyter_backend="static")
 
 ###############################################################################
 # Network assortativity measures the tendency for nodes with similar features
@@ -114,71 +108,8 @@ fig.colorbar(scatter, ax=ax, label='Connection strength')
 # To test whether this assortativity is significant, we need null models that
 # preserve key topological properties. We'll generate distance-preserving
 # surrogate networks that maintain the degree distribution and spatial
-# embedding of connections.
-#
-# First, let's calculate the Euclidean distances between parcel centroids:
-
-from scipy.spatial.distance import cdist
-
-get_parcel_centroids = importlib.import_module(
-    'neuromaps.nulls.spins'
-).get_parcel_centroids
-fetch_atlas = importlib.import_module('neuromaps.datasets').fetch_atlas
-neuromaps_images = importlib.import_module('neuromaps.images')
-relabel_gifti = neuromaps_images.relabel_gifti
-annot_to_gifti = neuromaps_images.annot_to_gifti
-
-parc_gii = [relabel_gifti(annot_to_gifti(parc_hemi))[0] for parc_hemi in parc]
-fsaverage_atlas = fetch_atlas('fsaverage', '164k')['pial']
-parc_centroids, _ = get_parcel_centroids(fsaverage_atlas, parc_gii)
-parc_dist = cdist(parc_centroids, parc_centroids)
-
-print(f'Distance matrix shape: {parc_dist.shape}')
-
-###############################################################################
-# This is also a good point to make the workflow boundaries explicit. The
-# tractography-derived connectome, parcel geometry, and centroid estimation all
-# come from upstream resources, while ``netneurotools`` provides the analysis
-# interface points used here: annotation-based assortativity, parcel/vertex
-# conversion, and distance-preserving null models.
-
-fig, ax = plt.subplots(figsize=(11, 2.8))
-ax.axis('off')
-
-boxes = [
-    (0.02, 0.55, 0.20, 0.26, "Upstream\ntractography +\nparcellation", "#e9ecef"),
-    (0.27, 0.55, 0.18, 0.26, "Surface geometry\n+ centroids\n(neuromaps)", "#e9ecef"),
-    (0.50, 0.55, 0.18, 0.26, "netneurotools\ndatasets / interface", "#d8f3dc"),
-    (
-        0.73,
-        0.55,
-        0.22,
-        0.26,
-        "netneurotools\nassortativity +\nnull rewiring",
-        "#d8f3dc",
-    ),
-    (0.73, 0.14, 0.22, 0.20, "Empirical vs. null\ninterpretation", "#fff3bf"),
-]
-
-for x0, y0, width, height, label, facecolor in boxes:
-    rect = plt.Rectangle((x0, y0), width, height, facecolor=facecolor,
-                         edgecolor='black', linewidth=1.0)
-    ax.add_patch(rect)
-    ax.text(x0 + width / 2, y0 + height / 2, label,
-            ha='center', va='center', fontsize=10)
-
-arrowprops = dict(arrowstyle='->', lw=1.5, color='black')
-ax.annotate('', xy=(0.27, 0.68), xytext=(0.22, 0.68), arrowprops=arrowprops)
-ax.annotate('', xy=(0.50, 0.68), xytext=(0.45, 0.68), arrowprops=arrowprops)
-ax.annotate('', xy=(0.73, 0.68), xytext=(0.68, 0.68), arrowprops=arrowprops)
-ax.annotate('', xy=(0.84, 0.34), xytext=(0.84, 0.55), arrowprops=arrowprops)
-
-ax.set_title('Workflow context for this example', fontsize=11)
-
-###############################################################################
-# Now we'll generate distance-preserving surrogate connectomes. This process
-# rewires the network while preserving both the degree distribution and the
-# relationship between connection probability and distance.
+# embedding of connections. For this, we need the empirical structural
+# connectome and a matrix specifying the distance between each parcel.
 #
 # Note: Generating many surrogates can be time-consuming. For this example,
 # we'll create just a few surrogates:
@@ -189,7 +120,7 @@ n_surrogates = 10
 surr_all = np.zeros((n_surrogates, 400, 400))
 
 for i in range(n_surrogates):
-    surr_all[i] = match_length_degree_distribution(SC, parc_dist)[1]
+    surr_all[i] = match_length_degree_distribution(SC, dist)[1]
 
 print(f'Generated {n_surrogates} surrogate networks')
 
