@@ -260,7 +260,7 @@ for i, (ci, label) in enumerate(zip(ci_all, mode_labels)):
 
     pv_plot_parcellated_data(
         ci_best,
-        "schafer400x7",
+        "schaefer400x7",
         cmap="Spectral",
         cbar_title=f"{label} communities",
         layout="row",
