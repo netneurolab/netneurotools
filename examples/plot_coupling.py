@@ -138,7 +138,7 @@ sri_mat = (sri_asym + sri_asym.T) / 2.0
 cmc_mat = communicability_wei(SC)
 
 # Diffusion efficiency
-dfe_asym = _, diffusion_efficiency(SC)
+_, dfe_asym = diffusion_efficiency(SC)
 dfe_mat = (dfe_asym + dfe_asym.T) / 2.0
 
 comm_mats = [dist_mat, spl_mat, npe_mat, sri_mat, cmc_mat, dfe_mat]
