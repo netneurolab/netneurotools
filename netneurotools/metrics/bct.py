@@ -581,11 +581,10 @@ def mean_first_passage_time(W, tol=1e-3):
             f"Cannot find eigenvalue of 1. Minimum eigenvalue is larger than {tol}."
         )
 
-    w = V[:, D_minidx][None, :]
+    w = V[:, D_minidx]
     w /= np.sum(w)
-    W_prob = np.real(np.repeat(w, n, 0))
-    Z = np.linalg.inv(np.eye(n) - P + W_prob)  # fundamental matrix
-    mfpt = (np.repeat(np.diag(Z)[None, :], n, 0) - Z) / W_prob
+    Z = np.linalg.inv(np.eye(n) - P + w[None, :])  # fundamental matrix
+    mfpt = (np.diag(Z)[None, :] - Z) / w[None, :]
     return mfpt
 
 
