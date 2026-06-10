@@ -893,7 +893,7 @@ def _resolve_parcellation(parcellation, template, hemi="both"):
     elif parc_str == 'mmpall':
         atlas = fetch_mmpall(version=template)
         atlas = relabel_gifti((atlas[0], atlas[1]))
-        return _select_hemi(atlas[key])
+        return _select_hemi(atlas)
 
     # else, the `parcellation` string is a normal path (presumably)
     return parcellation
