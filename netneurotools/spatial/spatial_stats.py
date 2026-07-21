@@ -32,7 +32,32 @@ if has_numba:
     _morans_i_numba = njit(_morans_i_numba)
 
 
-def morans_i(annot, weight, use_numba=has_numba):
+def _I_ev(w):
+    n = len(w)
+    return -1 / (n - 1)
+
+
+def _I_var(w):
+    n = len(w)
+    s0 = w.sum(axis=None)
+    num = (n * n * _S1(w)) - (n * _S2(w)) + (3 * s0 * s0)
+    den = (s0 * s0) * ((n * n) - 1)
+    var = num / den - (_I_ev(w)**2)
+    return var
+
+
+def _S1(w):
+    A = w + w.T
+    return (A * A).sum(axis=None) / 2
+
+
+def _S2(w):
+    row_sum = w.sum(axis=1)
+    col_sum = w.sum(axis=0)
+    return np.sum((row_sum + col_sum)**2)
+
+
+def morans_i(annot, weight, use_numba=has_numba, standardized=False):
     r"""
     Calculate Moran's I for spatial autocorrelation.
 
@@ -46,6 +71,10 @@ def morans_i(annot, weight, use_numba=has_numba):
     use_numba : bool, optional
         Whether to use numba for calculation. Default: True (if numba is
         installed).
+    standardized: bool, optional
+        Whether to standardize the Moran's I statistic with respect to its
+        expectation and variance under the null assumption that annotation
+        values are sampled from a normal distribution.
 
     Returns
     -------
@@ -58,7 +87,7 @@ def morans_i(annot, weight, use_numba=has_numba):
 
     Notes
     -----
-    Moran's I is calculated as:
+    Moran's I [1,2] is calculated as:
 
     .. math::
         I = \frac{n}{\sum_{i=1}^{n} \sum_{j=1}^{n} w_{ij}} \frac{\sum_{i=1}^{n}
@@ -80,13 +109,60 @@ def morans_i(annot, weight, use_numba=has_numba):
         moran(v, w, 100, Szero(w))
         # or
         moran.test(x, w)
+
+    Standardized Moran's I [2] is calculated as:
+
+    .. math::
+
+        Z_I = \frac{I - \mathbb{E}[I]}{\sqrt{\mathrm{Var}(I)}}
+
+    where
+
+    .. math::
+
+        \mathbb{E}[I] = -\frac{1}{n-1}
+
+    and
+
+    .. math::
+
+        \mathrm{Var}(I) = \frac{n^2 S_1 - n S_2 + 3 S_0^2} {(n-1)(n-2)(n-3) S_0^2} -
+        \left( \frac{1}{n-1} \right)^2,
+
+    with
+
+    .. math::
+
+        S_0 = \sum_i\sum_j w_{ij},
+
+    .. math::
+
+        S_1 = \frac{1}{2} \sum_{ij} (w_{ij} + w_{ji})^2,
+
+    and
+
+    .. math::
+
+        S_2 = \sum_i \left( \sum_j w_{ij} + \sum_j w_{ji} \right)^2.
+
+    References
+    ----------
+    .. [1] Moran, P. A. (1950). Notes on continuous stochastic phenomena.
+        Biometrika, 37(1/2), 17-23.
+    .. [2] Cliff, A. & Ord, J. Spatial Processes: Models & Applications
+        (Pion, 1981).
     """
     if use_numba:
         if not has_numba:
             raise ValueError("Numba not installed; cannot use numba for calculation")
-        return _morans_i_numba(annot, weight)
+        morans_i = _morans_i_numba(annot, weight)
     else:
-        return _morans_i_vectorized(annot, weight)
+        morans_i = _morans_i_vectorized(annot, weight)
+
+    if standardized:
+        morans_i = (morans_i - _I_ev(weight)) / np.sqrt(_I_var(weight))
+
+    return morans_i
 
 
 def local_morans_i(annot, weight, use_sampvar=True):
