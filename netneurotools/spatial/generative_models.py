@@ -21,6 +21,8 @@ def generate_ac_maps(X, weights, I_trg=None, n_maps=10, epsilon=0.0001,
     of `X` within the specified tolerance. Alternative target values of Moran's I can
     also be specified using the `I_trg` parameter.
 
+    See reference [1] for more info.
+
     Parameters
     ----------
     X: array-like of shape (n,)
@@ -50,6 +52,11 @@ def generate_ac_maps(X, weights, I_trg=None, n_maps=10, epsilon=0.0001,
     Y_all : (n,) or (n_maps, n) or (n_maps, n_eps, n) ndarray
         Surrogate maps whose autocorrelation structure matches the autocorrelation
         structure of `X` up to the tolerance value(s) specified in `epsilon`.
+
+    References
+    ----------
+    .. [1] Bazinet, V., Liu, Z. Q., Milisav, F., Luppi, A. I., & Misic, B. (2026).
+        Homophily-informed generative models of brain maps. bioRxiv, 2026-06.
     """
     rng = np.random.default_rng(seed)
 
