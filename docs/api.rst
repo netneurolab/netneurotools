@@ -309,6 +309,14 @@ To calculate spatial statistics
    lees_l
    local_lees_l
 
+To generate autocorrelated brain maps
+
+.. autosummary::
+   :template: function.rst
+   :toctree: generated/
+
+   generate_ac_maps
+   permute_ac_map
 
 .. _ref_interface:
 
