@@ -538,7 +538,7 @@ def search_information(W, D, has_memory=False):
     return SI
 
 
-def mean_first_passage_time(W, tol=1e-3):
+def mean_first_passage_time(W, check_connected=True):
     """
     Calculate mean first passage time.
 
@@ -556,8 +556,8 @@ def mean_first_passage_time(W, tol=1e-3):
     ----------
     W : (N x N) ndarray
         Weighted/unweighted, direct/undirected connection weight/length array
-    tol : float, optional
-        Tolerance for eigenvalue of 1. Default: 1e-3
+    check_connected : bool
+        If `True`, then checks whether `W` is strongly connected.
 
     Returns
     -------
@@ -571,20 +571,20 @@ def mean_first_passage_time(W, tol=1e-3):
        morphospace of communication efficiency in complex networks. PLoS One,
        8(3), e58070.
     """
+    # Ensure that the Markov chain is irreducible
+    if check_connected:
+        n_components, _ = scipy.sparse.csgraph.connected_components(
+            scipy.sparse.csr_matrix(W), directed=True, connection='strong')
+        if n_components != 1:
+            raise ValueError(f"Transition matrix is reducible ({n_components} "
+                             "strongly connected components); stationary distribution "
+                             "is not unique.")
+
     P = W / np.sum(W, axis=1)[:, None]  # transition matrix
     n = len(P)
-    D, V = np.linalg.eig(P.T)
-    D_minidx = np.argmin(np.abs(D - 1))
-
-    if D[D_minidx] > 1 + tol:
-        raise ValueError(
-            f"Cannot find eigenvalue of 1. Minimum eigenvalue is larger than {tol}."
-        )
-
-    w = V[:, D_minidx]
-    w /= np.sum(w)
-    Z = np.linalg.inv(np.eye(n) - P + w[None, :])  # fundamental matrix
-    mfpt = (np.diag(Z)[None, :] - Z) / w[None, :]
+    stationary = np.linalg.solve(P.T - np.eye(n) + 1.0, np.ones(n))
+    Z = np.linalg.inv(np.eye(n) - P + stationary[None, :])  # fundamental matrix
+    mfpt = (np.diag(Z)[None, :] - Z) / stationary[None, :]
     return mfpt
 
 
