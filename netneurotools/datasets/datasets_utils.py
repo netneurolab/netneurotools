@@ -3,6 +3,7 @@
 import json
 import os
 import shutil
+import tarfile
 from pathlib import Path
 from collections import namedtuple
 import importlib.resources
@@ -139,7 +140,13 @@ def fetch_file(dataset_name, keys=None, force=False, data_dir=None, verbose=1):
         else:
             archive_format = "gztar"
 
-        shutil.unpack_archive(dl_fname, targ_folder.parent, format=archive_format)
+        if archive_format == "zip":
+            shutil.unpack_archive(dl_fname, targ_folder.parent, format=archive_format)
+        else:
+            if not hasattr(tarfile, "data_filter"):
+                raise RuntimeError("Update Python to a version with tarfile.data_filter")
+            with tarfile.open(dl_fname, "r:gz") as archive:
+                archive.extractall(targ_folder.parent, filter=tarfile.data_filter)
         os.remove(dl_fname)
 
         # rename folder if necessary
